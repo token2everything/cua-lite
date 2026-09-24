@@ -2,6 +2,8 @@
 # 所有 manage 命令共用此配置；未传 --config 时读取 .sandbox/run.yaml。
 # 管理员提供 environment_id；模板固定 Worker 和 Agent 镜像，这里不填写任何密钥。
 # 完整 054 示例见 lite/gym/envs/osworld_2/WORKER.md。
+# 自动并发：manage batch --concurrency 4 --dry-run 预览；去掉 --dry-run 启动。
+# batch 将 tasks/task_set 拆为每题一个 Sandbox，完成后同步、回收并补位。
 project: ailab-llmagent
 base_url: http://deepenv.sandbox.pjlab.org.cn
 afs_url: http://10.140.95.76:28081
@@ -22,4 +24,4 @@ job:
   max_steps: 100
   history_turns: 4                 # Chat：4 张历史截图＋当前截图，文本完整保留
   results_root: results           # 本地镜像目录，也用作 Agent 容器内输出路径
-  # experiment: v21-054-my-run    # 默认自动生成唯一名称；指定名称不可重复提交
+  # experiment: v21-054-my-run    # 默认生成唯一名称；batch 用作批次 ID，恢复用 --resume <ID>

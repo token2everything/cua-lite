@@ -15,6 +15,7 @@ from unittest.mock import Mock, call
 
 import pytest
 
+from lite.platforms.sandbox import lifecycle
 from lite.platforms.sandbox.osworld_2 import manage
 
 AGENT_IMAGE = "registry.example/cua-agent@sha256:" + "a" * 64
@@ -218,17 +219,23 @@ def test_create_does_not_expose_model_job_through_worker_results_mount(deploymen
 def test_delete_requires_local_create_and_matching_remote_nonce(deployment):
     args, config, client = deployment
     with pytest.raises(ValueError, match="No local create record"):
-        manage.delete(args, config, client)
+        lifecycle.delete(
+            args.state_dir, args.sandbox_id, client, project=config["project"], owner=manage._OWNER,
+        )
     client.request.assert_not_called()
     result = manage.create(args, config, client, "osworld-v2.1")
     client.request.reset_mock()
     client.request.return_value = {"metadata": {"worker_run": "someone-else"}}
     with pytest.raises(ValueError, match="Remote Sandbox ownership"):
-        manage.delete(args, config, client)
+        lifecycle.delete(
+            args.state_dir, args.sandbox_id, client, project=config["project"], owner=manage._OWNER,
+        )
     assert all(call.args[0] == "GET" for call in client.request.call_args_list)
     client.request.reset_mock()
     client.request.side_effect = [{"metadata": {"worker_run": result["worker_run"]}}, {}]
-    assert manage.delete(args, config, client)["state"] == "deletion_requested"
+    assert lifecycle.delete(
+            args.state_dir, args.sandbox_id, client, project=config["project"], owner=manage._OWNER,
+        )["state"] == "deletion_requested"
     assert client.request.call_args_list[-1].args == ("DELETE", "/v1/sandboxes/new-sandbox")
 
 
@@ -238,7 +245,9 @@ def test_delete_rejects_different_deployment(deployment):
     client.request.reset_mock()
     client.base_url = "http://other-manager.example"
     with pytest.raises(ValueError, match="does not match this deployment"):
-        manage.delete(args, config, client)
+        lifecycle.delete(
+            args.state_dir, args.sandbox_id, client, project=config["project"], owner=manage._OWNER,
+        )
     client.request.assert_not_called()
 
 

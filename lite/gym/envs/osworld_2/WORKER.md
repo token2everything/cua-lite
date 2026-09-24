@@ -196,13 +196,63 @@ uv run python -m lite.platforms.sandbox.osworld_2.manage --config .sandbox/run.y
 | 跑 v2.1 offline | 删除 `job.tasks`，改为 `job.task_set: offline`，共 82 项 |
 | 跑 full | 删除 `job.tasks`，改为 `job.task_set: full`，共 108 项 |
 | 换 0808 / 0624 | 修改 `release`，选择匹配 Worker 与数据版本的 `environment_id`；可复用相同通用 Agent 镜像，见[模板说明](/lite/platforms/sandbox/osworld_2/README.md#workspace-templates) |
-| 并发执行 | 每个独立作业一份 YAML，各调用一次 submit；没有自动拆分或 Worker 池 |
+| 并发执行 | 同一份 YAML 选择任务，用 `batch --concurrency N` 自动拆分、补位和回收，见下例 |
 
 每次 submit 默认生成新 experiment。设置 `job.experiment` 时需手动保证每个作业名称不同。完整轨迹都保留；请求截图数量由 `job.history_turns` 控制。
 
 0624、0808 没有官方 offline 子集。0624 的 7 个交互任务与 069 仍在协议排除清单中；明确接受部分覆盖时设置 `job.skip_unsupported: true`。offline 也可能需要素材、自建网站或模型 API。
 
 054 无需额外网站。网站任务需由 benchmark 模板预置服务；标准 Worker 启动脚本不会安装 OSWorld-web。026 使用[同一 Sandbox 内的 GitLab 服务](/lite/platforms/sandbox/osworld_2/services/gitlab/README.md)，并为外层 Sandbox 预留服务内存。发布维护者负责服务就绪；这些依赖不打入通用 Agent 镜像，填写任务 ID 也不会自动部署网站。
+
+### 自动拆分与并发评测
+
+仍然只维护一份 `run.yaml`。例如运行 0808，修改已有配置的版本、模板和任务选择，其余平台和模型配置保留：
+
+```yaml
+release: osworld-v2-2026.08.08
+environment_id: ddfaf932-2461-4209-8d72-5cc991a3a60d
+job:
+  model_config: model-api.json
+  model_profile: glm5.3-flash
+  tasks: ["054", "007", "069"]
+  # 全集：删除 tasks，改为 task_set: full
+  experiment: osworld-0808-batch-001
+  max_steps: 100
+  history_turns: 4
+  results_root: results
+```
+
+先预览，再启动最多 4 个 Sandbox：
+
+```sh
+uv run python -m lite.platforms.sandbox.osworld_2.manage --config .sandbox/run.yaml batch --concurrency 4 --dry-run
+uv run python -m lite.platforms.sandbox.osworld_2.manage --config .sandbox/run.yaml batch --concurrency 4
+```
+
+每题使用独立 Sandbox，实验名为 `<batch-id>-task-<任务号>`。任务结束后自动同步轨迹、
+评分和启动日志，并核对所有权、删除实例；**确认实例消失后才启动下一题**。每个实例
+都验证飞书设置。调度器读取 Agent 退出码及 `run.json`，不会把 Sandbox 的 Running
+当作 Agent 仍在工作，也不会把得分 0 当作流程失败。任务失败会记录原因，其他任务继续。
+
+调度命令需要持续运行，可放在自己的 `tmux` 会话中；Agent 和 Worker 仍在 Sandbox 内。
+默认每 30 秒查询一次，接近到期时自动续期。每题含启动时间默认最多 4 小时，可用
+`--task-timeout 21600` 改为 6 小时；超时先终止该 Sandbox，再同步最终文件。
+并发上限包含创建、执行和回收中的实例，按项目配额设置。普通模板每个外层 Sandbox
+为 8 CPU / 16 GiB；所有任务沿用同一模板，网站、GitLab 依赖及额外内存须先准备好。
+
+进度、每题状态及模型得分实时写入 `.sandbox/state/batches/<batch-id>/batch.json`，
+轨迹仍在原有 `results/<子实验名>/`，启动日志在其中的 `_launcher/`。本地保留选中模型的
+私密快照，恢复后待运行任务继续使用同一配置。中断调度器不会停止已经运行的 Sandbox：
+
+```sh
+uv run python -m lite.platforms.sandbox.osworld_2.manage --config .sandbox/run.yaml batch --resume osworld-0808-batch-001
+```
+
+恢复时使用原来的部署、state 目录和 batch ID；不会重跑已完成任务。同步或管理接口
+出错时会停止补位并保留进度。若创建响应丢失，按提示中的提交记录及 `worker_run` 到
+Portal 核对，不自动重复创建。一个批次只运行一个调度器；进程被强杀留下
+`.scheduler.lock` 时，确认旧调度器已退出后再移除该锁目录。批次含流程失败时命令退出码
+为 1；模型得分为 0 且流程完成时仍为 0。
 
 <details>
 <summary>执行机制与排查入口（适配开发时阅读）</summary>

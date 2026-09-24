@@ -307,4 +307,12 @@ VM 内存于启动时生效，修改模板只影响之后启动的 VM。
 
 一个 Worker 同时运行一个任务；顺序复用前必须确认上个任务清理完成，并发任务使用
 独立 Worker。env-server idle TTL 与 Sandbox 到期时间独立，按整个批次时间续期。
-当前没有自动任务拆分或 Worker 池。
+`manage batch --concurrency N` 可把同一配置的任务自动拆成独立 Sandbox 作业，按并发
+上限补位、同步结果并回收；`--dry-run` 预览，`--resume <batch-id>` 恢复。
+调度器在工作站运行，不依赖重建 Worker 或 Agent 镜像，也不复用已有 Worker 池。
+完整配置、运行与恢复方法见[批量评测示例](/lite/gym/envs/osworld_2/WORKER.md#自动拆分与并发评测)。
+
+批量队列及 Sandbox 生命周期由 [公共平台层](/lite/platforms/sandbox/README.md#批量接入)
+维护；本目录的 `batch.py` 只负责 OSWorld 任务计划、作业提交、Worker 回执和结果读取。
+新增 benchmark 实现自己的 `submit / observe / collect` 即可复用队列，
+无需复制 OSWorld 的调度循环。0624、0808、v2.1 共用此适配器。

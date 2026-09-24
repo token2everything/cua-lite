@@ -18,6 +18,7 @@ from pathlib import Path, PurePosixPath
 import yaml
 
 from lite.gym.envs.osworld_2.catalog import DEFAULT_RELEASE, load_release
+from lite.platforms.sandbox import lifecycle
 from lite.platforms.sandbox.client import (
     NoRedirect,
     SandboxClient,
@@ -47,6 +48,16 @@ def _parse_args(argv=None):
     subs = parser.add_subparsers(dest="command", required=True)
     subs.add_parser("plan", help="Preview the configured job without credentials or network")
     subs.add_parser("submit", help="Stage the configured job on AFS and start it in Sandbox")
+    batch = subs.add_parser(
+        "batch", help="Split tasks into owned Sandboxes with bounded concurrency"
+    )
+    batch.add_argument("--concurrency", type=int, help="Maximum live Sandboxes (default: 4)")
+    batch.add_argument("--dry-run", action="store_true", help="Preview without credentials/network")
+    batch.add_argument("--resume", type=safe_component, metavar="BATCH_ID")
+    batch.add_argument("--poll-interval", type=int, help="Seconds between polls (default: 30)")
+    batch.add_argument(
+        "--task-timeout", type=int, help="Seconds per task, including boot (default: 14400)"
+    )
     create = subs.add_parser("create", help="Create a new Worker from an existing Environment")
     create.add_argument("environment_id", nargs="?", type=safe_component)
     create.add_argument("--dry-run", action="store_true")
@@ -145,36 +156,24 @@ def create(
     payload, effective_webhook = prepared or prepare_create(args, config, client, release)
     if args.dry_run:
         return redact(payload, [effective_webhook] if effective_webhook else [])
-    created = client.request("POST", "/v1/sandboxes", payload)
-    sandbox_id = safe_component(created["id"])
-    record = {
-        "sandbox_id": sandbox_id,
-        "environment_id": payload["extensions"]["environmentId"],
-        "project": config["project"],
-        "base_url": client.base_url,
-        "worker_run": payload["metadata"]["worker_run"],
+    details = {
         "release": release,
-        "state": state_of(created),
-        "feishu_webhook_configured": bool(effective_webhook),
         "agent_in_sandbox": bool(args.agent_job),
-        "managed_by": _OWNER,
     }
     if args.agent_job:
-        record["agent_image"] = payload["env"]["CUA_AGENT_IMAGE"]
+        details["agent_image"] = payload["env"]["CUA_AGENT_IMAGE"]
     if submission is not None:
-        record["submission"] = submission
-        record["feishu_webhook_verified"] = False
-    path = args.state_dir / f"worker-{sandbox_id}.json"
-    try:
-        write_json(path, record)
-    except OSError as error:
-        raise RuntimeError(
-            f"Sandbox {sandbox_id} was created but its ownership record could not be saved: {error}"
-        ) from None
-    return {**record, "ownership_file": str(path)}
+        details["submission"] = submission
+        details["feishu_webhook_verified"] = False
+    return lifecycle.create(
+        args.state_dir, client, payload, owner=_OWNER, details=details, webhook=effective_webhook,
+    )
 
 
-def submit(args, config: dict, client: SandboxClient, release: str, job: Job) -> dict:
+def submit(
+    args, config: dict, client: SandboxClient, release: str, job: Job,
+    *, batch_run: str | None = None,
+) -> dict:
     """Validate, stage an immutable private job, create once, and verify Feishu."""
     from lite.agents.extensions.api_config import load_profile
 
@@ -212,6 +211,8 @@ def submit(args, config: dict, client: SandboxClient, release: str, job: Job) ->
         **job.summary(), "afs_url": client.afs_url, "results_prefix": config["results_prefix"],
         "agent_image": payload["env"]["CUA_AGENT_IMAGE"],
     }
+    if batch_run is not None:
+        submission["batch_run"] = batch_run
     # Keep the nonce even if the create response is lost; never retry POST blindly.
     directory = args.state_dir / "jobs" / job.experiment
     directory.mkdir(parents=True, exist_ok=False, mode=0o700)
@@ -238,33 +239,21 @@ def submit(args, config: dict, client: SandboxClient, release: str, job: Job) ->
             f"{error}; do not resubmit blindly. Check worker_run="
             f"{payload['metadata']['worker_run']} in Portal; staging record: {directory}"
         ) from None
-    # The ownership record already exists so a failed verification never hides the resource.
-    path = Path(record.pop("ownership_file"))
-    try:
-        actual = client.request("GET", "/v1/sandboxes/" + record["sandbox_id"])
-    except RuntimeError as error:
-        raise RuntimeError(
-            f"Sandbox {record['sandbox_id']} created; could not verify Feishu: {error}. "
-            f"Ownership record: {path}; inspect it before resubmitting"
-        ) from None
-    record["feishu_webhook_verified"] = (
-        actual.get("extensions", {}).get("webhook-feishu") == webhook
-    )
-    write_json(path, record)
-    if not record["feishu_webhook_verified"]:
-        raise RuntimeError(
-            f"Sandbox {record['sandbox_id']} created but effective Feishu verification failed; "
-            f"inspect it before resubmitting. Ownership record: {path}"
-        )
-    return {**record, "ownership_file": str(path)}
+    return lifecycle.verify_feishu(client, record, webhook)
+
+
+def worker_health(sandbox_id: str, client: SandboxClient) -> tuple[str, dict]:
+    """Discover the Worker identity through its Sandbox-scoped, read-only health endpoint."""
+    endpoint = client.endpoint(sandbox_id, 8800)
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+    with opener.open(endpoint + "/healthz", timeout=30) as stream:
+        health = json.load(stream)
+    return endpoint, health
 
 
 def attach(args, config: dict, client: SandboxClient, release: str) -> dict:
     """Read this Worker's AFS control record and write a private connection file."""
-    endpoint = client.endpoint(args.sandbox_id, 8800)
-    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
-    with opener.open(endpoint + "/healthz", timeout=30) as stream:
-        health = json.load(stream)
+    endpoint, health = worker_health(args.sandbox_id, client)
     if health["release"] != release:
         raise ValueError("Worker release does not match the packaged OSWorld release manifest")
     worker_id = safe_component(health["worker_id"])
@@ -295,32 +284,18 @@ def attach(args, config: dict, client: SandboxClient, release: str) -> dict:
     }
 
 
-def delete(args, config: dict, client: SandboxClient) -> dict:
-    """Delete only a Sandbox this CLI created and whose remote ownership still matches."""
-    path = args.state_dir / f"worker-{args.sandbox_id}.json"
-    if not path.is_file():
-        raise ValueError(
-            "No local create record for this Sandbox; attach does not grant deletion ownership"
-        )
-    record = json.loads(path.read_text())
-    if (
-        record.get("sandbox_id") != args.sandbox_id
-        or record.get("project") != config["project"]
-        or record.get("base_url") != client.base_url
-        or record.get("managed_by") != _OWNER
-    ):
-        raise ValueError("Sandbox ownership record does not match this deployment")
-    current = client.request("GET", "/v1/sandboxes/" + args.sandbox_id)
-    if (
-        not record.get("worker_run")
-        or current.get("metadata", {}).get("worker_run") != record["worker_run"]
-    ):
-        raise ValueError("Remote Sandbox ownership does not match its local create record")
-    client.request("DELETE", "/v1/sandboxes/" + args.sandbox_id)
-    record["state"] = "deletion_requested"
-    write_json(path, record)
-    (args.state_dir / f"connection-{args.sandbox_id}.json").unlink(missing_ok=True)
-    return {"sandbox_id": args.sandbox_id, "state": "deletion_requested"}
+def sync(record: dict, client: SandboxClient) -> dict:
+    """Mirror a submission's persisted outputs, including failures before env initialization."""
+    submission = record["submission"]
+    experiment = safe_component(submission["experiment"])
+    output = Path(submission["results_root"])
+    client.afs(
+        "copy", f"afs:{submission['results_prefix']}/agent-results", str(output),
+        "--include", f"/{experiment}/**", "--include", f"/_environment/{experiment}/**",
+        "--ignore-times", "--ignore-size", "--multi-thread-streams", "0", "--transfers", "4",
+    )
+    return {"sandbox_id": record["sandbox_id"], "results": str(output / experiment),
+            "environment_results": str(output / "_environment" / experiment)}
 
 
 def main(argv=None) -> None:
@@ -378,6 +353,14 @@ def main(argv=None) -> None:
                     "state_dir": str(args.state_dir), **job.summary(),
                 }, ensure_ascii=False, indent=2))
                 return
+        if args.command == "batch":
+            from lite.platforms.sandbox import batch
+            from lite.platforms.sandbox.osworld_2.batch import OSWorldBatch, prepare
+
+            batch_state = prepare(args, config, selected)
+            if args.dry_run:
+                print(json.dumps(batch_state, ensure_ascii=False, indent=2))
+                return
         if args.command == "create" and args.dry_run:
             print(json.dumps(create(args, config, None, release), ensure_ascii=False, indent=2))
             return
@@ -408,25 +391,21 @@ def main(argv=None) -> None:
         )
         if args.command == "submit":
             result = submit(args, config, client, release, job)
+        elif args.command == "batch":
+            result = batch.run(
+                args, client, batch_state, OSWorldBatch(args, config, client, batch_state),
+            )
+            result["skipped"] = batch_state["selection"]["skipped"]
         elif args.command == "create":
             result = create(args, config, client, release)
         elif args.command == "sync":
-            experiment = safe_component(submission["experiment"])
-            output = Path(submission["results_root"])
-            # An initialization failure can produce Agent results without an env
-            # directory. Select both under their common parent instead of requiring both.
-            client.afs(
-                "copy", f"afs:{submission['results_prefix']}/agent-results", str(output),
-                "--include", f"/{experiment}/**", "--include", f"/_environment/{experiment}/**",
-                "--ignore-times", "--ignore-size", "--multi-thread-streams", "0",
-                "--transfers", "4",
-            )
-            result = {"sandbox_id": args.sandbox_id, "results": str(output / experiment),
-                      "environment_results": str(output / "_environment" / experiment)}
+            result = sync(record, client)
         elif args.command == "attach":
             result = attach(args, config, client, release)
         elif args.command == "delete":
-            result = delete(args, config, client)
+            result = lifecycle.delete(
+                args.state_dir, args.sandbox_id, client, project=config["project"], owner=_OWNER,
+            )
         elif args.command == "results":
             output = args.output.expanduser().resolve()
             source = f"afs:{config['results_prefix']}/runs/{args.run_id}"
@@ -476,6 +455,8 @@ def main(argv=None) -> None:
                 "expiresAt": value.get("expiresAt"),
             }
         print(json.dumps(redact(result, client.secrets), ensure_ascii=False, indent=2))
+        if args.command == "batch" and result["failed"]:
+            raise SystemExit(1)
     except (OSError, ValueError, RuntimeError, KeyError, yaml.YAMLError) as error:
         raise SystemExit(redact(str(error), client.secrets if client else secrets)) from None
 

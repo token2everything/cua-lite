@@ -175,7 +175,7 @@ platform = Path(deployment.__file__).parent
 assert platform.name == "osworld_2"
 assert not (platform.parent / "osworld").exists()
 for relative in (
-    "README.md", "manage.py", "job.py", "configs/run.yaml",
+    "README.md", "manage.py", "job.py", "batch.py", "configs/run.yaml",
     "launch_worker.sh", "launch_rollout.sh", "coordinator.py",
     "environment-template.example.json",
     "services/gitlab/launch.sh", "services/gitlab/init.rb",
@@ -183,6 +183,8 @@ for relative in (
 ):
     assert (platform / relative).is_file(), relative
 assert (platform.parent / "client.py").is_file()
+assert (platform.parent / "batch.py").is_file()
+assert (platform.parent / "lifecycle.py").is_file()
 assert (platform.parent / "README.md").is_file()
 assert not (platform / "configs/platform.yaml").exists()
 agent_package = Path(lite.agents.episode.__file__).parent
@@ -194,6 +196,14 @@ with redirect_stdout(preview):
 plan = json.loads(preview.getvalue())
 assert plan["requested_task_ids"] == ["054"]
 assert plan["release"] == "osworld-v2.1"
+assert not Path(plan["state_dir"]).exists()
+preview = StringIO()
+with redirect_stdout(preview):
+    manage(["--config", str(platform / "configs/run.yaml"), "batch",
+            "--concurrency", "2", "--dry-run"])
+batch = json.loads(preview.getvalue())
+assert batch["concurrency"] == 2
+assert [item["task_id"] for item in batch["tasks"]] == ["054"]
 assert not Path(plan["state_dir"]).exists()
 agent = ResponsesGatewayAgent(model_id="glm-5.3-responses", api_base="http://example.test/v1",
                              api_key="test-only", metadata=env.metadata,

@@ -1,6 +1,6 @@
 """Resolve a local run YAML into the existing Sandbox Agent job contract.
 
-Used by ``manage plan`` and ``manage submit``. Resolution reads only the packaged
+Used by ``manage plan``, ``submit`` and ``batch``. Resolution reads only the packaged
 task catalog; credentials, private model files and platform access are deferred
 until submission.
 """

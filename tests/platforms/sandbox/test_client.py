@@ -77,9 +77,25 @@ def test_api_error_redacts_credentials_without_retry(client):
     )
     with pytest.raises(RuntimeError, match="HTTP 403") as caught:
         client.request("POST", "/v1/sandboxes", {})
+    assert isinstance(caught.value, sandbox_client.SandboxAPIError)
+    assert caught.value.status_code == 403
     assert "test-access" not in str(caught.value)
     assert "test-secret" not in str(caught.value)
     assert client.opener.open.call_count == 1
+
+
+@pytest.mark.parametrize("code", [3, 7])
+def test_afs_failure_retains_exit_code_without_leaking_secrets(client, monkeypatch, code):
+    monkeypatch.setattr(sandbox_client.subprocess, "run", Mock(side_effect=[
+        Mock(stdout="obscured-value\n"),
+        subprocess.CalledProcessError(
+            code, ["rclone", "copy"], stderr="test-secret obscured-value"
+        ),
+    ]))
+    with pytest.raises(sandbox_client.AFSCommandError) as caught:
+        client.afs("copy", "afs:missing", "output")
+    assert caught.value.returncode == code
+    assert str(caught.value) == "[redacted] [redacted]"
 
 
 def test_proxy_endpoint_preserves_path_or_uses_manager(client, monkeypatch):

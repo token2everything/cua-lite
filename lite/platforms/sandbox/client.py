@@ -26,6 +26,22 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
+class SandboxAPIError(RuntimeError):
+    """An HTTP failure whose status can distinguish absence from access/transport errors."""
+
+    def __init__(self, message: str, status_code: int):
+        super().__init__(message)
+        self.status_code = status_code
+
+
+class AFSCommandError(RuntimeError):
+    """A redacted rclone failure retaining its exit code for missing-artifact handling."""
+
+    def __init__(self, message: str, returncode: int | None):
+        super().__init__(message)
+        self.returncode = returncode
+
+
 def safe_component(value: str) -> str:
     """Validate IDs before putting them in an API or local state path."""
     if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", value):
@@ -204,7 +220,9 @@ class SandboxClient:
                 return json.loads(body) if body else {}
         except urllib.error.HTTPError as error:
             detail = redact(error.read(2048).decode(errors="replace"), self.secrets)
-            raise RuntimeError(f"{method} {path}: HTTP {error.code}: {detail}") from None
+            raise SandboxAPIError(
+                f"{method} {path}: HTTP {error.code}: {detail}", error.code
+            ) from None
         except (OSError, ValueError) as error:
             raise RuntimeError(redact(str(error), self.secrets)) from None
 
@@ -256,7 +274,10 @@ class SandboxClient:
                     time.sleep(1)
         except (OSError, subprocess.CalledProcessError) as error:
             message = getattr(error, "stderr", None) or str(error)
-            raise RuntimeError(redact(message[-3000:], [*self.secrets, obscured])) from None
+            raise AFSCommandError(
+                redact(message[-3000:], [*self.secrets, obscured]),
+                getattr(error, "returncode", None),
+            ) from None
 
     def endpoint(self, sandbox_id: str, port: int) -> str:
         """Use the full proxy endpoint, mapping advertised internal hosts to the manager."""

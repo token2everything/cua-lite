@@ -84,6 +84,16 @@ def test_api_error_redacts_credentials_without_retry(client):
     assert client.opener.open.call_count == 1
 
 
+@pytest.mark.parametrize("method", ["GET", "POST", "DELETE"])
+def test_network_timeout_keeps_operation_context_without_retrying(client, method):
+    client.opener = Mock()
+    client.opener.open.side_effect = TimeoutError("timed out test-secret")
+    with pytest.raises(sandbox_client.SandboxTransportError) as caught:
+        client.request(method, "/v1/sandboxes/owned")
+    assert str(caught.value) == f"{method} /v1/sandboxes/owned: timed out [redacted]"
+    assert client.opener.open.call_count == 1
+
+
 @pytest.mark.parametrize("code", [3, 7])
 def test_afs_failure_retains_exit_code_without_leaking_secrets(client, monkeypatch, code):
     monkeypatch.setattr(sandbox_client.subprocess, "run", Mock(side_effect=[

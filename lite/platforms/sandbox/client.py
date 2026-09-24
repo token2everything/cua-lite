@@ -34,6 +34,10 @@ class SandboxAPIError(RuntimeError):
         self.status_code = status_code
 
 
+class SandboxTransportError(RuntimeError):
+    """A network failure with an unknown outcome; callers must reconcile mutations."""
+
+
 class AFSCommandError(RuntimeError):
     """A redacted rclone failure retaining its exit code for missing-artifact handling."""
 
@@ -223,8 +227,12 @@ class SandboxClient:
             raise SandboxAPIError(
                 f"{method} {path}: HTTP {error.code}: {detail}", error.code
             ) from None
-        except (OSError, ValueError) as error:
-            raise RuntimeError(redact(str(error), self.secrets)) from None
+        except OSError as error:
+            raise SandboxTransportError(
+                f"{method} {path}: {redact(str(error), self.secrets)}"
+            ) from None
+        except ValueError as error:
+            raise RuntimeError(f"{method} {path}: {redact(str(error), self.secrets)}") from None
 
     def afs(self, *command: str, timeout: float | None = None) -> str:
         """Run rclone with an in-memory WebDAV configuration, never an on-disk secret."""

@@ -48,6 +48,17 @@ def test_unavailable_or_stale_progress_is_unknown_and_does_not_fail_task(state):
     assert monitor.task_health(item, 920, 900, 30) == "finishing"
 
 
+def test_platform_timeout_is_visible_without_changing_workflow_result(state):
+    item = state["tasks"][0]
+    item.update(state="deleting", poll_error="DELETE /v1/sandboxes/example: timed out")
+    assert monitor.task_health(item, 20, 900, 30) == "unknown"
+    card = json.dumps(monitor.build_card(state, 20), ensure_ascii=False)
+    assert "timed out" in card and "暂时无法确认" in card
+    assert "error" not in item and item["state"] == "deleting"
+    item.pop("poll_error")
+    assert monitor.task_health(item, 20, 900, 30) == "finishing"
+
+
 def test_card_uses_collapsed_details_and_separates_zero_score_from_workflow_failure(state):
     state["tasks"].append({"task_id": "done", "state": "completed", "score": 0})
     card = monitor.build_card(state, 20)

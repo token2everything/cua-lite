@@ -20,6 +20,7 @@ from lite.platforms.sandbox import lifecycle
 from lite.platforms.sandbox.client import (
     SandboxAPIError,
     SandboxClient,
+    SandboxTransportError,
     redact,
     state_of,
     write_json,
@@ -160,92 +161,113 @@ def run(
             for item in state["tasks"]:
                 if item["state"] in _FINISHED | {"pending"}:
                     continue
-                record = lifecycle.read_record(
-                    args.state_dir,
-                    item["sandbox_id"],
-                    client,
-                    project=config["project"],
-                    owner=adapter.owner,
-                )
-                if (
-                    record["submission"]["experiment"] != item["experiment"]
-                    or record["submission"].get("batch_run") != state["batch_run"]
-                    or record["submission"]["afs_url"] != client.afs_url
-                    or record["submission"]["results_prefix"] != config["results_prefix"]
-                ):
-                    raise ValueError(
-                        "Batch ownership record does not match the original submission"
-                    )
                 try:
-                    current = client.request("GET", "/v1/sandboxes/" + item["sandbox_id"])
-                except SandboxAPIError as error:
-                    if error.status_code != 404:
-                        raise
-                    current = None
-                if current is not None:
-                    lifecycle.check_remote(record, current)
-                item["platform_state"] = state_of(current) if current is not None else "absent"
-                if current is None and not item.get("collected"):
-                    item["state"] = "collecting"
-                # A durable benchmark receipt can survive Sandbox expiry. Read it
-                # before platform failure/absence is interpreted by the queue.
-                finished = adapter.observe(item, record)
-                if current is None:
-                    item["sandbox_deleted"] = True
-                    if item.get("collected"):
-                        item["state"] = "completed" if item["workflow_completed"] else "failed"
-                        write_json(path, state)
-                        print(
-                            f"Task {item['task_id']}: {item['state']}; score={item.get('score')}",
-                            file=sys.stderr,
-                            flush=True,
-                        )
-                        continue
-                    item["state"] = "collecting"
-                if item["state"] == "running":
-                    if finished or item["platform_state"] in {
-                        "failed",
-                        "terminated",
-                        "stopped",
-                        "expired",
-                    }:
-                        item["state"] = "collecting"
-                    elif time.time() - item["started_at"] >= state["task_timeout"]:
-                        # Stop an unfinished writer before collecting its final artifacts.
-                        item.update(state="deleting", error="Task exceeded task-timeout")
-                    elif current.get("expiresAt"):
-                        expiration = datetime.fromisoformat(
-                            current["expiresAt"].replace("Z", "+00:00")
-                        )
-                        if expiration.timestamp() - time.time() < 600:
-                            client.request(
-                                "POST",
-                                f"/v1/sandboxes/{item['sandbox_id']}/renew-expiration",
-                                {"timeout": 7200},
-                            )
-                write_json(path, state)
-
-                # A collection error stops the scheduler without deleting the resource.
-                if item["state"] == "collecting":
-                    adapter.collect(item, record)
-                    item["collected"] = True
-                    item["state"] = (
-                        ("completed" if item["workflow_completed"] else "failed")
-                        if item.get("sandbox_deleted")
-                        else "deleting"
+                    record = lifecycle.read_record(
+                        args.state_dir,
+                        item["sandbox_id"],
+                        client,
+                        project=config["project"],
+                        owner=adapter.owner,
                     )
-                    write_json(path, state)
-                if item["state"] == "deleting":
-                    write_json(path, state)
-                    if not item.get("delete_requested"):
-                        lifecycle.delete(
-                            args.state_dir,
-                            item["sandbox_id"],
-                            client,
-                            project=config["project"],
-                            owner=adapter.owner,
+                    if (
+                        record["submission"]["experiment"] != item["experiment"]
+                        or record["submission"].get("batch_run") != state["batch_run"]
+                        or record["submission"]["afs_url"] != client.afs_url
+                        or record["submission"]["results_prefix"] != config["results_prefix"]
+                    ):
+                        raise ValueError(
+                            "Batch ownership record does not match the original submission"
                         )
-                        item["delete_requested"] = True
+                    try:
+                        current = client.request("GET", "/v1/sandboxes/" + item["sandbox_id"])
+                    except SandboxAPIError as error:
+                        if error.status_code != 404:
+                            raise
+                        current = None
+                    item.pop("poll_error", None)
+                    if current is not None:
+                        lifecycle.check_remote(record, current)
+                    item["platform_state"] = state_of(current) if current is not None else "absent"
+                    if current is None and not item.get("collected"):
+                        item["state"] = "collecting"
+                    # A durable benchmark receipt can survive Sandbox expiry. Read it
+                    # before platform failure/absence is interpreted by the queue.
+                    finished = adapter.observe(item, record)
+                    if current is None:
+                        item["sandbox_deleted"] = True
+                        if item.get("collected"):
+                            item["state"] = "completed" if item["workflow_completed"] else "failed"
+                            write_json(path, state)
+                            print(
+                                f"Task {item['task_id']}: {item['state']}; "
+                                f"score={item.get('score')}",
+                                file=sys.stderr,
+                                flush=True,
+                            )
+                            continue
+                        item["state"] = "collecting"
+                    if item["state"] == "running":
+                        if finished or item["platform_state"] in {
+                            "failed",
+                            "terminated",
+                            "stopped",
+                            "expired",
+                        }:
+                            item["state"] = "collecting"
+                        elif time.time() - item["started_at"] >= state["task_timeout"]:
+                            # Stop an unfinished writer before collecting its final artifacts.
+                            item.update(state="deleting", error="Task exceeded task-timeout")
+                        elif current.get("expiresAt"):
+                            expiration = datetime.fromisoformat(
+                                current["expiresAt"].replace("Z", "+00:00")
+                            )
+                            if expiration.timestamp() - time.time() < 600:
+                                client.request(
+                                    "POST",
+                                    f"/v1/sandboxes/{item['sandbox_id']}/renew-expiration",
+                                    {"timeout": 7200},
+                                )
+                    write_json(path, state)
+
+                    # A collection error stops the scheduler without deleting the resource.
+                    if item["state"] == "collecting":
+                        adapter.collect(item, record)
+                        item["collected"] = True
+                        item["state"] = (
+                            ("completed" if item["workflow_completed"] else "failed")
+                            if item.get("sandbox_deleted")
+                            else "deleting"
+                        )
+                        write_json(path, state)
+                    if item["state"] == "deleting":
+                        write_json(path, state)
+                        if not item.get("delete_requested"):
+                            lifecycle.delete(
+                                args.state_dir,
+                                item["sandbox_id"],
+                                client,
+                                project=config["project"],
+                                owner=adapter.owner,
+                            )
+                            item["delete_requested"] = True
+                            write_json(path, state)
+                except (SandboxTransportError, SandboxAPIError) as error:
+                    if isinstance(error, SandboxAPIError) and error.status_code not in {
+                        404, 408, 429, 500, 502, 503, 504,
+                    }:
+                        raise
+                    # Keep the slot and reconcile its owned resource on the next poll.
+                    # A lost DELETE/renew reply must never lead to another create.
+                    item["poll_error"] = redact(str(error), client.secrets)[:500]
+                    write_json(path, state)
+                    print(
+                        f"Task {item['task_id']}: platform unavailable; retry next poll: "
+                        + item["poll_error"], file=sys.stderr, flush=True,
+                    )
+                finally:
+                    # Large batches can take longer than the reporting interval to scan.
+                    if monitor:
+                        monitor.report(state, time.time())
                         write_json(path, state)
 
             # Persist intent before submission; never fill a still-deleting slot.

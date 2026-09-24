@@ -12,7 +12,7 @@ import pytest
 import yaml
 
 from lite.platforms.sandbox import batch
-from lite.platforms.sandbox.client import AFSCommandError, SandboxAPIError
+from lite.platforms.sandbox.client import AFSCommandError, SandboxAPIError, SandboxTransportError
 from lite.platforms.sandbox.osworld_2 import manage
 
 
@@ -96,7 +96,7 @@ def queue(tmp_path, monkeypatch):
             }
             events.append(("create", sandbox_id, clock.now))
             if faults.get("create"):
-                raise RuntimeError("lost create response private-model-key")
+                raise SandboxTransportError("lost create response private-model-key")
             if faults.get("feishu"):
                 boxes[sandbox_id]["extensions"] = {}
             return copy.deepcopy(boxes[sandbox_id])
@@ -379,6 +379,76 @@ def test_lost_delete_response_can_resume_without_another_create(queue, capsys):
     invoke(queue, "--resume", "batch-test")
     assert json.loads(capsys.readouterr().out)["completed"] == 3
     assert len([e for e in queue.events if e[0] == "delete"]) == 3
+
+
+@pytest.mark.parametrize("status", [None, 429, 503])
+def test_transient_platform_read_keeps_other_tasks_running_and_recovers(queue, capsys, status):
+    request = queue.client.request.side_effect
+    snapshots, other_reads = [], []
+
+    def flaky(method, endpoint, payload=None):
+        if method == "GET" and 0 < queue.clock.now <= 2:
+            if endpoint == "/v1/sandboxes/sandbox-1":
+                if status is None:
+                    raise SandboxTransportError("timed out private-model-key")
+                raise SandboxAPIError("temporary private-model-key", status)
+            if endpoint == "/v1/sandboxes/sandbox-2":
+                other_reads.append(queue.clock.now)
+        return request(method, endpoint, payload)
+
+    queue.client.request.side_effect = flaky
+    queue.hooks["sleep"] = lambda: snapshots.append(json.loads(queue.state.read_text()))
+    invoke(queue, "--concurrency", "2")
+    result = json.loads(capsys.readouterr().out)
+    assert result["completed"] == 3 and len(queue.boxes) == 3
+    assert {1, 2} <= set(other_reads)
+    unavailable = [s for s in snapshots if s["tasks"][0].get("poll_error")]
+    assert unavailable and all(s["tasks"][0]["state"] == "running" for s in unavailable)
+    assert all("error" not in s["tasks"][0] and "scheduler_error" not in s for s in unavailable)
+    assert "private-model-key" not in json.dumps(unavailable)
+    assert all("poll_error" not in t for t in result["tasks"])
+
+
+def test_lost_delete_reply_reconciles_absence_without_stopping_or_recreating(queue, capsys):
+    request = queue.client.request.side_effect
+    lost = []
+
+    def flaky(method, endpoint, payload=None):
+        result = request(method, endpoint, payload)
+        if method == "DELETE" and not lost:
+            lost.append(endpoint)
+            queue.boxes[endpoint.rsplit("/", 1)[-1]]["delete_at"] -= 3
+            raise SandboxTransportError("DELETE: timed out")
+        return result
+
+    queue.client.request.side_effect = flaky
+    invoke(queue, "--concurrency", "1")
+    assert json.loads(capsys.readouterr().out)["completed"] == 3
+    assert len(queue.boxes) == 3
+    assert len([e for e in queue.events if e[0] == "delete"]) == 3
+
+
+def test_long_scan_checks_notifications_between_tasks(queue, monkeypatch):
+    from lite.platforms.sandbox import monitor
+    from lite.platforms.sandbox.osworld_2.batch import OSWorldBatch
+
+    queue.config["monitor"] = {"enabled": True}
+    queue.path.write_text(yaml.safe_dump(queue.config))
+    reports = []
+    reporter = Mock()
+    reporter.report.side_effect = lambda state, now, **kw: reports.append(now)
+    monkeypatch.setattr(monitor, "BatchMonitor", Mock(return_value=reporter))
+    observe = OSWorldBatch.observe
+
+    def slow_observe(self, item, record):
+        result = observe(self, item, record)
+        queue.clock.now += 5
+        return result
+
+    monkeypatch.setattr(OSWorldBatch, "observe", slow_observe)
+    invoke(queue)
+    # A report opportunity follows each task instead of waiting for all three.
+    assert {6, 11, 16} <= set(reports)
 
 
 @pytest.mark.parametrize("fault", ["foreign_nonce", "read_forbidden"])

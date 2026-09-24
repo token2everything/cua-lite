@@ -34,6 +34,8 @@ def task_health(item: dict, now: float, stall_after: int, poll_interval: int) ->
         return state
     if item.get("error"):
         return "failed"
+    if item.get("poll_error"):
+        return "unknown"
     if state in {"collecting", "deleting"}:
         return "finishing"
     progress = item.get("progress", {})
@@ -126,7 +128,7 @@ def build_card(state: dict, now: float, *, event: str = "periodic") -> dict:
                 line += "\n暂时无法确认最新进度"
                 if "observed_at" in progress:
                     line += f"（上次采集：{_age(now - progress['observed_at'])}前）"
-        error = item.get("error") or item.get("progress_error")
+        error = item.get("error") or item.get("poll_error") or item.get("progress_error")
         if error:
             line += "\n原因：" + _text(error, 140)
         if item.get("sandbox_id"):

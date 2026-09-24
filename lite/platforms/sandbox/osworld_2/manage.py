@@ -17,7 +17,7 @@ from pathlib import Path, PurePosixPath
 
 import yaml
 
-from lite.gym.envs.osworld_2.catalog import DEFAULT_RELEASE, load_release
+from lite.gym.envs.osworld_2.catalog import DEFAULT_RELEASE, Release, load_release
 from lite.platforms.sandbox import lifecycle
 from lite.platforms.sandbox.client import (
     NoRedirect,
@@ -81,6 +81,41 @@ def _parse_args(argv=None):
     results.add_argument("run_id", type=safe_component)
     results.add_argument("--output", type=Path, required=True)
     return parser.parse_args(argv)
+
+
+def task_resources(config: dict, release: Release) -> dict[str, dict[str, str]]:
+    """Validate explicit per-task outer Sandbox CPU/memory requests."""
+    overrides = config.get("task_resources", {})
+    if not isinstance(overrides, dict):
+        raise ValueError("task_resources must map quoted task IDs to cpu and memory")
+    patterns = {"cpu": r"(\d+(?:\.\d+)?)(?:m)?", "memory": r"(\d+(?:\.\d+)?)(?:[EPTGMK]i?|k)?"}
+    for task, resources in overrides.items():
+        if not isinstance(task, str) or task not in release.tasks:
+            raise ValueError(f"task_resources task ID {task!r} is outside {release.name}")
+        if not isinstance(resources, dict) or set(resources) != set(patterns):
+            raise ValueError(f"task_resources.{task} requires exactly cpu and memory")
+        for key, pattern in patterns.items():
+            value = resources[key]
+            match = re.fullmatch(pattern, value) if isinstance(value, str) else None
+            if not match or float(match[1]) <= 0:
+                raise ValueError(
+                    f"task_resources.{task}.{key} must be a positive quantity string "
+                    '(for example cpu: "8", memory: "32Gi")'
+                )
+    return {task: dict(resources) for task, resources in overrides.items()}
+
+
+def job_resource_requests(config: dict, job: Job) -> dict[str, str]:
+    """Require one explicit resource choice for tasks sharing a Sandbox."""
+    overrides = task_resources(config, load_release(job.selection["release"]))
+    tasks = job.selection["scheduled_task_ids"]
+    requests = overrides.get(tasks[0], {}) if tasks else {}
+    if any(overrides.get(task, {}) != requests for task in tasks):
+        raise ValueError(
+            "Tasks in one submit have different task_resources; use batch to create "
+            "a Sandbox per task, or give all submitted tasks the same resource override"
+        )
+    return requests
 
 
 def prepare_create(args, config: dict, client: SandboxClient | None, release: str) -> tuple:
@@ -185,6 +220,7 @@ def submit(
         )
     if not job.selection["scheduled_task_ids"]:
         raise ValueError("No tasks remain to submit")
+    resources = job_resource_requests(config, job)
     model = load_profile(job.model_config, job.model_profile)
     client.secrets.append(model["api_key"])
     if model["api_type"] != "openai_chat" and any(
@@ -198,6 +234,8 @@ def submit(
     args.agent_results_root = str(job.results_root)
     prepared = prepare_create(args, config, client, release)
     payload, webhook = prepared
+    if resources:
+        payload["resourceRequests"] = resources
     if not webhook:
         raise ValueError("submit requires template Feishu notifications or feishu_config")
     output_mounts = [v for v in payload["volumes"] if v["mountPath"] == "/results"]
@@ -211,6 +249,8 @@ def submit(
         **job.summary(), "afs_url": client.afs_url, "results_prefix": config["results_prefix"],
         "agent_image": payload["env"]["CUA_AGENT_IMAGE"],
     }
+    if resources:
+        submission["resource_requests"] = resources
     if batch_run is not None:
         submission["batch_run"] = batch_run
     # Keep the nonce even if the create response is lost; never retry POST blindly.
@@ -318,7 +358,10 @@ def main(argv=None) -> None:
             if getattr(args, name) is not None:
                 config[name] = getattr(args, name)
         required = {"project", "base_url", "afs_url", "environment_id", "results_prefix"}
-        optional = {"release", "credentials", "state_dir", "feishu_config", "job", "monitor"}
+        optional = {
+            "release", "credentials", "state_dir", "feishu_config", "job", "monitor",
+            "task_resources",
+        }
         if not required <= set(config) or set(config) - required - optional or not all(
             isinstance(config.get(name), str) and config[name] for name in required
         ):
@@ -346,10 +389,12 @@ def main(argv=None) -> None:
         release = selected.name
         if args.command in ("plan", "submit"):
             job = Job.from_config(config.get("job"), args.config.parent, selected)
+            resources = job_resource_requests(config, job)
             if args.command == "plan":
                 print(json.dumps({
                     "project": config["project"], "environment_id": config["environment_id"],
                     "feishu": "config_file" if args.feishu_config else "inherit_template",
+                    "resource_requests": resources,
                     "state_dir": str(args.state_dir), **job.summary(),
                 }, ensure_ascii=False, indent=2))
                 return

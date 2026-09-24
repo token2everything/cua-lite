@@ -11,6 +11,11 @@ environment_id: 5d5b5dbb-bd30-447e-bff5-e67ec8b7bba4
 results_prefix: outputs/osworld
 release: osworld-v2.1
 
+# 按任务覆盖外层 Sandbox 的资源；未列出的任务沿用模板。CPU、内存都必须填写字符串。
+# 不改变桌面 VM 或 Agent 容器的内存；例如 026 需要给同 Sandbox 的 GitLab 额外留空间。
+# task_resources:
+#   "026": {cpu: "8", memory: "32Gi"}
+
 # 平台凭据文件的路径，文件内容示例：{"ak":"REPLACE_WITH_AK","sk":"REPLACE_WITH_SK"}。
 # 若配置放在 .sandbox/run.yaml，这里读取 .sandbox/AK-SK；已有文件在别处可填绝对路径。
 credentials: AK-SK

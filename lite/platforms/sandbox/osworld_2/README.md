@@ -307,6 +307,17 @@ Agent 与 VM 开销。**桌面 VM** 使用 `OSWORLD_VM_RAM_SIZE=4G` 和上游 4 
 **Agent 容器**单独限制为 8 GiB。GitLab 等服务需增加外层预算，不需要改变 VM 配置。
 VM 内存于启动时生效，修改模板只影响之后启动的 VM。
 
+需要给某个任务增加外层预算时，在 `run.yaml` 顶层配置：
+
+```yaml
+task_resources:
+  "026": {cpu: "8", memory: "32Gi"}
+```
+
+`submit` 和 `batch` 会将该任务的 CPU、内存请求覆盖到创建请求中；两项都用字符串填写。
+未列出的任务沿用模板，VM 和 Agent 容器限制不变。`batch` 保存这份资源配置，恢复时不能
+更改。同一次 `submit` 中若任务的资源配置不同，会提示改用 `batch` 分别创建 Sandbox。
+
 一个 Worker 同时运行一个任务；顺序复用前必须确认上个任务清理完成，并发任务使用
 独立 Worker。env-server idle TTL 与 Sandbox 到期时间独立，按整个批次时间续期。
 `manage batch --concurrency N` 可把同一配置的任务自动拆成独立 Sandbox 作业，按并发

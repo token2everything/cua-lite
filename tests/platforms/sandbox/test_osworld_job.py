@@ -156,6 +156,67 @@ def test_bad_job_is_rejected_before_platform_access(workspace, job_change):
     factory.assert_not_called()
 
 
+@pytest.mark.parametrize(
+    "resources",
+    [
+        None,
+        {26: {"cpu": "8", "memory": "32Gi"}},
+        {"999": {"cpu": "8", "memory": "32Gi"}},
+        {"026": {"memory": "32Gi"}},
+        {"026": {"cpu": 8, "memory": "32Gi"}},
+        {"026": {"cpu": "0", "memory": "32Gi"}},
+        {"026": {"cpu": "8", "memory": "-1Gi"}},
+        {"026": {"cpu": "8", "memory": "32Gi", "gpu": "1"}},
+    ],
+)
+def test_bad_task_resources_fail_before_private_reads_or_network(workspace, resources, monkeypatch):
+    path, config, model, _, _, _, factory, _ = workspace
+    config["task_resources"] = resources
+    path.write_text(yaml.safe_dump(config))
+    model.unlink()
+    monkeypatch.setattr(
+        manage, "load_credentials", Mock(side_effect=AssertionError("private read"))
+    )
+    with pytest.raises(SystemExit, match="task_resources"):
+        manage.main(["--config", str(path), "submit"])
+    factory.assert_not_called()
+
+
+@pytest.mark.parametrize("tasks", [["026"], ["054"], ["026", "069"]])
+def test_submit_applies_only_matching_outer_sandbox_resources(workspace, tasks, capsys):
+    path, config, _, template, client, _, _, _ = workspace
+    override = {"cpu": "8", "memory": "32Gi"}
+    config["task_resources"] = {"026": override, "069": override}
+    config["job"]["tasks"] = tasks
+    path.write_text(yaml.safe_dump(config))
+    manage.main(["--config", str(path), "plan"])
+    expected = override if "026" in tasks else {}
+    assert json.loads(capsys.readouterr().out)["resource_requests"] == expected
+    manage.main(["--config", str(path), "submit"])
+    payload = next(
+        call.args[2] for call in client.request.call_args_list if call.args[0] == "POST"
+    )
+    assert payload.get("resourceRequests", {}) == expected
+    assert payload["env"]["OSWORLD_VM_RAM_SIZE"] == "4G"
+    assert "resourceRequests" not in template
+    record = json.loads(capsys.readouterr().out)
+    assert record["submission"].get("resource_requests", {}) == expected
+
+
+@pytest.mark.parametrize("command", ["plan", "submit"])
+def test_mixed_resources_in_one_sandbox_require_batch(workspace, monkeypatch, command):
+    path, config, model, _, _, _, factory, _ = workspace
+    config["task_resources"] = {"054": {"cpu": "8", "memory": "32Gi"}}
+    path.write_text(yaml.safe_dump(config))
+    model.unlink()
+    monkeypatch.setattr(
+        manage, "load_credentials", Mock(side_effect=AssertionError("private read"))
+    )
+    with pytest.raises(SystemExit, match="different task_resources; use batch"):
+        manage.main(["--config", str(path), command])
+    factory.assert_not_called()
+
+
 def test_submit_matches_runner_and_snapshots_only_selected_model(workspace, capsys):
     from lite.gym.envs.osworld_2.rollout import _parse_args
 

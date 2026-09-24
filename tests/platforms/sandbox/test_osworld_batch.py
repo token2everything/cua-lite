@@ -250,6 +250,43 @@ def test_preview_full_0808_is_offline_and_does_not_create_files(queue, monkeypat
     queue.client.afs.assert_not_called()
 
 
+def test_per_task_resources_are_planned_and_submitted_with_template_inheritance(queue, capsys):
+    override = {"026": {"cpu": "8", "memory": "32Gi"}}
+    queue.config["task_resources"] = override
+    queue.config["job"]["tasks"] = ["054", "026", "069"]
+    queue.path.write_text(yaml.safe_dump(queue.config))
+    invoke(queue, "--dry-run")
+    state = json.loads(capsys.readouterr().out)
+    assert state["deployment"]["task_resources"] == override
+    queue.client.request.assert_not_called()
+    invoke(queue)
+    creates = [
+        call.args[2] for call in queue.client.request.call_args_list if call.args[0] == "POST"
+    ]
+    assert [payload.get("resourceRequests") for payload in creates] == [
+        None, override["026"], None,
+    ]
+    assert json.loads(queue.state.read_text())["deployment"]["task_resources"] == override
+
+
+def test_resume_rejects_changed_resource_plan_without_touching_live_sandboxes(queue):
+    queue.config["task_resources"] = {"026": {"cpu": "8", "memory": "32Gi"}}
+    queue.path.write_text(yaml.safe_dump(queue.config))
+    queue.faults["sync"] = True
+    with pytest.raises(SystemExit, match="AFS unavailable"):
+        invoke(queue, "--concurrency", "1")
+    queue.config["task_resources"]["026"]["memory"] = "48Gi"
+    queue.path.write_text(yaml.safe_dump(queue.config))
+    queue.client.reset_mock()
+    with pytest.raises(SystemExit, match="original batch deployment"):
+        invoke(queue, "--resume", "batch-test")
+    queue.client.request.assert_not_called()
+    queue.client.afs.assert_not_called()
+    assert json.loads(queue.state.read_text())["deployment"]["task_resources"]["026"] == {
+        "cpu": "8", "memory": "32Gi",
+    }
+
+
 def test_two_slots_refill_after_confirmed_deletion_and_zero_score_is_completed(queue, capsys):
     queue.faults.update(boot=True, empty_marker=True)
     invoke(queue, "--concurrency", "2")

@@ -24,6 +24,7 @@ def prepare(args, config: dict, release: Release) -> dict:
         for key in ("project", "base_url", "afs_url", "environment_id", "results_prefix")
     }
     deployment["release"] = release.name
+    deployment["task_resources"] = manage.task_resources(config, release)
 
     def build_plan():
         job = Job.from_config(config.get("job"), args.config.parent, release)
@@ -79,7 +80,7 @@ class OSWorldBatch:
         job = Job.from_config(child_config, directory, release)
         return manage.submit(
             copy.copy(self.args),
-            self.config,
+            {**self.config, "task_resources": self.state["deployment"]["task_resources"]},
             self.client,
             release.name,
             job,

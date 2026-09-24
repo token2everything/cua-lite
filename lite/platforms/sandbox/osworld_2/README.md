@@ -209,7 +209,7 @@ v2.1 的 offline 集也可能需要上述依赖；0624、0808 没有官方 offli
   "model": {"model_id": "MODEL_ID_FROM_PROFILE", "api_type": "openai_chat"},
   "rollout_args": [
     "--release", "osworld-v2-2026.08.08", "--tasks", "054",
-    "--model-profile", "glm5.3-flash", "--max-steps", "100",
+    "--model-profile", "glm5.3-flash", "--max-steps", "500",
     "--history-turns", "4", "--experiment", "0808-task054"
   ]
 }
@@ -269,7 +269,9 @@ URL 使用不带 `/v1` 的 origin；凭据来自配置中的 `credentials`、`--
 填写 `feishu_config`，或在低层 create 传 `--feishu-config /private/feishu.json`。
 也支持 `SANDBOX_FEISHU_WEBHOOK`。创建后检查实例实际设置，Webhook 和凭据不进 Git/日志。
 平台通知针对 Sandbox **Failed**，不是每题结束或模型零分；Agent 退出后 Worker 仍可
-处于 Running。`feishu-test` 仅在明确要求发送测试消息时使用。
+处于 Running。`batch` 还可通过 `run.yaml.monitor` 发送实际 Agent 步数、停滞提醒及可折叠
+的任务详情，见[监控卡片](/lite/gym/envs/osworld_2/WORKER.md#飞书监控卡片)。它复用同一个
+机器人，不需要修改模板或运行镜像。`feishu-test` 仅在明确要求发送测试消息时使用。
 
 <a id="outputs-and-resource-budgets"></a>
 

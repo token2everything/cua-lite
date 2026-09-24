@@ -318,7 +318,7 @@ def main(argv=None) -> None:
             if getattr(args, name) is not None:
                 config[name] = getattr(args, name)
         required = {"project", "base_url", "afs_url", "environment_id", "results_prefix"}
-        optional = {"release", "credentials", "state_dir", "feishu_config", "job"}
+        optional = {"release", "credentials", "state_dir", "feishu_config", "job", "monitor"}
         if not required <= set(config) or set(config) - required - optional or not all(
             isinstance(config.get(name), str) and config[name] for name in required
         ):
@@ -392,8 +392,22 @@ def main(argv=None) -> None:
         if args.command == "submit":
             result = submit(args, config, client, release, job)
         elif args.command == "batch":
+            from lite.platforms.sandbox.monitor import BatchMonitor
+
+            monitor = None
+            if batch_state["monitor"]["enabled"]:
+                webhook = feishu_webhook(args.feishu_config)
+                if not webhook:
+                    template = client.request(
+                        "GET", "/v1/sandbox-environments/" + config["environment_id"],
+                    )
+                    webhook = template.get("extensions", {}).get("webhook-feishu")
+                if not webhook:
+                    raise ValueError("Batch monitor needs template Feishu or feishu_config")
+                monitor = BatchMonitor(webhook, client.secrets)
             result = batch.run(
                 args, client, batch_state, OSWorldBatch(args, config, client, batch_state),
+                monitor=monitor,
             )
             result["skipped"] = batch_state["selection"]["skipped"]
         elif args.command == "create":

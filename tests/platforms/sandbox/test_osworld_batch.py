@@ -125,7 +125,9 @@ def queue(tmp_path, monkeypatch):
             return copy.deepcopy(box)
         raise AssertionError((method, endpoint))
 
-    def afs(*args):
+    def afs(*args, timeout=None):
+        if timeout is not None:
+            raise AFSCommandError("progress temporarily unavailable private-model-key", 7)
         if args[0] == "copy" and not args[1].startswith("afs:"):
             directory = Path(args[1])
             jobs[directory.name] = json.loads((directory / "job.json").read_text())
@@ -198,6 +200,36 @@ def queue(tmp_path, monkeypatch):
 
 def invoke(queue, *arguments):
     manage.main(["--config", str(queue.path), "batch", "--poll-interval", "1", *arguments])
+
+
+def test_monitor_uses_inherited_hook_and_failures_do_not_block_collection(queue, monkeypatch):
+    from lite.platforms.sandbox import monitor
+
+    queue.config["monitor"] = {"enabled": True}
+    queue.path.write_text(yaml.safe_dump(queue.config))
+    send = Mock(side_effect=RuntimeError("webhook unavailable private-model-key"))
+    monkeypatch.setattr(monitor, "send_feishu_message", send)
+    invoke(queue, "--concurrency", "2")
+    state = json.loads(queue.state.read_text())
+    assert all(i["state"] == "completed" for i in state["tasks"])
+    assert send.call_count == 3  # Start, final, and one bounded retry for the final card.
+    assert "private-test-webhook" in send.call_args.args[0]
+    assert "private-model-key" not in json.dumps(state)
+    assert "private-test-webhook" not in json.dumps(state)
+    assert "notification" in state and "error" in state["notification"]
+    assert "progress_error" in state["tasks"][0]
+
+
+def test_monitor_dry_run_does_not_send_or_read_secrets(queue, monkeypatch):
+    from lite.platforms.sandbox import monitor
+
+    queue.config["monitor"] = {"enabled": True}
+    queue.path.write_text(yaml.safe_dump(queue.config))
+    send = Mock()
+    monkeypatch.setattr(monitor, "send_feishu_message", send)
+    invoke(queue, "--dry-run")
+    send.assert_not_called()
+    queue.client.request.assert_not_called()
 
 
 def test_preview_full_0808_is_offline_and_does_not_create_files(queue, monkeypatch, capsys):

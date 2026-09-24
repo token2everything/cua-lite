@@ -226,9 +226,10 @@ class SandboxClient:
         except (OSError, ValueError) as error:
             raise RuntimeError(redact(str(error), self.secrets)) from None
 
-    def afs(self, *command: str) -> str:
+    def afs(self, *command: str, timeout: float | None = None) -> str:
         """Run rclone with an in-memory WebDAV configuration, never an on-disk secret."""
         obscured = None
+        deadline = time.monotonic() + timeout if timeout is not None else None
         try:
             obscured = subprocess.run(
                 ["rclone", "obscure", "-"],
@@ -236,6 +237,7 @@ class SandboxClient:
                 text=True,
                 capture_output=True,
                 check=True,
+                timeout=timeout,
             ).stdout.strip()
             env = os.environ.copy()
             no_proxy = ",".join(
@@ -267,11 +269,14 @@ class SandboxClient:
                         check=True,
                         text=True,
                         capture_output=True,
+                        timeout=max(0.001, deadline - time.monotonic()) if deadline else None,
                     ).stdout
                 except subprocess.CalledProcessError as error:
                     if attempt or "401 Unauthorized" not in (error.stderr or ""):
                         raise
                     time.sleep(1)
+        except subprocess.TimeoutExpired:
+            raise AFSCommandError("AFS observation timed out", None) from None
         except (OSError, subprocess.CalledProcessError) as error:
             message = getattr(error, "stderr", None) or str(error)
             raise AFSCommandError(
@@ -316,6 +321,12 @@ def feishu_webhook(config_file: Path | None = None, *, disabled: bool = False) -
     value = value.strip()
     if not value:
         return None
+    validate_feishu_webhook(value)
+    return value
+
+
+def validate_feishu_webhook(value: str) -> None:
+    """Check file, environment and inherited template destinations before sending."""
     url = urllib.parse.urlsplit(value)
     if (
         url.scheme != "https"
@@ -325,7 +336,6 @@ def feishu_webhook(config_file: Path | None = None, *, disabled: bool = False) -
         or not re.fullmatch(r"/open-apis/bot/v2/hook/[A-Za-z0-9_-]+", url.path)
     ):
         raise ValueError("Expected an HTTPS Feishu bot v2 webhook URL")
-    return value
 
 
 def feishu_test(webhook: str) -> dict:
@@ -339,11 +349,21 @@ def feishu_test(webhook: str) -> dict:
             )
         },
     }
+    send_feishu_message(webhook, payload)
+    return {"feishu": "test_message_accepted", "code": 0}
+
+
+def send_feishu_message(webhook: str, payload: dict) -> None:
+    """Send one bounded webhook message without forwarding platform credentials or redirects."""
+    validate_feishu_webhook(webhook)
+    data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    if len(data) > 20 * 1024:
+        raise ValueError("Feishu message exceeds 20 KiB")
     request = urllib.request.Request(
         webhook,
         method="POST",
         headers={"Content-Type": "application/json; charset=utf-8"},
-        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+        data=data,
     )
     opener = urllib.request.build_opener(NoRedirect())
     try:
@@ -351,9 +371,8 @@ def feishu_test(webhook: str) -> dict:
             result = json.load(response)
         if not isinstance(result, dict) or result.get("code") != 0:
             raise RuntimeError(
-                "Feishu rejected the test: " + json.dumps(result, ensure_ascii=False)
+                "Feishu rejected the message: " + json.dumps(result, ensure_ascii=False)
             )
     except (OSError, RuntimeError, ValueError) as error:
         message = redact(str(error), [webhook, webhook.rsplit("/", 1)[-1]])
-        raise RuntimeError("Feishu connection test failed: " + message) from None
-    return {"feishu": "test_message_accepted", "code": 0}
+        raise RuntimeError("Feishu notification failed: " + message) from None

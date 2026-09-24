@@ -24,6 +24,7 @@ from lite.platforms.sandbox.client import (
     state_of,
     write_json,
 )
+from lite.platforms.sandbox.monitor import BatchMonitor
 
 _FINISHED = {"completed", "failed"}
 
@@ -46,7 +47,9 @@ class BatchAdapter(Protocol):
         ...
 
 
-def prepare(args, deployment: dict, build_plan: Callable[[], dict]) -> dict:
+def prepare(
+    args, deployment: dict, build_plan: Callable[[], dict], *, monitor: dict | None = None,
+) -> dict:
     """Resolve queue limits and resume identity without reading secrets or contacting Sandbox."""
     if args.resume:
         path = args.state_dir / "batches" / args.resume / "batch.json"
@@ -62,10 +65,26 @@ def prepare(args, deployment: dict, build_plan: Callable[[], dict]) -> dict:
         if value < 1:
             raise ValueError(f"{key.replace('_', '-')} must be positive")
         state[key] = value
+    defaults = {"enabled": False, "interval": 300, "stall_after": 900}
+    if monitor is None:
+        monitor = {}
+    if not isinstance(monitor, dict) or set(monitor) - set(defaults):
+        raise ValueError("monitor accepts only enabled, interval and stall_after")
+    settings = {**defaults, **monitor}
+    if not isinstance(settings["enabled"], bool):
+        raise ValueError("monitor.enabled must be a boolean")
+    for key in ("interval", "stall_after"):
+        if type(settings[key]) is not int or settings[key] < 60:
+            raise ValueError(f"monitor.{key} must be an integer of at least 60 seconds")
+    # Runtime reporting settings can change on resume; execution progress remains intact.
+    state["monitor"] = settings
     return state
 
 
-def run(args, client: SandboxClient, state: dict, adapter: BatchAdapter) -> dict:
+def run(
+    args, client: SandboxClient, state: dict, adapter: BatchAdapter,
+    *, monitor: BatchMonitor | None = None,
+) -> dict:
     """Schedule owned Sandboxes, preserving progress across interruption and API failures."""
     from lite.agents.extensions.api_config import load_profile
 
@@ -132,6 +151,10 @@ def run(args, client: SandboxClient, state: dict, adapter: BatchAdapter) -> dict
                 )
             write_json(path, state)
 
+        state.pop("scheduler_error", None)
+        if monitor:
+            monitor.report(state, time.time(), event="resumed" if args.resume else "started")
+            write_json(path, state)
         while any(item["state"] not in _FINISHED for item in state["tasks"]):
             # Settle existing resources before filling slots. Deletion still consumes capacity.
             for item in state["tasks"]:
@@ -242,9 +265,14 @@ def run(args, client: SandboxClient, state: dict, adapter: BatchAdapter) -> dict
                 active += 1
                 print(f"Task {item['task_id']}: {item['sandbox_id']}", file=sys.stderr, flush=True)
             if any(item["state"] not in _FINISHED for item in state["tasks"]):
+                if monitor:
+                    monitor.report(state, time.time())
+                    write_json(path, state)
                 time.sleep(state["poll_interval"])
 
         state.pop("scheduler_error", None)
+        if monitor:
+            monitor.report(state, time.time(), event="finished")
         write_json(path, state)
         return {
             "batch_id": state["batch_id"],
@@ -255,6 +283,8 @@ def run(args, client: SandboxClient, state: dict, adapter: BatchAdapter) -> dict
         }
     except BaseException as error:
         state["scheduler_error"] = redact(str(error) or type(error).__name__, client.secrets)
+        if monitor:
+            monitor.report(state, time.time(), event="stopped")
         write_json(path, state)
         print(
             f"Batch stopped; saved state: {path}. Resume with batch --resume {state['batch_id']}",

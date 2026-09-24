@@ -185,3 +185,27 @@ def test_feishu_message_contains_no_management_credentials(monkeypatch):
     with pytest.raises(RuntimeError, match="19024") as caught:
         sandbox_client.feishu_test(hook)
     assert "test-hook" not in str(caught.value)
+
+
+def test_afs_monitor_timeout_is_bounded_and_does_not_expose_partial_output(client, monkeypatch):
+    run = Mock(side_effect=[Mock(stdout="obscured-value\n"), subprocess.TimeoutExpired(
+        ["rclone", "cat"], 10, stderr=b"test-secret obscured-value",
+    )])
+    monkeypatch.setattr(sandbox_client.subprocess, "run", run)
+    with pytest.raises(sandbox_client.AFSCommandError, match="timed out") as caught:
+        client.afs("cat", "afs:results/progress", timeout=10)
+    assert caught.value.returncode is None
+    assert 0 < run.call_args.kwargs["timeout"] <= 10
+    assert "test-secret" not in str(caught.value)
+
+
+def test_card_webhook_validates_destination_and_size_before_send(monkeypatch):
+    opener = Mock()
+    monkeypatch.setattr(sandbox_client.urllib.request, "build_opener", opener)
+    with pytest.raises(ValueError, match="HTTPS Feishu"):
+        sandbox_client.send_feishu_message("https://example.org/private", {})
+    with pytest.raises(ValueError, match="20 KiB"):
+        sandbox_client.send_feishu_message(
+            "https://open.feishu.cn/open-apis/bot/v2/hook/test-only", {"text": "中" * 20000},
+        )
+    opener.assert_not_called()

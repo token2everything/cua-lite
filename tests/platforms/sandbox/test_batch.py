@@ -159,7 +159,9 @@ def test_shared_modules_do_not_import_benchmark_implementations():
     import ast
     from pathlib import Path
 
-    for module in (batch, lifecycle):
+    from lite.platforms.sandbox import monitor
+
+    for module in (batch, lifecycle, monitor):
         source = Path(module.__file__).read_text()
         imports = [
             node.module

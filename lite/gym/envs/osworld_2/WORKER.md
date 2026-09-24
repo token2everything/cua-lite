@@ -49,21 +49,39 @@ afs_url: http://10.140.95.76:28081
 environment_id: 5d5b5dbb-bd30-447e-bff5-e67ec8b7bba4
 results_prefix: outputs/osworld
 release: osworld-v2.1
-credentials: AK-SK
-state_dir: state
+credentials: AK-SK  # 平台凭据文件：.sandbox/AK-SK；也可填已有文件的绝对路径
+state_dir: state    # 自动创建 .sandbox/state/，保存同步、回收和批次恢复所需记录
 # feishu_config: feishu-webhook.json  # 未从模板继承时启用
+monitor:                         # 仅 batch 使用，复用同一个机器人
+  enabled: true
+  interval: 300                  # 每 5 分钟汇总
+  stall_after: 900               # 15 分钟无新 Agent 步骤提醒
 job:
   model_config: model-api.json
   model_profile: glm5.3-flash
   tasks: ["054"]
-  max_steps: 100
+  max_steps: 500
   history_turns: 4
   results_root: results
 ```
 
-**本地相对路径以 YAML 所在目录为基准**：`model-api.json` 指 `.sandbox/model-api.json`，`results` 指 `.sandbox/results`。`results_prefix` 是当前项目的 AFS 路径。
+**本地相对路径以 YAML 所在目录为基准**。本例配置位于 `.sandbox/run.yaml`，所以
+`credentials: AK-SK` 读取 `.sandbox/AK-SK`，`state_dir: state` 使用 `.sandbox/state/`；
+`model-api.json` 和 `results` 同样位于 `.sandbox/` 下。直接用仓库里的示例 YAML 启动时，
+这些路径会相对它所在的 `configs/` 目录解析，因此先复制配置再使用。凭据在其他位置时，
+填写已有文件的绝对路径即可。`results_prefix` 是当前项目的 AFS 路径。
 
-本例每阶段最多 100 步，请求发送最近 **4 张历史截图＋当前截图**，文字历史完整保留。任务 ID 必须加引号，避免 YAML 将 `054` 解析成整数。
+`state_dir` 由程序创建，保存 Sandbox 所有权、提交记录、私密作业和批次进度；
+`sync`、`delete` 和 `batch --resume` 都依赖其中的记录。同步、回收或恢复同一作业时
+沿用这个目录，完成结果同步和资源回收前请保留，也不要提交 Git。截图和轨迹保存到
+`job.results_root` 指定的目录。
+
+本例采用[官方论文 §3.1](https://arxiv.org/html/2606.29537v2#S3.SS1)的 **500 步预算**；
+一步按 Agent 交互回合计数，一回合可包含多个动作。多阶段任务与官方代码一致，
+每阶段重新计数。上游示例脚本的预算可能不同，复现实验时记录实际配置；
+连通性短测可显式调小 `max_steps`。
+
+请求发送最近 **4 张历史截图＋当前截图**，文字历史完整保留。任务 ID 必须加引号，避免 YAML 将 `054` 解析成整数。
 
 <a id="配置示例"></a>
 
@@ -217,7 +235,7 @@ job:
   tasks: ["054", "007", "069"]
   # 全集：删除 tasks，改为 task_set: full
   experiment: osworld-0808-batch-001
-  max_steps: 100
+  max_steps: 500
   history_turns: 4
   results_root: results
 ```
@@ -253,6 +271,25 @@ uv run python -m lite.platforms.sandbox.osworld_2.manage --config .sandbox/run.y
 Portal 核对，不自动重复创建。一个批次只运行一个调度器；进程被强杀留下
 `.scheduler.lock` 时，确认旧调度器已退出后再移除该锁目录。批次含流程失败时命令退出码
 为 1；模型得分为 0 且流程完成时仍为 0。
+
+### 飞书监控卡片
+
+在 `run.yaml` 顶层设置上面的 `monitor` 段，再正常运行 `batch` 即可；只有一个任务也能用。
+卡片复用模板机器人或 `feishu_config`，无须填写 CardKit 模板 ID，也不用新增飞书应用。
+
+- 顶部显示已结束 / 总数、运行、排队、收尾及需关注数量。
+- “需关注”默认展开：失败、疑似停滞、进度暂时不可读；正常运行及已完成详情可点击展开。
+- 任务详情显示累计步数、本阶段步数 / 预算、距上次推进时间，以及是否在等待模型回复。
+  模型重试不算推进，步数增长也不代表任务做对；结束后单独展示流程结果与模型得分。
+
+默认每 5 分钟发送一张快照，15 分钟没有完成新步骤时提示“疑似停滞”，不自动结束任务。
+开始、恢复、结束和调度错误另发通知；异常变化最多每分钟合并一次，在下一轮查询后发送。
+原来的 Sandbox Failed 通知仍保留。`submit` 不会启动这个监控循环。
+
+监控只读小文件和文件名，不下载请求里的截图。网络错误时显示“暂时无法确认最新进度”，
+不会当成 Agent 推进；发送失败写入 `batch.json.notification.error`，不打断评测。
+调度器须持续运行；关闭 tmux 内进程或工作站断电后不会继续发卡片。已发卡片是带时间的
+快照，不会原地刷新。批次恢复后沿用已保存的步数和最后推进时间。
 
 <details>
 <summary>执行机制与排查入口（适配开发时阅读）</summary>

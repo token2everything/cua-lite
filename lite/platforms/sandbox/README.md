@@ -7,6 +7,7 @@
 | [client.py](/lite/platforms/sandbox/client.py) | 平台 API、AFS 传输、凭据加载、脱敏和飞书配置 |
 | [lifecycle.py](/lite/platforms/sandbox/lifecycle.py) | 创建记录、所有权校验、飞书实际配置校验和删除 |
 | [batch.py](/lite/platforms/sandbox/batch.py) | 并发队列、进度保存、恢复、超时、续期及删除确认 |
+| [monitor.py](/lite/platforms/sandbox/monitor.py) | Agent 停滞判断、批次汇总、飞书折叠卡片及通知节流 |
 | `<benchmark>/` | 任务计划、启动配置、环境完成信号、结果读取 |
 
 公共模块不导入具体 benchmark。OSWorld 的参考实现是
@@ -74,6 +75,41 @@ result = batch.run(args, client, state, adapter)
 适配器可补充自己的进度字段；`item.state` 的流转由公共队列维护。
 完成判定不依赖模型得分。正常结束先同步再删除；超时先终止实例再收集；
 只有确认 Sandbox 消失才释放并发名额。
+
+### 接入 Agent 进度卡片
+
+入口把 YAML 的 `monitor` 传给 `batch.prepare(..., monitor=config.get("monitor"))`；
+实际运行时解析已有飞书配置，构造 `BatchMonitor(webhook, client.secrets)`，通过
+`batch.run(..., monitor=monitor)` 传入。未启用时不发送批次卡片，Sandbox 本身的飞书扩展
+照常保留。配置示例见 [run.yaml](/lite/platforms/sandbox/osworld_2/configs/run.yaml)。
+
+benchmark 的 `observe` 将自己的产物映射到以下字段即可，不用各写一套通知：
+
+```python
+item["progress"] = {
+    "turns": 12,                       # 累计已完成的 Agent 步数，跨阶段不清零
+    "last_progress_at": 1790244010.0,  # 最近完成步骤的 Unix 时间；查询或重试不能刷新它
+    "observed_at": 1790244030.0,       # 本次成功采集时间
+    "activity": "waiting_model",      # starting / waiting_model / executing /
+                                      # between_phases / finished
+    "phase_index": 0, "phase_count": 1,  # 可选，index 从 0 开始
+    "phase_turn": 12, "max_steps": 500,  # 可选，本阶段预算
+}
+```
+
+进度读取须有时限；出错时保留上次数据，设置脱敏后的 `item.progress_error`，恢复后删除
+该字段。它只表示监控不可用，不写入流程失败的 `item.error`，也不触发资源回收。
+读取现有小型记录即可，避免轮询时下载截图、完整请求或轨迹。OSWorld 的实现直接读取
+累计步数、步骤事件尾部及模型日志文件名，无需重建运行镜像。
+
+公共层在开始、恢复、结束和调度异常时通知；运行中定期汇总，异常出现或恢复时提前通知，
+这些变化最多每分钟合并一次。Webhooks 发送新卡片快照，不更新旧消息；折叠不需要回调服务。
+通知结果保存到 `batch.json.notification`，失败记录脱敏原因，下次轮询按节流规则重试，
+不阻断执行。结束或调度停止后没有下一轮，因此发送失败仅额外重试一次；若仍失败，
+原因留在 `notification.error`。网络超时后重试可能产生重复快照。模型得分 0 与流程失败分开显示。
+
+通知由调度进程发出。进程被强杀、机器断电或长时间阻塞时不能继续上报；需要用 tmux 或
+进程管理器保持调度器运行。这不是监测调度器自身存活的独立服务。
 
 ## 提交记录约定
 

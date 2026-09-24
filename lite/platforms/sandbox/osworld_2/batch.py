@@ -30,6 +30,7 @@ def prepare(args, config: dict, release: Release) -> dict:
         job = Job.from_config(config.get("job"), args.config.parent, release)
         return {
             "batch_id": job.experiment,
+            "results": str(job.results_root / job.experiment),
             "selection": job.selection,
             "job": {
                 **config["job"],
@@ -85,6 +86,7 @@ class OSWorldBatch:
             release.name,
             job,
             batch_run=self.state["batch_run"],
+            batch_id=self.state["batch_id"],
         )
 
     def observe(self, item: dict, record: dict) -> bool:
@@ -243,14 +245,16 @@ class OSWorldBatch:
             ):
                 raise
             item.update(
-                results=str(Path(record["submission"]["results_root"]) / item["experiment"]),
+                results=str(
+                    Path(record["submission"]["results_root"]) / self.state["batch_id"]
+                ),
                 error="Sandbox ended before an Agent result directory was created",
             )
         if "worker_id" in item:
             client.afs(
                 "copy",
                 f"afs:{record['submission']['results_prefix']}/_workers/{item['worker_id']}",
-                str(Path(item["results"]) / "_launcher"),
+                str(Path(item["results"]) / f"task_{item['task_id']}" / "_launcher"),
                 "--include",
                 "/*.log",
                 "--include",

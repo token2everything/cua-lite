@@ -202,6 +202,36 @@ def invoke(queue, *arguments):
     manage.main(["--config", str(queue.path), "batch", "--poll-interval", "1", *arguments])
 
 
+def test_batch_collects_under_one_directory_and_manual_sync_keeps_the_saved_layout(queue):
+    invoke(queue)
+    state = json.loads(queue.state.read_text())
+    output = queue.path.parent / "results" / "batch-test"
+    assert state["results"] == str(output)
+    assert sorted(p.name for p in output.iterdir()) == ["task_007", "task_054", "task_069"]
+    for item in state["tasks"]:
+        assert item["state"] == "completed"
+        assert item["results"] == str(output)
+        task = output / f"task_{item['task_id']}"
+        assert (task / f"run-{item['task_id']}" / "run.json").is_file()
+        assert not (output.parent / item["experiment"]).exists()
+        record_file = queue.path.parent / f"state/worker-{item['sandbox_id']}.json"
+        record = json.loads(record_file.read_text())
+        assert record["submission"]["batch_id"] == state["batch_id"]
+    launcher_targets = [
+        call.args[2] for call in queue.client.afs.call_args_list
+        if call.args[0] == "copy" and "/_workers/" in call.args[1]
+    ]
+    assert set(launcher_targets) == {
+        str(output / f"task_{task}" / "_launcher") for task in ("054", "007", "069")
+    }
+    queue.config["job"]["experiment"] = "edited"
+    queue.config["job"]["results_root"] = "another-results"
+    queue.path.write_text(yaml.safe_dump(queue.config))
+    manage.main(["--config", str(queue.path), "sync", state["tasks"][0]["sandbox_id"]])
+    assert not (queue.path.parent / "another-results").exists()
+    assert not list(output.parent.glob(".batch-sync-*"))
+
+
 def test_monitor_uses_inherited_hook_and_failures_do_not_block_collection(queue, monkeypatch):
     from lite.platforms.sandbox import monitor
 

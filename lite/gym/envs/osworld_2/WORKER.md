@@ -258,8 +258,23 @@ uv run python -m lite.platforms.sandbox.osworld_2.manage --config .sandbox/run.y
 并发上限包含创建、执行和回收中的实例，按项目配额设置。普通模板每个外层 Sandbox
 为 8 CPU / 16 GiB；所有任务沿用同一模板，网站、GitLab 依赖及额外内存须先准备好。
 
-进度、每题状态及模型得分实时写入 `.sandbox/state/batches/<batch-id>/batch.json`，
-轨迹仍在原有 `results/<子实验名>/`，启动日志在其中的 `_launcher/`。本地保留选中模型的
+进度、每题状态及模型得分实时写入 `.sandbox/state/batches/<batch-id>/batch.json`。
+下载结果按批次归档，无须为每题配置输出目录：
+
+```text
+results/<batch-id>/
+├── task_002/
+│   ├── <run-id>/                # result.json、agent_trajectory.jsonl、images/、model/
+│   ├── experiment.json         # 本题实验信息，summary.json / summary.csv 也在此处
+│   ├── _launcher/              # 启动日志、退出码
+│   └── _environment/           # 环境日志（若已生成）
+└── task_004/
+    └── ...
+```
+
+批次目录名来自 `job.experiment`，未填写时自动生成。`batch` 自动下载与手动 `sync` 使用
+同一布局，轨迹中的截图路径随下载位置调整。AFS 原始输出仍按每题的唯一实验名保存。
+本地保留选中模型的
 私密快照，恢复后待运行任务继续使用同一配置。中断调度器不会停止已经运行的 Sandbox：
 
 ```sh

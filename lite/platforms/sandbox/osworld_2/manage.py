@@ -10,13 +10,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
+import shutil
+import tempfile
 import urllib.request
 import uuid
 from pathlib import Path, PurePosixPath
 
 import yaml
 
+from lite.gym.envs.osworld_2.artifacts import atomic_text
 from lite.gym.envs.osworld_2.catalog import DEFAULT_RELEASE, Release, load_release
 from lite.platforms.sandbox import lifecycle
 from lite.platforms.sandbox.client import (
@@ -207,7 +211,7 @@ def create(
 
 def submit(
     args, config: dict, client: SandboxClient, release: str, job: Job,
-    *, batch_run: str | None = None,
+    *, batch_run: str | None = None, batch_id: str | None = None,
 ) -> dict:
     """Validate, stage an immutable private job, create once, and verify Feishu."""
     from lite.agents.extensions.api_config import load_profile
@@ -253,6 +257,8 @@ def submit(
         submission["resource_requests"] = resources
     if batch_run is not None:
         submission["batch_run"] = batch_run
+    if batch_id is not None:
+        submission["batch_id"] = safe_component(batch_id)
     # Keep the nonce even if the create response is lost; never retry POST blindly.
     directory = args.state_dir / "jobs" / job.experiment
     directory.mkdir(parents=True, exist_ok=False, mode=0o700)
@@ -324,16 +330,64 @@ def attach(args, config: dict, client: SandboxClient, release: str) -> dict:
     }
 
 
+def group_batch_results(source: Path, submission: dict) -> dict:
+    """Archive downloaded child outputs under one batch; also used for explicit local migration.
+
+    Remote experiment IDs remain unique job identities. This projection owns the
+    local layout and rebases only the viewer's image references, never model logs.
+    """
+    experiment = safe_component(submission["experiment"])
+    task_id, = submission["scheduled_task_ids"]
+    task = "task_" + safe_component(task_id)
+    root = Path(submission["results_root"])
+    output = root / safe_component(submission["batch_id"])
+    target = output / task
+    child = source / experiment
+    old_images = str(root / experiment / task) + "/"
+    for trace in (child / task).glob("*/agent_trajectory.jsonl"):
+        row = json.loads(trace.read_text())
+        for message in row["messages"]:
+            content = message.get("content")
+            if isinstance(content, list):
+                for part in content:
+                    if part.get("type") == "image":
+                        image = part["image"]
+                        if image["url"].startswith(old_images):
+                            image["url"] = str(target) + "/" + image["url"][len(old_images):]
+        atomic_text(trace, json.dumps(row, ensure_ascii=False, allow_nan=False) + "\n")
+    # Move files on this filesystem, merging repeated syncs by atomic replacement.
+    # Each task owns its manifests/logs, so collecting another task cannot overwrite them.
+    environment = source / "_environment" / experiment
+    for origin, destination in (
+        (child / task, target),
+        (child, target),
+        (environment, target / "_environment"),
+    ):
+        if origin.exists():
+            shutil.copytree(origin, destination, dirs_exist_ok=True, copy_function=os.replace)
+            shutil.rmtree(origin)
+    return {"results": str(output), "environment_results": str(target / "_environment")}
+
+
 def sync(record: dict, client: SandboxClient) -> dict:
     """Mirror a submission's persisted outputs, including failures before env initialization."""
     submission = record["submission"]
     experiment = safe_component(submission["experiment"])
     output = Path(submission["results_root"])
-    client.afs(
-        "copy", f"afs:{submission['results_prefix']}/agent-results", str(output),
+    arguments = (
         "--include", f"/{experiment}/**", "--include", f"/_environment/{experiment}/**",
         "--ignore-times", "--ignore-size", "--multi-thread-streams", "0", "--transfers", "4",
     )
+    source = f"afs:{submission['results_prefix']}/agent-results"
+    if submission.get("batch_id") is not None:
+        output.mkdir(parents=True, exist_ok=True)
+        # Download completely before updating the readable batch directory. Failed
+        # transfers leave its last mirror intact and never recreate flat task folders.
+        with tempfile.TemporaryDirectory(prefix=".batch-sync-", dir=output) as temporary:
+            client.afs("copy", source, temporary, *arguments)
+            grouped = group_batch_results(Path(temporary), submission)
+        return {"sandbox_id": record["sandbox_id"], **grouped}
+    client.afs("copy", source, str(output), *arguments)
     return {"sandbox_id": record["sandbox_id"], "results": str(output / experiment),
             "environment_results": str(output / "_environment" / experiment)}
 

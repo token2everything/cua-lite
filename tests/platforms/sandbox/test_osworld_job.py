@@ -450,18 +450,37 @@ def test_afs_rejects_same_named_job_from_a_different_state_directory(workspace, 
     assert sorted(file.name for file in target.iterdir()) == ["job.json", "model-api.json"]
 
 
+@pytest.mark.parametrize("batched", [False, True])
 def test_sync_fetches_failure_without_environment_then_refreshes_mutable_results(
-    workspace, tmp_path
+    workspace, tmp_path, batched
 ):
     rclone = shutil.which("rclone")
     if not rclone:
         pytest.skip("local rclone is required")
     path, _, _, _, client, _, _, _ = workspace
     manage.main(["--config", str(path), "submit"])
+    output = path.parent / "results"
+    if batched:
+        record_file = path.parent / "state/worker-sandbox-one.json"
+        record = json.loads(record_file.read_text())
+        record["submission"].update(batch_id="test-batch", scheduled_task_ids=["054"])
+        record_file.write_text(json.dumps(record))
+    task = output / ("test-batch" if batched else "test-v21-job") / "task_054"
     source = tmp_path / "fake-afs-results"
     run = source / "test-v21-job/task_054/run-one"
     run.mkdir(parents=True)
     (run / "run.json").write_text('{"steps":1}')
+    (run.parent.parent / "experiment.json").write_text('{"experiment_id":"test-v21-job"}')
+    (run / "images").mkdir()
+    (run / "images/screen.png").write_bytes(b"image")
+    old_image = str(output / "test-v21-job/task_054/run-one/images/screen.png")
+    trace = {"messages": [{"role": "user", "content": [
+        {"type": "image", "image": {"url": old_image}},
+        {"type": "text", "text": "Original model content: " + old_image},
+    ]}], "metadata": {"tools": [{"name": "computer"}]}}
+    (run / "agent_trajectory.jsonl").write_text(json.dumps(trace) + "\n")
+    (run / "model").mkdir()
+    (run / "model/request.json").write_text(json.dumps(trace))
     other = source / "another-experiment"
     other.mkdir()
     (other / "run.json").write_text('{"steps":1}')
@@ -488,9 +507,24 @@ def test_sync_fetches_failure_without_environment_then_refreshes_mutable_results
 
     client.afs.side_effect = download
     manage.main(["--config", str(path), "sync", "sandbox-one"])
-    output = path.parent / "results"
-    saved = output / "test-v21-job/task_054/run-one/run.json"
+    saved = task / "run-one/run.json"
     assert saved.read_text() == '{"steps":1}'
+    lines = (task / "run-one/agent_trajectory.jsonl").read_text().splitlines()
+    assert len(lines) == 1
+    mirrored = json.loads(lines[0])
+    image_url = mirrored["messages"][0]["content"][0]["image"]["url"]
+    assert image_url == str(task / "run-one/images/screen.png")
+    assert mirrored["messages"][0]["content"][1] == trace["messages"][0]["content"][1]
+    assert mirrored["metadata"] == trace["metadata"]
+    assert (task / "run-one/model/request.json").read_bytes() == (
+        run / "model/request.json"
+    ).read_bytes()
+    assert (run / "agent_trajectory.jsonl").read_text() == json.dumps(trace) + "\n"
+    manifest = task / "experiment.json" if batched else task.parent / "experiment.json"
+    assert json.loads(manifest.read_text())["experiment_id"] == "test-v21-job"
+    if batched:
+        assert not (output / "test-v21-job").exists()
+        assert not (task / "task_054").exists()
     assert not (output / "another-experiment").exists()
     assert not (output / "_environment").exists()
     (run / "run.json").write_text('{"steps":2}')
@@ -499,4 +533,14 @@ def test_sync_fetches_failure_without_environment_then_refreshes_mutable_results
     (environment / "events.jsonl").write_text('{"action":"click"}\n')
     manage.main(["--config", str(path), "sync", "sandbox-one"])
     assert saved.read_text() == '{"steps":2}'
-    assert (output / "_environment/test-v21-job/task_054/events.jsonl").is_file()
+    environment_output = (
+        task / "_environment" if batched else output / "_environment/test-v21-job"
+    )
+    assert (environment_output / "task_054/events.jsonl").is_file()
+    if batched:
+        # A failed transfer must not damage the last complete local mirror.
+        client.afs.side_effect = RuntimeError("download interrupted")
+        with pytest.raises(SystemExit, match="download interrupted"):
+            manage.main(["--config", str(path), "sync", "sandbox-one"])
+        assert saved.read_text() == '{"steps":2}'
+        assert not list(output.glob(".batch-sync-*"))

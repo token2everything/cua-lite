@@ -281,6 +281,11 @@ URL 使用不带 `/v1` 的 origin；凭据来自配置中的 `credentials`、`--
 `_environment/<experiment>/`，运行中可重复执行，同长度的可变文件也会刷新。
 作业结束后做最后一次同步，再回收 Sandbox。
 
+本地 `batch` 结果统一放在 `job.results_root/<batch-id>/task_<id>/<run-id>/`；
+每题的实验信息、`_launcher/` 和 `_environment/` 放在对应的 `task_<id>/` 中。
+批次 ID 来自 `job.experiment`，下载时会同步调整查看器轨迹中的截图路径。
+手动 `sync` 也遵循提交时记录的批次归属。以下是 AFS 上的原始位置：
+
 - Agent 轨迹：`outputs/osworld/agent-results/<experiment>/task_<id>/<run-id>/`。
   整个任务一条 `agent_trajectory.jsonl`；`metadata.episodes` 保留独立上下文的边界，
   `model/episode_NNN/` 保存请求、响应、`episode.json`、`agent.log` 和 `env-server.log`。

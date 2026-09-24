@@ -40,5 +40,5 @@ job:
   # task_set: offline             # 与 tasks 二选一；offline 仅 v2.1 提供
   max_steps: 500                  # 正式评测采用论文的 500 步预算；每阶段按 Agent 交互回合计数
   history_turns: 4                 # Chat：4 张历史截图＋当前截图，文本完整保留
-  results_root: results           # 本地镜像目录，也用作 Agent 容器内输出路径
+  results_root: results           # 本地结果根目录；batch 自动归档为 <批次名>/task_<任务号>/<run-id>/
   # experiment: v21-054-my-run    # 默认生成唯一名称；batch 用作批次 ID，恢复用 --resume <ID>

@@ -4,7 +4,7 @@
 
 - **运行任务**：先照[完整例子：v2.1 的 054](/lite/gym/envs/osworld_2/WORKER.md)准备文件、提交、看结果并回收，再修改 [run.yaml](/lite/platforms/sandbox/osworld_2/configs/run.yaml)切换任务
 - **部署 Sandbox**：[镜像、数据和提交方法](/lite/platforms/sandbox/osworld_2/README.md)
-- **接入其他 benchmark**：按[六步开发示例](/lite/gym/envs/ADDING_BENCHMARKS.md#example-integration)实现环境、注册、验证与部署；同页包含接入 SPEC
+- **接入其他 benchmark**：按[六步开发示例](/docs/ADDING_BENCHMARKS.md#example-integration)实现环境、注册、验证与部署；同页包含接入 SPEC
 
 <a id="deployment-and-ownership"></a>
 
@@ -85,6 +85,6 @@ osworld_2/
 
 新 benchmark 满足既有 Lite 契约时，只发布自己的环境镜像与部署配置，即可复用已发布 Agent 镜像。修改 Agent、模型适配器、其 Python 依赖或 Lite 线上协议时再更新相关镜像，并用集成检查确认兼容性；不要求两边来自同一次 commit。
 
-参考测试位于 [tests/gym/envs/osworld_2](/tests/gym/envs/osworld_2)：根目录检查注册，`worker/` 下覆盖环境动作、HTTP、阶段、输出和构建。多人协作边界与验收要求见[接入 SPEC](/lite/gym/envs/ADDING_BENCHMARKS.md)。
+参考测试位于 [tests/gym/envs/osworld_2](/tests/gym/envs/osworld_2)：根目录检查注册，`worker/` 下覆盖环境动作、HTTP、阶段、输出和构建。多人协作边界与验收要求见[接入 SPEC](/docs/ADDING_BENCHMARKS.md)。
 
 上游资料：[OSWorld-V2 源码](https://github.com/xlang-ai/OSWorld-V2) · [OSWorld 2.0 论文](https://arxiv.org/abs/2606.29537) · [OSWorld 论文](https://arxiv.org/abs/2404.07972)。研究中请同时引用上游工作与 [CUA-Lite](/README.md#citation)。

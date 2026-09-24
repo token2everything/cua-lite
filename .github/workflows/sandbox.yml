@@ -5,7 +5,7 @@ on:
     paths:
       - 'lite/gym/envs/osworld_2/**'
       - 'lite/platforms/**'
-      - 'lite/gym/envs/ADDING_BENCHMARKS.md'
+      - 'docs/ADDING_BENCHMARKS.md'
       - 'lite/gym/remote/**'
       - 'lite/gym/registry.py'
       - 'lite/gym/services.py'

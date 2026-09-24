@@ -296,6 +296,7 @@ See [docs/grpo.md](/docs/grpo.md) for more — async train/rollout, other RL alg
 | Doc | What's in it |
 |:---|:---|
 | [docs/envs.md](/docs/envs.md)   | available envs, API reference, action spaces |
+| [docs/ADDING_BENCHMARKS.md](/docs/ADDING_BENCHMARKS.md) | benchmark integration guide and contract |
 | [docs/eval.md](/docs/eval.md)   | rollout scripts for benchmarking |
 | [docs/slime.md](/docs/slime.md) | Docker training container setup |
 | [docs/sft.md](/docs/sft.md)     | supervised fine-tuning |

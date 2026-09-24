@@ -171,7 +171,6 @@ for release in worker_releases:
 for release in worker_releases:
     for relative in ("protocol_verification.json", "model_verification.json"):
         assert not (release.path / relative).exists(), (release.name, relative)
-assert (package.parent / "ADDING_BENCHMARKS.md").is_file()
 platform = Path(deployment.__file__).parent
 assert platform.name == "osworld_2"
 assert not (platform.parent / "osworld").exists()

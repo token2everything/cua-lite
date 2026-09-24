@@ -2,7 +2,7 @@
 
 下面用一个完整例子说明：**从工作站提交 v2.1 的任务 054，使用 `glm5.3-flash`，下载轨迹后回收 Sandbox。** Agent、coordinator、env-server、Worker 和桌面 VM 都在 Sandbox 内运行。
 
-新增 benchmark 的开发步骤见 [接入示例与 SPEC](/lite/gym/envs/ADDING_BENCHMARKS.md#example-integration)；本页用于运行已经接入的 OSWorld。首次发布镜像、任务数据与模板的同事先读 [部署指南](/lite/platforms/sandbox/osworld_2/README.md)。
+新增 benchmark 的开发步骤见 [接入示例与 SPEC](/docs/ADDING_BENCHMARKS.md#example-integration)；本页用于运行已经接入的 OSWorld。首次发布镜像、任务数据与模板的同事先读 [部署指南](/lite/platforms/sandbox/osworld_2/README.md)。
 
 ## 1. 开始前拿到这些信息
 

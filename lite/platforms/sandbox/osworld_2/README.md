@@ -218,7 +218,7 @@ v2.1 的 offline 集也可能需要上述依赖；0624、0808 没有官方 offli
 coordinator 为每阶段生成私密 `episode.json`，启动原生 env-server，使用随机令牌、
 `--max-live-envs 1` 和 `max(3600, 3 * model_timeout + 300)` 秒的 idle TTL。
 Agent 只得到 Lite 环境地址/令牌、指定模型文件和输出目录；完整 job 字段见
-[通用入口契约](/lite/gym/envs/ADDING_BENCHMARKS.md#generic-agent-job)。
+[通用入口契约](/docs/ADDING_BENCHMARKS.md#generic-agent-job)。
 
 | 容器 | 镜像与权限 |
 |---|---|

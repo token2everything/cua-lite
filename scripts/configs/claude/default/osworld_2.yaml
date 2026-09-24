@@ -23,4 +23,4 @@ agent_kwargs:
 env_id: "osworld_2"
 env_kwargs:
   max_steps: 200   # OSWorld-V2 official run value (V2 tasks need far longer trajectories than v1's 30)
-  loop_detect: 0   # a make/wrapper knob (LoopDetectWrapper), NOT an OSWorldV2Env.__init__ param
+  loop_detect: 0   # LoopDetectWrapper setting, consumed by gym.make

@@ -1,19 +1,9 @@
 from __future__ import annotations
 
-from lite.core.tools.extra_tools import extra_tool_name_and_arguments_are_admitted
-from lite.core.tools.schemas import make_tool_schema
-
-
-def _ask_schema() -> dict:
-    return make_tool_schema(
-        "ask_user",
-        parameters={
-            "type": "object",
-            "properties": {"question": {"type": "string"}},
-            "required": ["question"],
-            "additionalProperties": False,
-        },
-    )
+from lite.core.tools.extra_tools import (
+    LiteUserInteractionToolSet,
+    extra_tool_name_and_arguments_are_admitted,
+)
 
 
 def test_provider_extra_admission_refuses_without_schema_authority() -> None:
@@ -37,7 +27,7 @@ def test_provider_extra_admission_refuses_without_schema_authority() -> None:
 def test_provider_extra_admission_rejects_inactive_names() -> None:
     assert not extra_tool_name_and_arguments_are_admitted(
         "ask_user",
-        {"question": "Proceed?"},
+        {"text": "Proceed?"},
         active_extra_tool_names=frozenset({"response"}),
         active_extra_tool_schemas=None,
     )
@@ -46,13 +36,13 @@ def test_provider_extra_admission_rejects_inactive_names() -> None:
 def test_provider_extra_admission_uses_schema_authority_when_available() -> None:
     assert extra_tool_name_and_arguments_are_admitted(
         "ask_user",
-        {"question": "Proceed?"},
+        {"text": "Proceed?"},
         active_extra_tool_names=frozenset({"ask_user"}),
-        active_extra_tool_schemas=(_ask_schema(),),
+        active_extra_tool_schemas=LiteUserInteractionToolSet.get_tool_schemas(),
     )
     assert not extra_tool_name_and_arguments_are_admitted(
         "ask_user",
         {"unexpected": "bad replay"},
         active_extra_tool_names=frozenset({"ask_user"}),
-        active_extra_tool_schemas=(_ask_schema(),),
+        active_extra_tool_schemas=LiteUserInteractionToolSet.get_tool_schemas(),
     )

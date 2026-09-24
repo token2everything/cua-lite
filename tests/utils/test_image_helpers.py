@@ -18,7 +18,7 @@ import base64
 import io
 
 import pytest
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 from lite.utils.image import decode_image, encode_png, png_from_b64
 
@@ -105,3 +105,38 @@ def test_decode_image_rgb_passthrough():
     img = decode_image(_png_bytes(mode="RGB"))
     assert img.mode == "RGB"
     assert img.size == (8, 6)
+
+
+@pytest.mark.parametrize("mode", ["RGB", "RGBA", "P", "L"])
+def test_decoded_pixels_survive_closed_source_and_reencoding(mode, monkeypatch):
+    png = _png_bytes(mode)
+    with Image.open(io.BytesIO(png)) as reference:
+        expected = reference.convert("RGB").tobytes()
+    original_open = Image.open
+    sources = []
+
+    def open_image(source, *args, **kwargs):
+        sources.append(source)
+        return original_open(source, *args, **kwargs)
+
+    monkeypatch.setattr(Image, "open", open_image)
+    image = decode_image(png)
+    assert sources[0].closed
+    assert image.mode == "RGB" and image.tobytes() == expected
+    for _ in range(2):
+        with original_open(io.BytesIO(encode_png(image))) as reopened:
+            assert reopened.tobytes() == expected
+
+
+def test_invalid_png_also_closes_source(monkeypatch):
+    original_open = Image.open
+    sources = []
+
+    def open_image(source, *args, **kwargs):
+        sources.append(source)
+        return original_open(source, *args, **kwargs)
+
+    monkeypatch.setattr(Image, "open", open_image)
+    with pytest.raises(UnidentifiedImageError):
+        decode_image(b"not an image")
+    assert sources[0].closed

@@ -297,7 +297,7 @@ def test_grounding_envs_reject_unsupported_cursor_kwargs(bad_key):
 @pytest.mark.parametrize("bad_key", ["cursor", "cursor_overlay", "definitely_unknown"])
 def test_osworld_envs_reject_unsupported_cursor_kwargs(bad_key):
     from lite.gym.envs.osworld.main import OSWorldConfig, OSWorldEnv
-    from lite.gym.envs.osworld_2.main import OSWorldV2Config, OSWorldV2Env
+    from lite.gym.envs.osworld_2.worker_env import OSWorldWorkerEnv
 
     with pytest.raises(TypeError, match=bad_key):
         OSWorldEnv(
@@ -305,8 +305,8 @@ def test_osworld_envs_reject_unsupported_cursor_kwargs(bad_key):
             **{bad_key: False},
         )
     with pytest.raises(TypeError, match=bad_key):
-        OSWorldV2Env(
-            config=OSWorldV2Config(task_id="task"),
+        OSWorldWorkerEnv(
+            task_id="054",
             **{bad_key: False},
         )
 

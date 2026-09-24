@@ -740,15 +740,19 @@ _SECRET_CONFIG_KEY_PARTS = (
 def _env_config_dir_for_env_id(env_id: str) -> Path | None:
     """Best-effort env_id -> env config directory.
 
-    Programmatic sub-envs (``browsergym.webarena``, ``cua.bench.kicad``,
-    ``lite.cuaworld.<software>``) share a parent package config. Walk from the
-    full dotted name toward its parent until a ``configs/default.yaml`` is found.
+    A registrar with separate configs per env ID declares ``ENV_CONFIG_DIRS``.
+    Otherwise programmatic sub-envs share the nearest parent package's
+    ``configs/default.yaml`` under the standard env directory convention.
     """
     import sys
 
     envs_dir = sys.modules["lite.gym.registry"]._ENVS_DIR
     parts = env_id.split(".")
     for end in range(len(parts), 0, -1):
+        module = sys.modules.get(f"lite.gym.envs.{'.'.join(parts[:end])}.main")
+        declared = getattr(module, "ENV_CONFIG_DIRS", {})
+        if env_id in declared:
+            return Path(declared[env_id])
         candidate = envs_dir / Path(*parts[:end])
         if (candidate / "configs" / "default.yaml").is_file():
             return candidate
@@ -1342,7 +1346,9 @@ async def _reap_drift_one_cycle(state: State, scope: ServerScope) -> None:
     # single-threaded. Each blocking reap/live_ids call carries its own subprocess
     # ``timeout=``, so a cycle is self-bounded (a pure-Python-wedged hook is an env
     # bug, surfaced by the dispatcher going quiet — not something to recover here).
-    reports = await asyncio.to_thread(reconcile_all, state_view, scope)
+    reports = await asyncio.to_thread(
+        reconcile_all, state_view, scope, allowed_env_ids=state.allowed_env_ids,
+    )
 
     # Cross-env validation (framework-universal, §5.3): a reconcile for env A
     # cannot drop env B's entries. Single source of truth in the reaper module.
@@ -1709,7 +1715,7 @@ def make_app(
         # operator can SEE prior-session cleanup happen (a non-zero count after
         # a crash/restart is the no-leak guarantee working, not an anomaly).
         from lite.gym.remote.recovery import recover_all
-        n_recovered = recover_all(state.scope)
+        n_recovered = recover_all(state.scope, allowed_env_ids=state.allowed_env_ids)
         logger.info(
             "boot recovery: reclaimed %d orphan resource(s) leaked by a prior "
             "env-server lifetime (server_port=%s)",
@@ -1792,7 +1798,9 @@ def make_app(
             # blocking I/O (subprocess, RPC).
             try:
                 from lite.gym.remote.recovery import shutdown_all
-                await asyncio.to_thread(shutdown_all, state.scope)
+                await asyncio.to_thread(
+                    shutdown_all, state.scope, allowed_env_ids=state.allowed_env_ids,
+                )
             except Exception as e:
                 logger.warning(
                     "lifespan shutdown: shutdown_all failed: %s — "
@@ -2023,8 +2031,8 @@ def make_app(
                 env_inserted = True
 
             logger.info(
-                "created instance id=%s env_key=%s session_id=%s token=%s token_hash=%s",
-                id_, body.env_key, body.session_id, token, token_hash,
+                "created instance id=%s env_key=%s session_id=%s token_hash=%s",
+                id_, body.env_key, body.session_id, token_hash,
             )
             return {
                 "id": id_,

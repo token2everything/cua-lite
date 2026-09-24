@@ -26,6 +26,7 @@ if TYPE_CHECKING:
     from lite.agents.types import PredictResult
     from lite.core import (
         LiteRLSample,
+        LiteSample,
     )
     from lite.gym.types import LiteEnvStepResult
 
@@ -57,6 +58,13 @@ class SampleHook:
 
     def on_step(self, data: SampleStepData) -> None:
         """Called after each env.step."""
+
+    def on_trajectory(self, trajectory: LiteSample) -> None:
+        """Observe cumulative messages after feedback is stored; do not mutate.
+
+        The desktop Responses and adapter-backed loops publish each turn;
+        on_complete remains the final sample hook.
+        """
 
     def on_complete(self, lite_rl_sample: LiteRLSample | None) -> None:
         """Called after sampling finishes (or fails). ``lite_rl_sample`` is None on error."""

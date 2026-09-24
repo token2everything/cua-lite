@@ -6,6 +6,7 @@ from lite.core.tools.extra_tools import (
     LiteAppLaunchToolSet,
     LiteBrowserNavToolSet,
     LiteFinishToolSet,
+    LiteUserInteractionToolSet,
     make_open_app_tool,
 )
 from lite.core.tools.schemas import tool_schema_name
@@ -94,6 +95,16 @@ GOLDEN_OPEN_APP = [{'type': 'function',
                                                                          'to launch.'}},
                               'required': ['app_name']}}}]
 
+GOLDEN_ASK_USER = [{'type': 'function',
+  'function': {'name': 'ask_user',
+               'description': 'Ask the user for information needed to complete '
+                              'the task. Returns their reply.',
+               'parameters': {'type': 'object',
+                              'properties': {'text': {'type': 'string',
+                                                      'description': 'The question '
+                                                                     'to ask the user.'}},
+                              'required': ['text']}}}]
+
 # The runtime-enum path: four env mains call ``make_open_app_tool(apps)`` to
 # stamp the env's real installed-app catalog onto ``app_name``. Pinned
 # separately because the enum is appended AFTER ``description``, so the key
@@ -131,6 +142,20 @@ def test_open_app_schema_golden():
     _assert_canonical(schemas)
     assert schemas == GOLDEN_OPEN_APP
     assert LiteAppLaunchToolSet.get_tool_schemas() == GOLDEN_OPEN_APP
+
+
+def test_ask_user_schema_golden():
+    schemas = LiteUserInteractionToolSet.get_tool_schemas(include=["ask_user"])
+    _assert_canonical(schemas)
+    assert schemas == GOLDEN_ASK_USER
+    assert LiteUserInteractionToolSet.get_tool_schemas() == GOLDEN_ASK_USER
+    assert LiteUserInteractionToolSet.ask_user("Which file should I use?") == {
+        "type": "function",
+        "function": {"name": "ask_user", "arguments": {"text": "Which file should I use?"}},
+    }
+    assert LiteUserInteractionToolSet.get_tool_names().isdisjoint(
+        LiteFinishToolSet.get_tool_names()
+    )
 
 
 def test_open_app_runtime_enum_schema_golden():

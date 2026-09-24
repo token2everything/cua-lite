@@ -105,9 +105,7 @@ def test_cuaworld_image_hashes_asset_lock_once(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize("env_id", supported_env_ids())
-def test_image_freshness_dispatches_env_local_specs(env_id, monkeypatch, tmp_path):
-    if env_id == "osworld_2":
-        monkeypatch.setenv("OSWORLD_V2_SRC", str(tmp_path / "missing"))
+def test_image_freshness_dispatches_env_local_specs(env_id):
     image = image_for(env_id)
     assert isinstance(image, ContainerImage)
     assert image.tag
@@ -130,7 +128,6 @@ def test_all_env_local_image_specs_are_discoverable():
         "mobileworld",
         "online_mind2web",
         "osworld",
-        "osworld_2",
         "waa",
         "webgym",
         "webharbor.webvoyager",
@@ -245,24 +242,6 @@ def test_image_freshness_cli_hash_path():
     assert all(c in "0123456789abcdef" for c in digest)
 
 
-def test_image_freshness_cli_hash_path_with_dynamic_source(tmp_path, monkeypatch):
-    src = tmp_path / "OSWorld-V2"
-    src.mkdir()
-    (src / "pyproject.toml").write_text("[project]\nname='osworld-v2-test'\n")
-    (src / "package.py").write_text("VALUE = 1\n")
-    monkeypatch.setenv("OSWORLD_V2_SRC", str(src))
-    result = subprocess.run(
-        [sys.executable, "-m", "lite.gym.utils.backend.freshness", "hash", "osworld_2"],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    digest = result.stdout.strip()
-    assert digest == image_for("osworld_2").src_hash()
-    assert len(digest) == 64
-    assert all(c in "0123456789abcdef" for c in digest)
-
-
 def test_image_freshness_cli_hash_path_with_asset_manifest():
     result = subprocess.run(
         [sys.executable, "-m", "lite.gym.utils.backend.freshness", "hash", "lite.cuagym"],
@@ -274,38 +253,6 @@ def test_image_freshness_cli_hash_path_with_asset_manifest():
     assert digest == image_for("lite.cuagym").src_hash()
     assert len(digest) == 64
     assert all(c in "0123456789abcdef" for c in digest)
-
-
-def test_osworld2_image_hash_tracks_selected_source_tree(tmp_path, monkeypatch):
-    import lite.gym.envs.osworld_2.image_spec as image_spec
-
-    src = tmp_path / "OSWorld-V2"
-    src.mkdir()
-    (src / "pyproject.toml").write_text("[project]\nname='osworld-v2-test'\n")
-    (src / "package.py").write_text("VALUE = 1\n")
-    ignored = src / "docs"
-    ignored.mkdir()
-    (ignored / "guide.md").write_text("ignored\n")
-    monkeypatch.setenv("OSWORLD_V2_SRC", str(src))
-
-    image = image_spec.image_for("osworld_2")
-    assert "lite/gym/envs/osworld_2/image_spec.py" in image.sources
-    assert "lite/gym/envs/osworld_2/scripts/install.sh" in image.sources
-    assert image.extra_hash_inputs[0].startswith("osworld-v2-source=")
-    first_hash = image.src_hash()
-
-    (ignored / "guide.md").write_text("ignored change\n")
-    assert image_spec.image_for("osworld_2").src_hash() == first_hash
-    (src / "package.py").write_text("VALUE = 2\n")
-    assert image_spec.image_for("osworld_2").src_hash() != first_hash
-
-
-def test_osworld2_image_identity_is_explicit_when_source_absent(tmp_path, monkeypatch):
-    import lite.gym.envs.osworld_2.image_spec as image_spec
-
-    monkeypatch.setenv("OSWORLD_V2_SRC", str(tmp_path / "missing"))
-    image = image_spec.image_for("osworld_2")
-    assert image.extra_hash_inputs == ("osworld-v2-source=absent",)
 
 
 def test_cuaworld_image_hash_excludes_host_only_runtime_modules(monkeypatch):

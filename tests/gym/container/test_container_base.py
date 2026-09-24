@@ -4,7 +4,7 @@ The properties PoC-verified before the migration, kept as durable tests:
 ABC-mixin + @dataclass composes; template destroy() is idempotent, never
 raises, and dispatches an overridden `_pre_destroy`; a subclass missing
 `start()` fails AT INSTANTIATION; a double-destroy never re-releases ports;
-the five production containers all conform.
+the production containers all conform.
 
 Run: uv run pytest tests/gym/container/test_container_base.py
 """
@@ -108,14 +108,13 @@ def test_missing_start_fails_at_instantiation():
         _Broken(name="nope", api_port=1)
 
 
-def test_all_five_production_containers_conform():
+def test_production_containers_conform():
     from lite.gym.envs.androidlab.container import AndroidLabContainer
     from lite.gym.envs.androidworld.container import AndroidWorldContainer
     from lite.gym.envs.mobileworld.container import MobileWorldContainer
     from lite.gym.envs.osworld.container import OSWorldContainer
-    from lite.gym.envs.osworld_2.container import OSWorldV2Container
 
-    for cls in (OSWorldContainer, OSWorldV2Container, AndroidWorldContainer,
+    for cls in (OSWorldContainer, AndroidWorldContainer,
                 AndroidLabContainer, MobileWorldContainer):
         assert issubclass(cls, LiteContainerBase)
         c = cls(name=f"conform-{cls.__name__}", api_port=19999)
@@ -127,16 +126,11 @@ def test_all_five_production_containers_conform():
 
 
 def test_every_lite_container_subclass_keeps_the_destroy_template():
-    """6th-class gate: the conformance test above enumerates today's five
-    containers by hand — a SIXTH env's container that overrides destroy()
-    would sail past it. Walk ALL LiteContainerBase subclasses transitively
-    (after importing the five production container modules) and auto-conscript
-    every ``lite.*`` class into the template pin."""
+    """Check every imported production subclass, including indirect subclasses."""
     import lite.gym.envs.androidlab.container  # noqa: F401
     import lite.gym.envs.androidworld.container  # noqa: F401
     import lite.gym.envs.mobileworld.container  # noqa: F401
     import lite.gym.envs.osworld.container  # noqa: F401
-    import lite.gym.envs.osworld_2.container  # noqa: F401
 
     def _walk(cls):
         for sub in cls.__subclasses__():
@@ -147,7 +141,7 @@ def test_every_lite_container_subclass_keeps_the_destroy_template():
         {c for c in _walk(LiteContainerBase) if c.__module__.startswith("lite.")},
         key=lambda c: c.__qualname__,
     )
-    assert len(lite_subs) >= 5, "expected at least the five production containers"
+    assert len(lite_subs) >= 4, "expected at least the four production containers"
     for cls in lite_subs:
         assert cls.destroy is LiteContainerBase.destroy, (
             f"{cls.__module__}.{cls.__qualname__} overrides the destroy() template "

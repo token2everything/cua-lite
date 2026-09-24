@@ -538,6 +538,7 @@ class GPTDesktopUseAgent(_GPTBaseAgent, key=r"gpt@(desktop|browser)@use"):
         hooks = hooks or []
         result: LiteRLSample | None = None
         completed = False
+        trajectory: LiteSample | None = None
 
         # Responses API conversation state.
         input_items: list[dict[str, Any]] = []
@@ -634,6 +635,9 @@ class GPTDesktopUseAgent(_GPTBaseAgent, key=r"gpt@(desktop|browser)@use"):
                             provider_visible_image_indices.append(sent_image_index)
                     input_items.append({"role": "user", "content": user_content})
                     trajectory.messages.append({"role": "user", "content": traj_content})
+                    for hook in hooks:
+                        if publish := getattr(hook, "on_trajectory", None):
+                            await asyncio.to_thread(publish, trajectory)
 
                 # 2. Request: compact client-managed history, then call the model.
                 request_input = _compress_computer_use_history(input_items, self.full_history_size)
@@ -777,6 +781,9 @@ class GPTDesktopUseAgent(_GPTBaseAgent, key=r"gpt@(desktop|browser)@use"):
                 )
 
                 if terminated or truncated:
+                    for hook in hooks:
+                        if publish := getattr(hook, "on_trajectory", None):
+                            await asyncio.to_thread(publish, trajectory)
                     break
 
                 # 5. Feedback: append Responses-shaped outputs for next turn.
@@ -803,6 +810,9 @@ class GPTDesktopUseAgent(_GPTBaseAgent, key=r"gpt@(desktop|browser)@use"):
                     else None
                 )
                 provider_visible_image_indices.extend(step_provider_visible_image_indices)
+                for hook in hooks:
+                    if publish := getattr(hook, "on_trajectory", None):
+                        await asyncio.to_thread(publish, trajectory)
             else:
                 truncated = True
                 mark_steps_truncated(steps)
@@ -817,6 +827,15 @@ class GPTDesktopUseAgent(_GPTBaseAgent, key=r"gpt@(desktop|browser)@use"):
             completed = True
             return result
         finally:
+            if not completed and trajectory is not None:
+                # Retain the last model message even if its environment step
+                # failed. A logger failure must not prevent episode cleanup.
+                for hook in hooks:
+                    if publish := getattr(hook, "on_trajectory", None):
+                        try:
+                            await asyncio.to_thread(publish, trajectory)
+                        except Exception as error:
+                            logger.warning("Could not publish interrupted trajectory: %s", error)
             await self._finalize_sample(
                 cache_stats=cache_stats,
                 hooks=hooks,

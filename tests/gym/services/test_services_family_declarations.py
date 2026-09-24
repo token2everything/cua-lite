@@ -38,7 +38,7 @@ EXPECTED: dict[str, BackendFamily] = {
     "lite.scalecua": BackendFamily.DEDICATED,
     "lite.cuaworld.pymol": BackendFamily.DEDICATED,
     "osworld": BackendFamily.DEDICATED,  # official OSWorld: VM-in-Docker
-    "osworld_2": BackendFamily.DEDICATED,  # OSWorld-V2: same VM-in-Docker infra as v1
+    "osworld_2": BackendFamily.REMOTE,  # release-matched Worker owns the VM
     "mobileworld": BackendFamily.DEDICATED,
     "captcha": BackendFamily.DEDICATED,
     "lite.demo": BackendFamily.DEDICATED,

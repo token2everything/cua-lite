@@ -32,18 +32,17 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, ClassVar
 
-from lite.core.errors import LiteContractError
 from lite.core.messages.final import (
     MAX_STEPS_STOP_REASON,
     STOP_REASON_INFO_KEY,
 )
 from lite.core.metadata import LiteCUAMetadata
-from lite.core.tools.action_space.geometry import strict_norm_to_pixel
-from lite.core.tools.extra_tools import LiteFinishToolSet, make_report_infeasible_tool
+from lite.core.tools.extra_tools import LiteFinishToolSet
 from lite.core.tools.calls import RuntimeEnvAction
 from lite.core.tools.schemas import BaseTools
 from lite.gym.base import LiteBaseEnv
 from lite.gym.container import spawn_background_destroy
+from lite.gym.envs.osworld.actions import OsworldTools, to_pyautogui
 from lite.gym.envs.osworld.container import OSWorldContainer, OSWorldContainerFactory
 from lite.gym.errors import TrueInfraFailure, EnvDepsMissingError
 from lite.gym.registry import register, registry
@@ -55,10 +54,6 @@ from lite.gym.types import (
     LiteExecutedAction,
 )
 from lite.gym.utils import config as env_config
-from lite.gym.utils.backend.model_inputs import (
-    coerce_model_duration,
-    project_model_keys,
-)
 from lite.gym.utils.backend.rpc import json_rpc
 from lite.gym.utils.config.identity import EnvIdentity
 from lite.gym.utils.feedback.errors import (
@@ -123,22 +118,6 @@ _EVAL_RPC_TIMEOUT = 180.0
 
 _EXECUTOR = ThreadPoolExecutor(max_workers=_MAX_WORKERS, thread_name_prefix="osworld-exec")
 atexit.register(lambda: _EXECUTOR.shutdown(wait=False, cancel_futures=True))
-
-
-# ---------------------------------------------------------------------------
-# Extra tools (report_infeasible) — opt-in, off by default. PUBLIC: part of this
-# module's v1/v2-shared surface (osworld_2 imports it; see `to_pyautogui` below).
-# ---------------------------------------------------------------------------
-class OsworldTools(BaseTools):
-    """What osworld declares beyond the GUI surface: ``report_infeasible``.
-
-    PUBLIC: part of this module's v1/v2-shared surface (osworld_2 declares the
-    same set; see ``to_pyautogui`` below).
-    """
-
-    _SCHEMAS: ClassVar[dict[str, dict[str, Any]]] = {
-        "report_infeasible": make_report_infeasible_tool(),
-    }
 
 
 #: Finish tools cannot live in an env's own set, so the union is not optional.
@@ -588,7 +567,7 @@ def reap_pending_build(cf: Any, container: Any, *, thread_name: str) -> None:
     that RETURNS the container — we reap whatever it produced. The dying
     handle is captured as a LOCAL (never read back off shared state).
     osworld_2 imports this verbatim (same single-source pattern as
-    ``to_pyautogui`` below)."""
+    the shared action projection)."""
     def _destroy(c: Any) -> None:
         if c is not None:
             c.destroy()   # idempotent, never raises (LiteContainerBase)
@@ -599,116 +578,6 @@ def reap_pending_build(cf: Any, container: Any, *, thread_name: str) -> None:
         on_failure=lambda _e: _destroy(container),
         thread_name=thread_name,
     )
-
-
-# ---------------------------------------------------------------------------
-# Action translation (LiteDesktopActionSpace → pyautogui). Pure function — no desktop_env.
-# osworld_2 imports this verbatim (single source of truth; benchmark-version-agnostic).
-# ---------------------------------------------------------------------------
-def to_pyautogui(name: str, args: dict[str, Any], w: int, h: int) -> str | None:
-    def _px(coord: list[int] | tuple[int, ...] | None) -> tuple[int, int]:
-        if not isinstance(coord, (list, tuple)) or len(coord) < 2:
-            raise ValueError("arguments could not be interpreted")
-        try:
-            x, y = strict_norm_to_pixel(coord, w, h, clamp=False, round=False)
-        except (LiteContractError, TypeError, ValueError, IndexError):
-            raise ValueError("arguments could not be interpreted") from None
-        return x, y
-
-    def _keys_to_pyautogui() -> list[str]:
-        return project_model_keys(
-            args.get("keys", []),
-            action_name=name,
-            backend="pyautogui",
-        )
-
-    if name == "click":
-        x, y = _px(args.get("coordinate"))
-        button = args.get("button", "left")
-        clicks = args.get("clicks", 1)
-        if clicks >= 3:
-            return f"pyautogui.tripleClick({x}, {y}, button={button!r})"
-        if clicks == 2:
-            return f"pyautogui.doubleClick({x}, {y}, button={button!r})"
-        return f"pyautogui.click({x}, {y}, button={button!r})"
-    if name == "mouse_move":
-        x, y = _px(args.get("coordinate"))
-        return f"pyautogui.moveTo({x}, {y})"
-    if name == "mouse_down":
-        return f"pyautogui.mouseDown(button={args.get('button', 'left')!r})"
-    if name == "mouse_up":
-        return f"pyautogui.mouseUp(button={args.get('button', 'left')!r})"
-    if name == "drag":
-        ex, ey = _px(args.get("coordinate"))
-        button = args.get("button", "left")
-        duration = coerce_model_duration(
-            args.get("duration", 0.5),
-            action_name="drag",
-        )
-        # start_coordinate optional → omit the pre-move so dragTo starts from the
-        # current pyautogui cursor (matches waa / SandboxBaseEnv "drag from cursor").
-        prefix = ""
-        if args.get("start_coordinate") is not None:
-            sx, sy = _px(args["start_coordinate"])
-            prefix = f"pyautogui.moveTo({sx}, {sy}); "
-        return f"{prefix}pyautogui.dragTo({ex}, {ey}, duration={duration}, button={button!r})"
-    if name == "scroll":
-        direction = args.get("direction", "down")
-        amount = args.get("amount", 3)
-        pos = ""
-        if args.get("coordinate") is not None:
-            x, y = _px(args["coordinate"])
-            pos = f", x={x}, y={y}"
-        if direction in ("left", "right"):
-            clicks = amount if direction == "right" else -amount
-            return f"pyautogui.hscroll({clicks}{pos})"
-        clicks = amount if direction == "up" else -amount
-        return f"pyautogui.scroll({clicks}{pos})"
-    if name == "type":
-        # repr() safely escapes quotes/newlines/backslashes; NO interval= kwarg. Split on `<`
-        # host-side (emitting hotkey('shift', ',') per `<`): upstream's
-        # _fix_pyautogui_less_than_bug corrupts any typewrite whose source text contains `<`
-        # plus escapes — it unicode_escape-decodes the literal (turning `\n` into real
-        # newlines) and re-embeds the parts unescaped, a SyntaxError that silently drops the
-        # whole action. With no `<` left in any typewrite literal, that fixer stays inert.
-        text = args.get("text", "")
-        if not isinstance(text, str):
-            raise TypeError("type.arguments.text must be a string")
-        parts = text.split("<")
-        calls = [f"pyautogui.typewrite({parts[0]!r})"] if parts[0] else []
-        for part in parts[1:]:
-            calls.append("pyautogui.hotkey('shift', ',')")
-            if part:
-                calls.append(f"pyautogui.typewrite({part!r})")
-        return "; ".join(calls) or None
-    if name == "key":
-        pg_keys = _keys_to_pyautogui()
-        return f"pyautogui.hotkey({', '.join(repr(k) for k in pg_keys)})"
-    if name == "key_down":
-        pg_keys = _keys_to_pyautogui()
-        return "; ".join(f"pyautogui.keyDown({k!r})" for k in pg_keys)
-    if name == "key_up":
-        pg_keys = _keys_to_pyautogui()
-        return "; ".join(f"pyautogui.keyUp({k!r})" for k in reversed(pg_keys))
-    if name == "hold_key":
-        pg_keys = _keys_to_pyautogui()
-        duration = coerce_model_duration(
-            args.get("duration", 1.0),
-            action_name="hold_key",
-        )
-        downs = "; ".join(f"pyautogui.keyDown({k!r})" for k in pg_keys)
-        ups = "; ".join(f"pyautogui.keyUp({k!r})" for k in reversed(pg_keys))
-        return f"import time; {downs}; time.sleep({duration}); {ups}"
-    if name == "wait":
-        duration = coerce_model_duration(
-            args.get("duration", 1.0),
-            action_name="wait",
-        )
-        return f"import time; time.sleep({duration})"
-    if name in ("screenshot", "cursor_position"):
-        return None
-    logger.warning("unknown action: %s(%s)", name, args)
-    return None
 
 
 # ---------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-"""Null-AFTER-destroy ordering pin for osworld / osworld_2 (section 7.4a).
+"""The local OSWorld container remains visible throughout teardown.
 
 ``_teardown_existing`` must keep ``_container`` / ``_pending`` pointing at the
 dying container UNTIL destroy() returns — an eager null blanks the
@@ -7,19 +7,13 @@ inviting the drift reaper to race the env's own teardown (same fix as
 mobileworld's ``_destroy_container``). Stub containers record whether the
 attr still pointed at them AT destroy time; no docker.
 
-This file stays shallow because it asserts the shared teardown lifecycle
-contract across the two top-level OSWorld env variants.
-
 Run: uv run pytest tests/gym/envs/test_osworld_teardown_ordering.py
 """
 from __future__ import annotations
 
 import asyncio
 
-import pytest
-
 from lite.gym.envs.osworld.main import OSWorldEnv
-from lite.gym.envs.osworld_2.main import OSWorldV2Env
 
 
 class _StubContainer:
@@ -40,9 +34,8 @@ class _StubContainer:
             raise RuntimeError("synthetic destroy failure")
 
 
-@pytest.mark.parametrize("env_cls", [OSWorldEnv, OSWorldV2Env])
-def test_teardown_nulls_attr_only_after_destroy_returns(env_cls):
-    env = env_cls.__new__(env_cls)
+def test_teardown_nulls_attr_only_after_destroy_returns():
+    env = OSWorldEnv.__new__(OSWorldEnv)
     stub = _StubContainer(env, "_container")
     env._container = stub
     env._pending = None
@@ -56,9 +49,8 @@ def test_teardown_nulls_attr_only_after_destroy_returns(env_cls):
     assert env._pending is None
 
 
-@pytest.mark.parametrize("env_cls", [OSWorldEnv, OSWorldV2Env])
-def test_teardown_nulls_attr_even_when_destroy_raises(env_cls):
-    env = env_cls.__new__(env_cls)
+def test_teardown_nulls_attr_even_when_destroy_raises():
+    env = OSWorldEnv.__new__(OSWorldEnv)
     stub = _StubContainer(env, "_container", raise_on_destroy=True)
     env._container = stub
     env._pending = None

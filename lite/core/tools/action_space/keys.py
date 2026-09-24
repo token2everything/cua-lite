@@ -77,6 +77,20 @@ CANONICAL_SPECIAL_KEY_NAMES: frozenset[str] = (
 _CONTROL_CHARS = frozenset(chr(i) for i in range(32)) | frozenset({chr(127)})
 _VISIBLE_ASCII_GLYPHS = frozenset(chr(i) for i in range(33, 127))
 
+# The model emits canonical tokens directly; provider/preprocessing aliases are
+# not part of the shared computer tool's input grammar.
+ACTION_SCHEMA_KEYS_DESCRIPTION = (
+    "Non-empty list of lowercase canonical key tokens. Put each key of a chord "
+    'in a separate item, e.g. ["ctrl", "c"] or ["ctrl", "shift", "s"]. '
+    'Use "enter", "esc", and "meta" for Enter, Escape, and the OS modifier; '
+    'aliases such as "return", "escape", or "super" are not accepted. '
+    "Printable keys are single ASCII characters (lowercase letters, digits, or "
+    'punctuation), e.g. "a", "1", "-", "+"; use "space" for a space and the '
+    '"type" action for text. Named keys: '
+    + ", ".join(sorted(CANONICAL_SPECIAL_KEY_NAMES))
+    + "."
+)
+
 
 def canonical_special_keys() -> frozenset[str]:
     """Return the canonical named key vocabulary excluding literal characters."""
@@ -155,4 +169,9 @@ def normalize_keys(keys: list[str] | str) -> list[str]:
     return [_normalize_token(token) for token in raw]
 
 
-__all__ = ["canonical_special_keys", "is_canonical_key_token", "normalize_keys"]
+__all__ = [
+    "ACTION_SCHEMA_KEYS_DESCRIPTION",
+    "canonical_special_keys",
+    "is_canonical_key_token",
+    "normalize_keys",
+]

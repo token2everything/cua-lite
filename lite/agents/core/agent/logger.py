@@ -296,13 +296,12 @@ class TrajectoryLogger(SampleHook):
         self._media_timeline_incomplete = False
         self._next_observation_source = "reset"
         self._final_stop_reason: str | None = None
-        # Project root for computing relative image paths in trajectory.parquet —
-        # the worktree this Python install came from. Found by marker (pyproject.toml
-        # + lite/), NOT by __file__-depth counting, which silently broke when this
-        # module moved deeper. Reading ``CUA_LITE_ROOT`` from the environment was
-        # worktree-unsafe — a value inherited from another worktree's shell would
-        # silently redirect every relative path.
-        self._project_root = project_root()
+        # Source installs keep worktree-relative image paths. Wheels have no
+        # worktree; their images use absolute paths just like out-of-tree logs.
+        try:
+            self._project_root = project_root()
+        except RuntimeError:
+            self._project_root = None
         self._start_time = time.monotonic()
 
     def _save_json(self, path: Path, data: Any) -> None:
@@ -716,10 +715,12 @@ class TrajectoryLogger(SampleHook):
         for image_idx, image in enumerate(lite_rl_sample.lite_sample.images):
             abs_path = (image_dir / f"{image_idx:06d}.png").resolve()
             image.save(abs_path)
-            try:
-                stored_path = str(abs_path.relative_to(self._project_root))
-            except ValueError:
-                stored_path = str(abs_path)
+            stored_path = str(abs_path)
+            if self._project_root is not None:
+                try:
+                    stored_path = str(abs_path.relative_to(self._project_root))
+                except ValueError:
+                    pass
             image_paths.append(stored_path)
 
         metadata = lite_rl_sample.lite_sample.metadata.to_dict()

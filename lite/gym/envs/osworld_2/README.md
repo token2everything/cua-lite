@@ -1,140 +1,90 @@
-# OSWorld-V2
+# OSWorld-V2 接入说明
 
-`--env-id` `osworld_2`
+这里将 OSWorld-V2 接入 CUA-Lite，支持 **0624、0808、v2.1**。三个版本共用适配代码，分别使用对应的任务、素材和 Worker 镜像。
 
-CUA-Lite wrapper for the official [OSWorld 2.0](https://github.com/xlang-ai/OSWorld) benchmark (release `osworld-v2-2026.06.24`). 108 capability-graded desktop tasks (ids `001`–`108`, eval-only), via `gym.make("osworld_2@<id>")` with `LiteDesktopActionSpace`. Each trajectory runs on a locally-managed VM-in-Docker container (the derived `cua-lite/osworld_2` image, `FROM happysixd/osworld-docker`; QEMU/KVM booting the gated **v2** `osworld-v2-ubuntu-x86.qcow2`) scored by OSWorld's **native evaluators** (strict upstream reproduction).
+- **运行任务**：先照[完整例子：v2.1 的 054](/lite/gym/envs/osworld_2/WORKER.md)准备文件、提交、看结果并回收，再修改 [run.yaml](/lite/platforms/sandbox/osworld_2/configs/run.yaml)切换任务
+- **部署 Sandbox**：[镜像、数据和提交方法](/lite/platforms/sandbox/osworld_2/README.md)
+- **接入其他 benchmark**：按[六步开发示例](/lite/gym/envs/ADDING_BENCHMARKS.md#example-integration)实现环境、注册、验证与部署；同页包含接入 SPEC
 
-OSWorld-V2 uses the same VM-in-Docker runtime shape as [`osworld`](/lite/gym/envs/osworld/README.md) v1. Its tasks come from gated Hugging Face task classes and may return structured evaluator scores. See [docs/envs.md](/docs/envs.md) for the env contract.
+<a id="deployment-and-ownership"></a>
 
-> **Eval-in-container.** The OSWorld-V2 runtime is baked into the derived Docker image, so the host only needs the CUA-Lite package plus Docker/KVM. `install.sh` builds the image and provisions the required V2 assets.
+## 各部分做什么
 
-## Setup
+| 部分 | 职责 |
+|---|---|
+| Agent | 使用通用镜像和 `lite.agents.episode`，调用模型、选择动作并记录轨迹 |
+| env-server | 在 coordinator 内运行，向 Agent 提供统一的 Lite 环境接口 |
+| Worker | 运行原生 OSWorld，管理桌面 VM、用户模拟器和评分 |
+| 桌面 VM | 真正执行鼠标、键盘操作的桌面 |
+| `rollout.py` | 只协调任务初始化、阶段切换、评分、结果记录和最终清理 |
+| coordinator | 使用 benchmark 镜像启动 env-server，并为每个阶段启动独立 Agent 容器 |
 
-> **KVM required** — `/dev/kvm` must be rw-accessible (usually via the `kvm` group); `/dev/net/tun` too.
->
-> **Hugging Face auth required** — accept the gates on [`xlangai/v2-image`](https://huggingface.co/datasets/xlangai/v2-image) and [`xlangai/osworld_v2_tasks`](https://huggingface.co/datasets/xlangai/osworld_v2_tasks), then `hf auth login`. The qcow2 + task-class downloads 401 otherwise.
->
-> **Local OSWorld-V2 source required for image build/pull freshness** — set `OSWORLD_V2_SRC` to a checked-out official V2 source tree, or place it at `lite/gym/envs/osworld_2/_vendor/OSWorld-V2`. The image freshness label includes that source tree's content digest; without the same source identity, `install.sh pull` intentionally rejects published images instead of trusting an unverified binary.
-
-```bash
-# Choose one install path:
-# Source path: build cua-lite/osworld_2:latest, download the gated ~14 GiB archive,
-# verify/extract the ~25.5 GiB qcow2, then stage task classes and a static service scan.
-uv run --no-sync bash lite/gym/envs/osworld_2/scripts/install.sh
-
-# Or, published-image path: adopt a matching GHCR image, then provision gated V2 assets.
-# uv run --no-sync bash lite/gym/envs/osworld_2/scripts/install.sh pull
-
-# Optional lifecycle helpers:
-# uv run --no-sync bash lite/gym/envs/osworld_2/scripts/install.sh status    # image / qcow2 / task-class files / KVM+tun presence
-# uv run --no-sync bash lite/gym/envs/osworld_2/scripts/install.sh provision  # gated assets only, assumes image exists
-# uv run --no-sync bash lite/gym/envs/osworld_2/scripts/install.sh rebuild   # force-rebuild the image after an image-time source edit
+```mermaid
+flowchart LR
+    Agent --> Gym["Lite Gym / env-server"]
+    Gym --> Env["worker_env.py"]
+    Env --> Client["worker_client.py"]
+    Coordinator["coordinator：容器与服务管理"] --> Agent
+    Coordinator --> Gym
+    Coordinator --> Runner["rollout.py：任务与阶段管理"]
+    Runner --> Client
+    Client --> Worker["Worker 服务 → 原生 OSWorld"]
+    Worker --> VM["桌面 VM"]
 ```
 
-**Env-server mode (recommended)** — launch [`scripts/serve_env.py`](/scripts/serve_env.py); clients only set `CUA_LITE_ENV_SERVER_URL`.
+Agent 的动作经过 Lite 环境接口；benchmark runner 另用 Worker 连接管理整个任务。env-server 本身不创建桌面 VM。Worker 与 coordinator 使用同一 benchmark 镜像、分别运行在两个容器中；Agent 使用独立通用镜像。
 
-**Direct mode** — `gym.make` brings the container up itself:
+本工作区的这些进程均在 Sandbox 内运行；工作站负责提交、监控和同步结果。Agent 容器限制为 8 GiB，桌面 VM 为 4G，两者都计入外层 Sandbox 预算。Agent 不挂载 Docker socket、KVM、任务数据或 Worker 管理凭据；coordinator 持有 Docker socket，是可信管理进程，不能视为安全隔离边界。
 
-```python
-import asyncio, lite.gym as gym
-env = gym.make("osworld_2@001", max_steps=200)
-asyncio.run(env.reset())
+<a id="release-support"></a>
+
+## 版本怎么选
+
+| 版本 | `--release` | Gym / env-server ID | 任务集 |
+|---|---|---|---|
+| 0624 | `osworld-v2-2026.06.24` | `osworld_2` | `full`：108 项 |
+| 0808 | `osworld-v2-2026.08.08` | `osworld_2.v2026_08_08` | `full`：108 项 |
+| v2.1（默认） | `osworld-v2.1` | `osworld_2.v2_1` | `full`：108 项；`offline`：82 项 |
+
+单个任务使用 `<env_id>@<任务 ID>`，例如 `osworld_2.v2_1@054`。
+所有版本都支持指定任务 ID；0624、0808 没有官方 offline 子集。
+
+Worker 镜像、任务、素材和网站版本必须与所选 release 匹配。只改 `--release` 不会更新已部署的 Worker。
+
+目前 0624 的 7 个交互任务和多阶段任务 069 仍在排除清单中；0808、v2.1 的清单已根据此前部署的验证清空。此次独立 Agent 镜像部署已通过三个版本的 054 协议检查，最终镜像通过 v2.1 的两轮真实模型短测；交互与多阶段尚未在新部署重跑。协议通过情况与模型任务得分分别记录，详见[验证说明](/lite/gym/envs/osworld_2/WORKER.md#verification-and-extension)。
+
+<a id="code-map"></a>
+
+## 代码从哪里看
+
+推荐顺序：**`main.py → catalog.py → worker_env.py`**，先理解注册、版本选择和环境适配。
+
+```text
+osworld_2/
+├── main.py               # 注册任务、metadata 和配置
+├── catalog.py            # 读取版本信息、选择任务集
+├── worker_env.py         # Lite 的 reset / step / close，动作与反馈
+├── worker_client.py      # 调用 Worker HTTP 接口
+├── rollout.py            # 任务与阶段生命周期，不调用模型
+├── smoke.py              # 不调用模型的环境连通性检查
+├── artifacts.py          # 运行记录、事件和汇总
+├── releases/             # 各版本的任务清单与配置
+└── worker/               # Worker 原生运行代码与镜像构建
 ```
 
-Task **enumeration** (`gym.registry.task_ids("osworld_2")`) works with **none** of the above — it reads the vendored `data/test_v2.json` + `data/capabilities/*.json`. The gated code is needed only to `reset()`.
+- **`releases/`**：`index.json` 绑定版本与 env ID；各版本保存官方 `release.json`、任务 ID、`task_hashes.json`、排除清单和配置。Worker 在任务初始化前校验源码哈希。官方子集放在 `task_sets/`。
+- **`worker/`**：`prepare.py --wheel …` 将上游源码和已构建的 CUA-Lite wheel 放入构建目录。镜像将原生 OSWorld 与 coordinator/env-server 依赖分别安装；后者使用 `/opt/cua-benchmark-venv`。`worker_service.py` 管理请求，`worker_runtime.py` 调用原生任务与评分器。
+- **Agent 与协调器**：[episode.py](/lite/agents/episode.py) 只接收 Lite 环境、模型配置和输出位置；[coordinator.py](/lite/platforms/sandbox/osworld_2/coordinator.py) 负责 OSWorld 的容器启动与服务连接。
+- **部署与结果**：Sandbox 配置归属 [platforms/sandbox/osworld_2](/lite/platforms/sandbox/osworld_2)；截图、轨迹和验证报告写入实验输出目录。
 
-## Quick Start
+<a id="using-this-integration-as-a-reference"></a>
 
-```python
-import asyncio
-import lite.gym as gym
-from lite.core.tools import make_tool_call
+## 接入其他 benchmark 时参考什么
 
-async def main():
-    env = gym.make("osworld_2@001", max_steps=200)
-    result = await env.reset()          # cold-boots a VM (~30-90 s), runs V2 task setup
-    print(result.text)       # task instruction
+先实现 [LiteBaseEnv](/lite/gym/base.py) 并[注册任务](/lite/gym/registry.py)，通过原生 env-server 接入通用 [Agent 入口](/lite/agents/episode.py)。独立 Worker、多阶段协调和专用输出管理按实际需要添加；模型 prompt、截图历史和 JSONL 导出由 `lite/agents` 负责。
 
-    result = await env.step([
-        make_tool_call("computer", {"actions": [
-            {"action": "click", "coordinate": [500, 300]},
-            {"action": "type", "text": "hello"},
-        ]}, call_id="call_0000"),
-    ])
-    print(f"reward={result.reward}, terminated={result.terminated}")
-    await env.close()
+新 benchmark 满足既有 Lite 契约时，只发布自己的环境镜像与部署配置，即可复用已发布 Agent 镜像。修改 Agent、模型适配器、其 Python 依赖或 Lite 线上协议时再更新相关镜像，并用集成检查确认兼容性；不要求两边来自同一次 commit。
 
-asyncio.run(main())
-```
+参考测试位于 [tests/gym/envs/osworld_2](/tests/gym/envs/osworld_2)：根目录检查注册，`worker/` 下覆盖环境动作、HTTP、阶段、输出和构建。多人协作边界与验收要求见[接入 SPEC](/lite/gym/envs/ADDING_BENCHMARKS.md)。
 
-## Configuration
-
-Tunable defaults live in [`configs/default.yaml`](/lite/gym/envs/osworld_2/configs/default.yaml) — `env_kwargs` (per-instance), `server_kwargs` (deployment/service settings), and `make_kwargs`, read via `env_config.load`. Swap the whole file with `OSWORLD_2_CONFIG=<abs-path | name>`.
-
-**Service knobs** (in `server_kwargs`) drive `exclude_reason` at registration. Each set knob is also
-threaded into every container as an `-e` var (via `service_env`) so the in-container task setup can
-reach the service:
-| knob | when unset | when set |
-|---|---|---|
-| `user_sim_model` | the 7 `human_in_the_loop` tasks are excluded | HITL tasks included (needs a user-sim LLM wired) |
-| `website_host_suffix` | website tasks excluded | included (default `"web.hku.icu"`, official OSWorld-web) → ~31 website tasks scored |
-| `gitlab_url` + `gitlab_private_token` | gitlab-backed tasks excluded | included |
-
-**LLM-judge evaluators.** ~18 tasks call an LLM at `evaluate()` (desktop_env `model_client`), so they need a host **`OPENAI_API_KEY`** (+ optional `OPENAI_BASE_URL`), auto-threaded into each container. Without the key they'd 500/mis-score, so they're **excluded** (`exclude_reason: "llm_judge"`) unless it's set. The judge model is the `eval_model` knob (**default `"gpt-4.1"`**, like webgym — gpt-4o's deployment 429s at high concurrency).
-
-**Stateful-website tasks** (39 tagged via `others['website']==True`; ~31 net scored when enabled) need the companion website service. With the default hosted suffix, tasks are isolated per session and can be rolled out concurrently.
-
-## Available Tasks
-
-```python
-import lite.gym as gym
-print(len(gym.registry.task_ids("osworld_2")))   # 108
-```
-
-108 tasks across **10 overlapping capabilities** (not app-domains): `conflict_disambiguation`, `cross_source_reasoning`, `dynamic_environment`, `human_in_the_loop`, `implicit_state_inference`, `multi_item_state_tracking`, `multimodal_editing`, `streaming_interaction`, `tutorial_following`, `visual_spatial_precision`. Metadata identity lives in `env.metadata.others["task_id"]` / `env.metadata.others["env_id"]`; `env.metadata.others` also carries `capabilities` (a task is usually in several), the static service-dependency flags (`website`/`gitlab`/`volume`/`multi_phase`/`user_sim`/`llm_judge`, for filtering — e.g. `--filter "lambda m: m.others.get('website')"`), and `exclude_reason` on service-gated tasks. The **scored count is environment-dependent** — `108 − (whichever services are unprovisioned)` — not a fixed number like v1's 325. With the default `website_host_suffix` **and a host `OPENAI_API_KEY`** → **82 scored** (without the key the ~18 `llm_judge` tasks also drop → **67**). `google_auth`/`blocked` from v1 are dropped (V2 needs no Google accounts; the v1 uuid blocklist is unrelated to the v2 `001–108` id space).
-
-## Evaluation
-
-Runs **only at episode end** (`terminate` / `response` / `max_steps`) via OSWorld-V2's native evaluators (custom Python `evaluate()` or the JSON fallback), returning a float `reward` in `[0.0, 1.0]` (extracted from `["score"]` when `evaluate()` returns a dict).
-
-The action surface is **identical to [`osworld` v1](/lite/gym/envs/osworld/README.md#evaluation)**: mouse, keyboard, scroll, wait, screenshot, and finish actions. **Extra tool:** `report_infeasible(reason)` (opt-in) gives up on infeasible tasks.
-
-<details>
-<summary>Architecture & background</summary>
-
-```
-lite/gym/envs/osworld_2/
-├── main.py            # OSWorldV2Env (thin JSON-RPC client — no desktop_env) + services + Tier-1 registration
-├── container.py       # OSWorldV2Container + factory (spawn derived image, map the 1 API port, launch server)
-├── docker/            # Dockerfile (FROM happysixd/osworld-docker + V2 desktop_env) + server.py (in-container eval) + _vendor/ (gitignored)
-├── configs/default.yaml
-├── data/              # (committed) release.json + test_v2.json + capabilities/*.json — registration metadata
-├── scripts/
-│   ├── install.sh     # build / rebuild / pull / status image + gated assets + service scan
-│   ├── uninstall.sh   # rm v2 qcow2 + task_class/ + derived image
-│   └── cleanup.sh     # docker rm -f by -osworld_2- name filter
-├── README.md
-└── .cache/            # (gitignored) osworld-v2-ubuntu-x86.qcow2 + task_class/task_*.py + evaluator goldens
-```
-
-Runtime and evaluator code live inside the Docker image. The host creates one VM-backed container per trajectory, sends actions to it, and receives screenshots/rewards back through the env API. `install.sh status` is the quickest way to check the image, KVM/TUN access, qcow2, task classes, and service scan.
-
-**References:** [OSWorld paper](https://arxiv.org/abs/2404.07972) · [xlang-ai/OSWorld](https://github.com/xlang-ai/OSWorld)
-
-</details>
-
-## Citation
-
-Please cite the upstream work alongside [CUA-Lite](/README.md#citation).
-
-```bibtex
-@misc{yuan26osworld2,
-  title         = {OSWorld 2.0: Benchmarking Computer Use Agents on Long-Horizon Real-World Tasks},
-  author        = {Mengqi Yuan and Zilong Zhou and Xinzhuang Xiong and Weiming Wu and Jiayang Sun and Jiamin Song and Kaiqian Cui and Bowen Wang and Haoyuan Wu and Yitong Li and Dunjie Lu and Haikong Lu and Qi Zhen and Xinyuan Wang and Jiaqi Deng and Yuhao Yang and Cheng Chen and Boyuan Zheng and Alex Su and Xiao Yu and Hao Zou and Saaket Agashe and Xing Han Lu and Manpreet Kaur and Zhengyang Qi and Vincent Sunn Chen and Frederic Sala and Dayiheng Liu and Junyang Lin and Zhou Yu and Yu Su and Siva Reddy and Xin Eric Wang and Peng Qi and Tianbao Xie and Tao Yu},
-  year          = {2026},
-  eprint        = {2606.29537},
-  archivePrefix = {arXiv},
-  primaryClass  = {cs.AI},
-  url           = {https://arxiv.org/abs/2606.29537}
-}
-```
+上游资料：[OSWorld-V2 源码](https://github.com/xlang-ai/OSWorld-V2) · [OSWorld 2.0 论文](https://arxiv.org/abs/2606.29537) · [OSWorld 论文](https://arxiv.org/abs/2404.07972)。研究中请同时引用上游工作与 [CUA-Lite](/README.md#citation)。

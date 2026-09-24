@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# osworld_2 (OSWorld-V2) eval — single-model invocation.
+# osworld_2 (OSWorld-V2 2026.06.24) single-phase eval — single-model invocation.
 #
 # Routes --log-root to <repo-root>/.exps/eval/osworld_2/<commit-ts>_<commit>/<run_id>/<slug>/.
 # Repo root is derived from this script's location (worktree-safe — a stale
@@ -13,10 +13,11 @@
 #
 # Env-server prereq (workflow default): export CUA_LITE_ENV_SERVER_URL +
 # CUA_LITE_ENV_SERVER_TOKEN before invoking. Missing vars now fail fast;
-# set EVAL_ALLOW_DIRECT=1 for an explicit direct-mode dev run. Like osworld v1,
-# osworld_2 VMs are local VM-in-Docker containers on the env-server host
-# (separate image + task set). See /docs/envs.md#env-server
-# and /lite/gym/envs/osworld_2/README.md.
+# set EVAL_ALLOW_DIRECT=1 to connect the Agent directly to its Worker.
+# The env-server uses OSWORLD_WORKER_CONNECTION to reach a release-matched
+# Worker; it does not create desktop VMs. Run the Agent and Worker in Sandbox.
+# See /lite/gym/envs/osworld_2/WORKER.md. Multi-phase tasks use the task runner
+# lite.gym.envs.osworld_2.rollout, which owns the full phase lifecycle.
 #
 # Usage:
 #   # auto-resume to latest run_<N> at this commit (most common):
@@ -31,30 +32,22 @@
 #   ./devs/exps/eval/osworld_2/run.sh gpt-5.5         # API model, no GPU
 #
 # tp_size is inferred from the GPU count in CUDA_VISIBLE_DEVICES (local HF models only).
-# Pre-reqs (env-server host):
-#   - /dev/kvm AND /dev/net/tun rw-accessible.
-#   - cua-lite/osworld_2 image + gated v2 qcow2 + 108 task classes via
-#       uv run --no-sync bash lite/gym/envs/osworld_2/scripts/install.sh
-#     (needs HF auth with the xlangai/v2-image + xlangai/osworld_v2_tasks gates accepted).
-#   - OPENAI_API_KEY exported where the env MODULE IMPORTS (env-server launch,
-#     or this shell in direct mode); set OPENAI_BASE_URL only for a custom endpoint.
-#     The ~18 llm_judge tasks call an LLM at evaluate() (server_kwargs.eval_model,
-#     default gpt-4.1). Without the key they register with
-#     exclude_reason="llm_judge" and the filter below silently drops them.
+# Pre-reqs:
+#   - Provision a Worker for release osworld-v2-2026.06.24 as described in WORKER.md.
+#     Its native runtime, gated task code, and VM image must match that release.
+#   - Set OSWORLD_WORKER_CONNECTION to the private connection JSON on the
+#     env-server host (or Agent host for EVAL_ALLOW_DIRECT=1).
+#   - Configure task services and simulator/judge APIs on the Worker. Their
+#     credentials are not read by the task registry or this campaign launcher.
 #
 # Env shape (see lite/gym/envs/osworld_2/README.md):
-#   - eval split = 108 capability-graded tasks (ids 001-108), each on a
-#     DEDICATED QEMU/KVM VM-in-Docker container (no snapshot reuse — one
-#     container per trajectory, cold boot ~30-90 s).
-#   - The SCORED count is service-dependent, not fixed: exclude_reason gates
-#     tasks whose service isn't provisioned. With the default website host
-#     (web.hku.icu) + OPENAI_API_KEY → 82 scored; without the key → 67
-#     (llm_judge drop); gitlab + human_in_the_loop stay excluded unless their
-#     server_kwargs knobs are set. Record num_tasks from summary.json — don't
-#     assume 82.
-#   - No --env-kwargs step_timeout override: osworld_2's make_kwargs already
-#     set step_timeout=180 + reset_timeout=600 (configs/default.yaml), unlike
-#     androidworld/mobilegym whose specs leave the framework 120s default.
+#   - eval split = the release's 108 tasks (ids 001-108). The filter uses only
+#     the packaged protocol exclusions; missing deployment services fail during
+#     execution, rather than silently shrinking the task catalog.
+#   - The Worker owns one active task at a time. Default concurrency is 1;
+#     higher concurrency requires independent Worker assignment per episode.
+#   - Wrapper defaults come from the release's configs/default.yaml:
+#     step_timeout=420, reset_timeout=2100, and loop_detect=0.
 #   - max_steps: env default 200 (OSWorld-V2 official GPT run) — no override.
 #     V2 trajectories are far longer than v1's 30-step runs; budget wall-clock
 #     accordingly.
@@ -100,16 +93,6 @@ if [ -n "$DIRTY" ]; then
   exit 1
 fi
 
-# Pre-flight: the LLM-judge key. Non-fatal, but without it the ~18 llm_judge
-# tasks are excluded AT REGISTRATION (on the env-server host), shrinking the
-# scored set from 82 to 67 — and a later mop-up with the key would need an
-# env-server restart to re-register them.
-if [ -z "${OPENAI_API_KEY:-}" ]; then
-  echo "[run.sh] WARNING: OPENAI_API_KEY unset in this shell — if it's also unset where the" >&2
-  echo "  env-server was launched, the ~18 llm_judge tasks are excluded (82 → 67 scored)." >&2
-  sleep 5
-fi
-
 # Resolve $COMMIT_DIR. Prefer reusing the latest existing campaign dir whose
 # commit's pipeline state matches HEAD's (so doc-only commits between campaigns
 # don't fragment paths). Fall through to a fresh HEAD-keyed dir otherwise.
@@ -151,7 +134,7 @@ case "$MODEL" in
   *) echo "unknown model: $MODEL — add a case (and a scripts/configs/<family>/default/osworld_2.yaml) in $0" >&2; exit 1 ;;
 esac
 
-CONCURRENCY="${EVAL_CONCURRENCY:-16}"
+CONCURRENCY="${EVAL_CONCURRENCY:-1}"
 
 mkdir -p "$LOG_ROOT"
 echo "[run.sh] $MODEL"
@@ -162,9 +145,6 @@ echo "         config=$CFG"
 HF_HUB_OFFLINE=1 exec uv run python scripts/rollout.py \
   --model-id "$MODEL" \
   --env-id osworld_2 --splits eval \
-  `# Filter drops service-gated tasks (llm_judge without OPENAI_API_KEY,` \
-  `# gitlab, human_in_the_loop, volume — whatever this deployment left` \
-  `# unprovisioned); the scored count lands at 108 minus those.` \
   --filter "lambda m: not m.others.get('exclude_reason')" \
   --concurrency "$CONCURRENCY" \
   --config-path "$CFG" \

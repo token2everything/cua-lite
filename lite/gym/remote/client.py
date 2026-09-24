@@ -800,29 +800,32 @@ class LiteEnvClient(LiteBaseEnv, allow_metadata_override=True):
         )  # type: ignore[return-value]
 
     async def close(self) -> None:
-        """Close the remote instance and release the server-owned resource."""
+        """Close the remote instance, retaining its identity if DELETE fails."""
         # DELETE uses a fresh client so close still works after a cancelled
         # in-flight reset/step leaves the long-lived httpx client unusable.
         # ``asyncio.shield`` protects the release call from caller cancellation.
-        if self._id is not None:
-            token = self._client.headers.get("Authorization")
-            headers = {"Authorization": token} if token else {}
-            try:
+        try:
+            if self._id is not None:
+                token = self._client.headers.get("Authorization")
+                headers = {"Authorization": token} if token else {}
                 async with httpx.AsyncClient(headers=headers, timeout=30.0) as fresh:
-                    await asyncio.shield(
+                    response = await asyncio.shield(
                         fresh.delete(f"{self._url}/instances/{self._id}")
                     )
-            except Exception as e:
-                logger.warning("DELETE /instances/%s failed: %s", self._id, e)
-        # Tear down the per-instance long-lived client. Best-effort and
-        # bounded — ``aclose`` can hang on a TCP teardown if the
-        # connection was cancelled mid-protocol; an unbounded wait here
-        # would block run teardown.
-        try:
-            await asyncio.wait_for(self._client.aclose(), timeout=5.0)
-        except Exception:
-            pass
-        self._id = None
+                    if response.status_code >= 400:
+                        _log_error_response(response, "close")
+                        _raise_typed_error_if_any(response)
+                    response.raise_for_status()
+                # Only an acknowledged DELETE releases the retry identity.
+                self._id = None
+        finally:
+            # Close the local pool even when DELETE fails. A subsequent close
+            # uses a fresh client with the retained identity and auth headers.
+            # Bound teardown because cancelled connections can stall aclose.
+            try:
+                await asyncio.wait_for(self._client.aclose(), timeout=5.0)
+            except Exception:
+                pass
 
 
 def register_from_server(env_id: str, server_url: str) -> None:

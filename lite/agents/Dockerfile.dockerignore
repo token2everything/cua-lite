@@ -1,0 +1,18 @@
+# This Agent build only needs package metadata and source from the repo root.
+**
+!pyproject.toml
+!README.md
+!lite/
+!lite/**
+
+**/__pycache__/
+**/*.py[cod]
+**/.sandbox/
+**/.cache/
+**/_vendor/
+**/.env*
+**/AK-SK
+**/model-api.json
+**/docker-auth
+**/hf-auth
+**/feishu-webhook.json

@@ -23,6 +23,7 @@ import importlib
 import logging
 from typing import TYPE_CHECKING
 
+from lite.gym.errors import EnvDepsMissingError, EnvServerUnavailable, EnvUnavailable
 from lite.gym.services import services_for
 from lite.gym.types import ReapReport, StateView
 from lite.utils.registry import split_key
@@ -55,16 +56,35 @@ def _registered_leaf_env_ids() -> list[str]:
     cleanup, webgym container rm) would never run. Eager envs sit in both sets;
     ``set`` dedups. Using the services keys (not their leaves) keeps this cheap —
     no task-dataset load just to find what to reap."""
-    return sorted(
-        {split_key(key)[0] for key in registry._specs} | set(registry._services)
-    )
+    return sorted({split_key(key)[0] for key in registry._specs} | set(registry._services))
 
 
-def _validate_families_declared() -> None:
+def _lifecycle_env_ids(allowed_env_ids: set[str] | None) -> list[str]:
+    """Import the served envs without discovering or cleaning unrelated backends.
+
+    Explicit IDs use the registry's namespace resolution. Keep each selected
+    ID when its services are registered on an umbrella: services_for/family_of
+    resolve that owner without adding sibling IDs to this server's scope.
+    """
+    if allowed_env_ids is None:
+        registry._import_all()
+        return _registered_leaf_env_ids()
+    selected = []
+    for env_id in sorted(allowed_env_ids):
+        try:
+            registry._import_env(env_id)
+        except (EnvDepsMissingError, EnvUnavailable, EnvServerUnavailable) as error:
+            logger.debug("Env '%s' is unavailable here (%s)", env_id, error)
+        else:
+            selected.append(env_id)
+    return selected
+
+
+def _validate_families_declared(env_ids: list[str] | None = None) -> None:
     """Boot-time contract check for the family-gated reaper. Enforces the
     services⟺lifecycle contract in BOTH directions so the per-sweep code can trust it (no
     defensive ``if svc is None`` guards) — NOT placeable in ``register_services`` (envs call it
-    BEFORE ``register_family``), so it runs after ``_import_all``, at the boot entry point.
+    BEFORE ``register_family``), so it runs after scoped imports, at the boot entry point.
 
     Delegates per-env to :func:`lite.gym.services.validate_declarations` —
     the SAME finalizer direct mode fires at import — so the two modes cannot
@@ -72,11 +92,14 @@ def _validate_families_declared() -> None:
     the live_ids-override requirement).
     """
     from lite.gym.services import validate_declarations
-    for eid in _registered_leaf_env_ids():
+
+    for eid in _registered_leaf_env_ids() if env_ids is None else env_ids:
         validate_declarations(eid)
 
 
-def reconcile_all(state_view: StateView, scope: ServerScope) -> list[ReapReport]:
+def reconcile_all(
+    state_view: StateView, scope: ServerScope, *, allowed_env_ids: set[str] | None = None
+) -> list[ReapReport]:
     """Run the framework reconcile loop for every DEDICATED (PER_INSTANCE) env-id.
 
     Per env-id (NOT deduped by ``id(svc)`` — each leaf has its own external
@@ -87,14 +110,14 @@ def reconcile_all(state_view: StateView, scope: ServerScope) -> list[ReapReport]
     failure (``ReconcileProbeError``) skips that env's cycle; per-env exceptions are
     isolated (logged, empty report) so one env's docker hiccup can't abort the cycle.
 
-    Called by the env-server drift dispatcher on a ~120 s timer.
+    Called by the env-server drift dispatcher on a ~120 s timer. An explicit
+    allow-list restricts both imports and lifecycle dispatch to those exact IDs.
     """
     from lite.gym.remote.reconcile import reconcile
     from lite.gym.services import ReconcileMode, family_of, reconcile_mode
 
-    registry._import_all()
     out: list[ReapReport] = []
-    for env_id in _registered_leaf_env_ids():
+    for env_id in _lifecycle_env_ids(allowed_env_ids):
         # Family is the authority: only PER_INSTANCE (DEDICATED) envs
         # get steady per-instance reconcile. SINGLETON (BOOT_ONLY) is a steady no-op (its
         # shared backend is reaped only on boot recovery); PURE/REMOTE (NONE) have no world.
@@ -111,20 +134,21 @@ def reconcile_all(state_view: StateView, scope: ServerScope) -> list[ReapReport]
     return out
 
 
-def recover_all(scope: ServerScope) -> int:
+def recover_all(scope: ServerScope, *, allowed_env_ids: set[str] | None = None) -> int:
     """Boot-time recovery: the reconcile loop with an empty tracked set for every
     lifecycle-family (DEDICATED/SINGLETON, i.e. ``has_lifecycle``) env-id (see
     :func:`lite.gym.remote.reconcile.recover`); PURE/REMOTE are skipped by family.
     Each env's ``reap`` reclaims the orphans a prior lifetime leaked, under its
-    own policy. Idempotent. Returns total reclaimed.
+    own policy. Idempotent. Returns total reclaimed. With an explicit allow-list,
+    only those exact IDs are imported, validated and dispatched.
     """
     from lite.gym.remote.reconcile import recover
     from lite.gym.services import family_of, has_lifecycle
 
-    registry._import_all()
-    _validate_families_declared()  # F3: fail-fast if a services-registered env forgot family
+    env_ids = _lifecycle_env_ids(allowed_env_ids)
+    _validate_families_declared(env_ids)  # F3: fail-fast if a served env forgot family
     total = 0
-    for env_id in _registered_leaf_env_ids():
+    for env_id in env_ids:
         # has_lifecycle == DEDICATED|SINGLETON: the families whose backend the env-server owns
         # and must boot-reap. PURE/REMOTE (no lifecycle) have nothing to reclaim.
         if not has_lifecycle(family_of(env_id)):
@@ -137,20 +161,20 @@ def recover_all(scope: ServerScope) -> int:
     return total
 
 
-def shutdown_all(scope: ServerScope) -> int:
+def shutdown_all(scope: ServerScope, *, allowed_env_ids: set[str] | None = None) -> int:
     """Graceful-shutdown teardown: call ``shutdown(env_id, scope)`` on each
     lifecycle-family (DEDICATED/SINGLETON, i.e. ``has_lifecycle``) env's services
     object, AFTER the per-instance ``env.close()`` loop; PURE/REMOTE are skipped by
     family. Deduped by ``id(svc)`` (one owned-process tree per umbrella). Most envs
     own nothing here (the docker daemon owns container lifetime). Returns the number
-    of services objects dispatched to.
+    of services objects dispatched to. An explicit allow-list restricts imports
+    and dispatch to those exact IDs, including services owned by an umbrella.
     """
     from lite.gym.services import family_of, has_lifecycle
 
-    registry._import_all()
     n = 0
     seen: set[int] = set()
-    for env_id in _registered_leaf_env_ids():
+    for env_id in _lifecycle_env_ids(allowed_env_ids):
         if not has_lifecycle(family_of(env_id)):
             continue
         svc = services_for(env_id)  # has_lifecycle ⟹ has services (F3 enforces it)

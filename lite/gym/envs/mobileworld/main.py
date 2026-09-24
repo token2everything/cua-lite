@@ -47,13 +47,14 @@ import requests
 from lite.core.metadata import LiteCUAMetadata
 from lite.core.tools.extra_tools import (
     LiteFinishToolSet,
+    LiteUserInteractionToolSet,
     make_open_app_tool,
 )
 from lite.core.tools.action_space.duration import (
     ACTION_SCHEMA_DURATION_CAPS_SECONDS,
 )
 from lite.core.tools.calls import RuntimeEnvAction
-from lite.core.tools.schemas import BaseTools, make_tool_schema
+from lite.core.tools.schemas import BaseTools
 from lite.gym.container import spawn_background_destroy
 from lite.gym.envs.mobileworld.container import (
     ADB_DEVICE,
@@ -187,22 +188,10 @@ _MOBILE_WORLD_APPS: list[str] = [
 # reply — REQUIRED for the agent-user-interaction task family; GUI-only
 # tasks don't need it.
 
-_ASK_USER_TOOL: dict[str, Any] = make_tool_schema(
-    "ask_user",
-    description=(
-        "Ask the phone's user a question when the task needs information "
-        "only they know (preferences, missing details). Returns their reply."
-    ),
-    parameters={
-        "type": "object",
-        "properties": {
-            "text": {
-                "type": "string",
-                "description": "The question to ask the user.",
-            },
-        },
-        "required": ["text"],
-    },
+(_ASK_USER_TOOL,) = LiteUserInteractionToolSet.get_tool_schemas()
+_ASK_USER_TOOL["function"]["description"] = (
+    "Ask the phone's user a question when the task needs information "
+    "only they know (preferences, missing details). Returns their reply."
 )
 
 class MobileworldTools(BaseTools):

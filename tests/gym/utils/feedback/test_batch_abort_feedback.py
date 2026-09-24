@@ -18,7 +18,6 @@ from unittest.mock import AsyncMock
 import pytest
 
 import lite.gym.envs.osworld.main as osworld
-import lite.gym.envs.osworld_2.main as osworld_2
 from lite.core.tools import make_tool_call
 from lite.gym.envs.waa.main import WindowsAgentArenaEnv, _load_tasks
 from lite.gym.utils.feedback.errors import (
@@ -68,16 +67,6 @@ def _make_osworld(monkeypatch):
         osworld.OSWorldConfig(domain="libreoffice_calc", task_id="t1"),
     )
     monkeypatch.setattr(osworld, "_rpc", fake_rpc)
-    return env, calls
-
-
-def _make_osworld_2(monkeypatch):
-    env, calls, fake_rpc = _osworld_env(
-        monkeypatch,
-        osworld_2.OSWorldV2Env,
-        osworld_2.OSWorldV2Config(task_id="001"),
-    )
-    monkeypatch.setattr(osworld_2, "_rpc", fake_rpc)
     return env, calls
 
 
@@ -160,8 +149,8 @@ async def test_osworld_capped_hold_key_duration_refuses_only_that_action(monkeyp
 
 
 @pytest.mark.asyncio
-async def test_osworld_2_capped_wait_duration_refuses_only_that_action(monkeypatch):
-    env, calls = _make_osworld_2(monkeypatch)
+async def test_osworld_capped_wait_duration_refuses_only_that_action(monkeypatch):
+    env, calls = _make_osworld(monkeypatch)
 
     result = await env.step([
         _batch(

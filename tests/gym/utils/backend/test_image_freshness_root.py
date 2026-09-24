@@ -110,7 +110,7 @@ def test_exclude_supports_basename_and_path_suffixes():
         ("osworld/docker/server.py",),
     )
     assert not _excluded(
-        "lite/gym/envs/osworld_2/docker/server.py",
+        "lite/gym/envs/androidworld/docker/server.py",
         "server.py",
         ("osworld/docker/server.py",),
     )

@@ -1,0 +1,10 @@
+env_var_prefix: OSWORLD_2
+make_kwargs:
+  reset_timeout: 2100.0
+  step_timeout: 420.0
+  loop_detect: 0
+env_kwargs:
+  max_steps: 200
+  post_action_delay: 0.2
+  extra_tools: [terminate, response, report_infeasible]
+server_kwargs: {}

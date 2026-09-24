@@ -92,7 +92,6 @@ def test_osworld_import_time_json_is_declared_for_wheel():
     package_data = pyproject["tool"]["setuptools"]["package-data"]
     patterns = package_data["*"]
     assert "lite.gym.envs.osworld" not in package_data
-    assert "lite.gym.envs.osworld_2" not in package_data
     required = {
         "data/release.json",
         "data/tasks.json",
@@ -101,6 +100,19 @@ def test_osworld_import_time_json_is_declared_for_wheel():
         "data/capabilities/visual_spatial_precision.json",
     }
     assert all(any(fnmatch.fnmatch(path, pattern) for pattern in patterns) for path in required)
+    release_patterns = [*patterns, *package_data["lite.gym.envs.osworld_2"]]
+    release_data = {
+        "releases/index.json",
+        "releases/osworld-v2-2026.06.24/release.json",
+        "releases/osworld-v2-2026.06.24/task_hashes.json",
+        "releases/osworld-v2-2026.06.24/protocol_exclusions.json",
+        "releases/osworld-v2-2026.08.08/tasks.json",
+        "releases/osworld-v2.1/task_sets/offline.json",
+    }
+    assert all(
+        any(fnmatch.fnmatch(path, pattern) for pattern in release_patterns)
+        for path in release_data
+    )
 
 
 def test_pyautogui_translation_coerces_drag_duration():

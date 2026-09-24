@@ -9,6 +9,12 @@ build-backend = "setuptools.build_meta"
 include = ["lite*"]
 [tool.setuptools.package-data]
 "*" = ["**/*.yaml", "**/*.yml", "data/*.json", "data/**/*.json"]
+"lite.agents" = ["Dockerfile", "Dockerfile.dockerignore"]
+"lite.gym.envs" = ["ADDING_BENCHMARKS.md"]
+"lite.gym.envs.osworld_2" = ["README.md", "WORKER.md", "releases/index.json", "releases/*/release.json", "releases/*/tasks.json", "releases/*/task_hashes.json", "releases/*/protocol_exclusions.json", "releases/*/task_sets/*.json"]
+"lite.gym.envs.osworld_2.worker" = ["Dockerfile", "*.sh"]
+"lite.platforms.sandbox" = ["README.md"]
+"lite.platforms.sandbox.osworld_2" = ["README.md", "*.sh", "environment-template.example.json", "services/*/*.sh", "services/*/*.rb", "services/*/*.md", "services/*/*.json"]
 
 [project]
 name = "lite"
@@ -19,6 +25,36 @@ requires-python = ">=3.12,<3.13"
 dependencies = []
 
 [project.optional-dependencies]
+
+# Remote Sandbox Workers need no local Docker, VM or desktop libraries.
+sandbox = [
+    "pillow>=10.0",
+    "httpx>=0.27",
+    "pyyaml>=6.0",
+    "requests>=2.31",
+    "jsonschema>=4.23",
+]
+
+# Native HTTP env-server without local Docker, desktop or model runtimes.
+env-server = [
+    "fastapi>=0.110",
+    "uvicorn>=0.27",
+    "starlette>=0.36",
+    "httpx>=0.27",
+    "pydantic>=2.6",
+    "pyyaml>=6.0",
+    "psutil>=7.2.2",        # ships musllinux wheels for lightweight Linux launchers
+    "jsonschema>=4.23",
+]
+
+# API agents and their trajectory logger; no local GPU serving stack required.
+api = [
+    "litellm>=1.72",
+    "numpy>=1.26",
+    "pillow>=10.0",
+    "pyarrow>=18.0",
+    "jsonschema>=4.23",
+]
 
 quick-start = [
     # Host quick-start stack: keep torch/sglang on CUDA-12-compatible wheels.

@@ -84,6 +84,21 @@ class LiteFinishToolSet(BaseTools):
 
 
 @install_tool_schemas
+class LiteUserInteractionToolSet(BaseTools):
+    """Core-owned catalog for requesting information from the user.
+
+    Envs provide the reply and may decorate a schema copy with task-specific
+    wording. Asking a question does not finish the task.
+    """
+
+    @staticmethod
+    @tool(text="The question to ask the user.")
+    def ask_user(text: str) -> dict[str, Any]:
+        """Ask the user for information needed to complete the task. Returns their reply."""
+        return make_tool_call("ask_user", {"text": text})
+
+
+@install_tool_schemas
 class LiteBrowserNavToolSet(BaseTools):
     """Core-owned catalog for browser navigation and tab tools.
 
@@ -334,6 +349,7 @@ __all__ = [
     "LiteBrowserNavToolSet",
     "LiteFinishToolSet",
     "LiteShellToolSet",
+    "LiteUserInteractionToolSet",
     "active_extra_tool_names",
     "extra_tool_name_and_arguments_are_admitted",
     "is_internal_finish_tool_call",

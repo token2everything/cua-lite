@@ -17,6 +17,7 @@ import lite.gym.envs.mobileworld.main as M
 from lite.core.messages.final import make_no_tool_call_final_actions
 from lite.core.tools import make_tool_call
 from lite.core.tools.calls import tool_call_arguments, tool_call_name
+from lite.core.tools.extra_tools import LiteUserInteractionToolSet
 from lite.core.tools.schemas import tool_schema_name, tool_schema_parameters
 from lite.gym.envs.mobileworld.main import _TASKS, MobileWorldEnv
 
@@ -107,6 +108,20 @@ def test_extra_tools_opt_in():
     )
     names = [tool_schema_name(t) for t in env.metadata.extra_tool_schemas]
     assert names == ["open_app", "ask_user", "response", "terminate"]
+
+
+def test_ask_user_uses_core_schema_with_phone_description():
+    env = MobileWorldEnv(task_id="AcceptMeetingTask", extra_tools=["ask_user"])
+    schema = _tool_schema(env, "ask_user")
+    core_schema = LiteUserInteractionToolSet.get_tool_schema("ask_user")
+    assert tool_schema_parameters(schema) == tool_schema_parameters(core_schema)
+    assert schema["function"]["description"] == (
+        "Ask the phone's user a question when the task needs information "
+        "only they know (preferences, missing details). Returns their reply."
+    )
+    assert core_schema["function"]["description"] == (
+        "Ask the user for information needed to complete the task. Returns their reply."
+    )
 
 
 def test_open_app_catalog_metadata_matches_schema_enum():

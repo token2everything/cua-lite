@@ -27,7 +27,11 @@ from lite.core.tools.action_space.batches import (
     make_lite_action_batch_schema,
 )
 from lite.core.tools.action_space.duration import duration_description
-from lite.core.tools.action_space.keys import is_canonical_key_token, normalize_keys
+from lite.core.tools.action_space.keys import (
+    ACTION_SCHEMA_KEYS_DESCRIPTION,
+    is_canonical_key_token,
+    normalize_keys,
+)
 from lite.core.tools.schemas import BaseTools, install_tool_schemas, tool
 
 
@@ -136,7 +140,7 @@ class LiteDesktopActionSet(_ActionBatchActionSet):
     )
 
     @staticmethod
-    @tool(keys="list of keys to press.")
+    @tool(keys=ACTION_SCHEMA_KEYS_DESCRIPTION)
     def key(keys: list[str]) -> dict[str, Any]:
         """On a desktop, press and release keys."""
         return LiteDesktopActionSet._wrap_action(
@@ -147,7 +151,7 @@ class LiteDesktopActionSet(_ActionBatchActionSet):
         )
 
     @staticmethod
-    @tool(keys="list of keys to press down.")
+    @tool(keys=ACTION_SCHEMA_KEYS_DESCRIPTION)
     def key_down(keys: list[str]) -> dict[str, Any]:
         """On a desktop, press keys down without releasing them."""
         return LiteDesktopActionSet._wrap_action(
@@ -158,7 +162,7 @@ class LiteDesktopActionSet(_ActionBatchActionSet):
         )
 
     @staticmethod
-    @tool(keys="list of keys to release.")
+    @tool(keys=ACTION_SCHEMA_KEYS_DESCRIPTION)
     def key_up(keys: list[str]) -> dict[str, Any]:
         """On a desktop, release keys that were previously pressed down."""
         return LiteDesktopActionSet._wrap_action(
@@ -181,7 +185,7 @@ class LiteDesktopActionSet(_ActionBatchActionSet):
 
     @staticmethod
     @tool(
-        keys="list of keys to hold down.",
+        keys=ACTION_SCHEMA_KEYS_DESCRIPTION,
         duration=duration_description("Duration in seconds."),
     )
     def hold_key(keys: list[str], duration: float) -> dict[str, Any]:

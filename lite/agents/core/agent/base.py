@@ -556,6 +556,9 @@ class AdapterBasedAgent(BaseAgent):
                 else:
                     raise RuntimeError("Internal error: no pending tool results for continued turn")
                 observe_s = t.mark("observe")
+                for hook in hooks:
+                    if publish := getattr(hook, "on_trajectory", None):
+                        await asyncio.to_thread(publish, lite_sample)
 
                 # 2. Call provider and parse output: render the turn, generate,
                 # and convert the model text into a canonical Lite message whose
@@ -680,6 +683,10 @@ class AdapterBasedAgent(BaseAgent):
                 )
                 for hook in hooks:
                     await asyncio.to_thread(hook.on_step, step_data)
+                if is_terminal_step:
+                    for hook in hooks:
+                        if publish := getattr(hook, "on_trajectory", None):
+                            await asyncio.to_thread(publish, lite_sample)
 
                 # 7. Stop once the rollout is terminal or truncated.
                 if lite_rl_sample.terminated or lite_rl_sample.truncated:
@@ -694,6 +701,13 @@ class AdapterBasedAgent(BaseAgent):
             completed = True
             return lite_rl_sample
         finally:
+            if not completed and lite_rl_sample is not None:
+                for hook in hooks:
+                    if publish := getattr(hook, "on_trajectory", None):
+                        try:
+                            await asyncio.to_thread(publish, lite_rl_sample.lite_sample)
+                        except Exception:
+                            logger.warning("Failed to publish interrupted trajectory", exc_info=True)
             await finalize_lite_sample(
                 hooks=hooks,
                 result=lite_rl_sample,

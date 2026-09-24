@@ -150,6 +150,14 @@ assets/README/teaser/_frames/
 # runtime cache (cross-container flock for android emulator boot serialization, etc.)
 .tmp/
 
+# Private Sandbox connections and local experiment artifacts.
+.sandbox/
+/AK-SK
+/model-api.json
+/docker-auth
+/hf-auth
+/feishu-webhook.json
+
 # session scratch / runtime artifacts (never commit)
 # root-level *.md is scratch — only the whitelist below is tracked
 /*.md

@@ -1,0 +1,65 @@
+name: Sandbox integration
+
+on:
+  pull_request:
+    paths:
+      - 'lite/gym/envs/osworld_2/**'
+      - 'lite/platforms/**'
+      - 'lite/gym/envs/ADDING_BENCHMARKS.md'
+      - 'lite/gym/remote/**'
+      - 'lite/gym/registry.py'
+      - 'lite/gym/services.py'
+      - 'lite/agents/extensions/responses_gateway/**'
+      - 'lite/agents/extensions/chat_gateway/**'
+      - 'lite/agents/extensions/api_config.py'
+      - 'lite/agents/episode.py'
+      - 'lite/agents/Dockerfile*'
+      - 'lite/agents/core/agent/**'
+      - 'lite/agents/models/gpt/**'
+      - 'lite/gym/envs/osworld/actions.py'
+      - 'lite/gym/envs/osworld/main.py'
+      - 'tests/gym/envs/osworld_2/**'
+      - 'tests/platforms/sandbox/**'
+      - 'tests/scripts/test_serve_env.py'
+      - 'tests/gym/remote/test_remote_import_surface.py'
+      - 'tests/gym/remote/test_recovery.py'
+      - 'tests/gym/remote/test_reconcile.py'
+      - 'tests/gym/remote/test_server.py'
+      - 'tests/gym/remote/test_server_state_view.py'
+      - 'tests/agents/core/agent/test_jsonl_logger.py'
+      - 'tests/agents/extensions/responses_gateway/**'
+      - 'tests/agents/extensions/chat_gateway/**'
+      - 'tests/agents/extensions/test_api_config.py'
+      - 'tests/agents/test_episode.py'
+      - 'scripts/check_sandbox_package.py'
+      - 'scripts/serve_env.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/sandbox.yml'
+  workflow_dispatch:
+
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --extra sandbox --extra api --extra env-server --extra dev
+      - run: >-
+          uv run --no-sync python -m pytest tests/gym/envs/osworld_2
+          tests/platforms/sandbox
+          tests/scripts/test_serve_env.py
+          tests/gym/remote/test_remote_import_surface.py
+          tests/gym/remote/test_recovery.py
+          tests/gym/remote/test_reconcile.py
+          tests/gym/remote/test_server.py::TestStartupRecoveryDispatch
+          tests/gym/remote/test_server.py::TestShutdownAllDispatch
+          tests/gym/remote/test_server.py::TestReconcileAllDispatch
+          tests/gym/remote/test_server.py::TestAllowedEnvIds
+          tests/gym/remote/test_server_state_view.py
+          tests/agents/extensions/responses_gateway
+          tests/agents/extensions/chat_gateway
+          tests/agents/extensions/test_api_config.py
+          tests/agents/test_episode.py
+          tests/agents/core/agent/test_jsonl_logger.py -q
+      - run: uv run --no-sync python scripts/check_sandbox_package.py

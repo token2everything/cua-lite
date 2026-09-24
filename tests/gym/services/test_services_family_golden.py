@@ -9,11 +9,11 @@ the exact properties those sites read today, so a refactor that
     changes any observable wiring fails HERE rather than silently in production
 (container reaping / availability).
 
-The companion parity assertions document the ONE intended divergence the audit
-flagged: a PURE env may register a catalog ``EnvServices`` (for ``register_tasks``)
+The companion parity assertions document that PURE and REMOTE envs may
+register catalog ``EnvServices``
 → ``isinstance(svc, EnvServices)`` is True but ``has_lifecycle(family)`` is False.
 Recovery's isinstance sites therefore parity-match *has-a-services-object*, which is
-``reconcile_mode(family) is not NONE`` ONLY up to that harmless PURE no-op (a PURE
+``reconcile_mode(family) is not NONE`` ONLY up to those harmless no-ops (the
 services object's live_ids/reap are base no-ops, so including or excluding it reaps
 nothing).
 
@@ -68,12 +68,12 @@ GOLDEN: dict[str, dict] = {
         reap=True,
     ),
     "osworld_2": dict(
-        family=BackendFamily.DEDICATED,
+        family=BackendFamily.REMOTE,
         has_svc=True,
-        ensure=True,
+        ensure=False,
         health=False,
-        live_ids=True,
-        reap=True,
+        live_ids=False,
+        reap=False,
     ),
     "androidworld": dict(
         family=BackendFamily.DEDICATED,
@@ -274,15 +274,11 @@ def test_derivations_consistent_with_family(env_id):
 
 
 @pytest.mark.parametrize("env_id", list(GOLDEN))
-def test_pure_with_catalog_divergence_is_documented(env_id):
-    """The ONE intended divergence: PURE envs (screenspot_pro/osworld_g) DO have a
-    catalog services object (has_svc=True) yet has_lifecycle=False. Recovery's
-    isinstance gate (has-a-services) must NOT be migrated to has_lifecycle (would
-    drop these) — it parity-matches *has-a-reconciler*. Pin it so the divergence
-    stays conscious."""
+def test_catalog_services_do_not_imply_owned_backend_lifecycle(env_id):
+    """PURE and REMOTE catalog services have no local resources to reconcile."""
     import_env_main_or_skip(env_id)
     g = GOLDEN[env_id]
-    if g["family"] is BackendFamily.PURE:
+    if g["family"] in (BackendFamily.PURE, BackendFamily.REMOTE):
         assert g["has_svc"] is True
         assert has_lifecycle(g["family"]) is False
         # ...but its reconcile is a pure no-op: live_ids/reap NOT overridden.

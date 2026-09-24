@@ -111,7 +111,7 @@ def _patch_reconcile_all(reports: list[ReapReport]):
     reg_mod = importlib.import_module("lite.gym.remote.recovery")
     orig = reg_mod.reconcile_all
 
-    def fake_reconcile_all(state_view, scope):
+    def fake_reconcile_all(state_view, scope, *, allowed_env_ids=None):
         return reports
     reg_mod.reconcile_all = fake_reconcile_all
     return lambda: setattr(reg_mod, "reconcile_all", orig)
@@ -260,6 +260,7 @@ async def test_dispatcher_isolates_concurrent_modifications():
     the FROZEN snapshot. An entry added AFTER the snapshot can't be
     classified as orphan/ghost this cycle (it's not in state_view)."""
     state = _fake_state()
+    state.allowed_env_ids = {"androidworld"}
     state.envs["before-snapshot"] = _fake_session(
         env_id="androidworld", session_id="S", task_id="t",
     )
@@ -267,7 +268,8 @@ async def test_dispatcher_isolates_concurrent_modifications():
     # Track what reconcile_all gets — verify "after-snapshot" is NOT in it.
     captured = {}
 
-    def fake_reap(state_view, scope):
+    def fake_reap(state_view, scope, *, allowed_env_ids=None):
+        captured["allowed_env_ids"] = allowed_env_ids
         captured["view_ids"] = {
             i.id for v in state_view.by_env_id.values() for i in v
         }
@@ -287,6 +289,7 @@ async def test_dispatcher_isolates_concurrent_modifications():
         reg_mod.reconcile_all = orig
 
     assert captured["view_ids"] == {"before-snapshot"}
+    assert captured["allowed_env_ids"] == {"androidworld"}
 
 
 @pytest.mark.asyncio

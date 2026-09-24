@@ -1,0 +1,25 @@
+# 复制到 cua-lite/.sandbox/run.yaml；所有本地相对路径以该 YAML 所在目录为基准。
+# 所有 manage 命令共用此配置；未传 --config 时读取 .sandbox/run.yaml。
+# 管理员提供 environment_id；模板固定 Worker 和 Agent 镜像，这里不填写任何密钥。
+# 完整 054 示例见 lite/gym/envs/osworld_2/WORKER.md。
+project: ailab-llmagent
+base_url: http://deepenv.sandbox.pjlab.org.cn
+afs_url: http://10.140.95.76:28081
+environment_id: 5d5b5dbb-bd30-447e-bff5-e67ec8b7bba4
+results_prefix: outputs/osworld
+release: osworld-v2.1
+
+credentials: AK-SK
+state_dir: state
+# 默认从 Environment 继承飞书；模板未配置时，取消下一行注释。
+# feishu_config: feishu-webhook.json
+
+job:
+  model_config: model-api.json    # 与 run.yaml 放在同一私密目录，或改为已有文件路径
+  model_profile: glm5.3-flash
+  tasks: ["054"]                  # 必须加引号；多个任务在同一 Sandbox 内顺序执行
+  # task_set: offline             # 与 tasks 二选一；offline 仅 v2.1 提供
+  max_steps: 100
+  history_turns: 4                 # Chat：4 张历史截图＋当前截图，文本完整保留
+  results_root: results           # 本地镜像目录，也用作 Agent 容器内输出路径
+  # experiment: v21-054-my-run    # 默认自动生成唯一名称；指定名称不可重复提交

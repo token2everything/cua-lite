@@ -1015,7 +1015,6 @@ def test_status_sensitive_envs_pin_loop_detect_terminal_status_to_success():
     """Env configs own the score-sensitive loop terminal status policy."""
     config_paths = {
         "osworld": "lite/gym/envs/osworld/configs/default.yaml",
-        "osworld_2": "lite/gym/envs/osworld_2/configs/default.yaml",
         "browsergym": "lite/gym/envs/browsergym/configs/default.yaml",
         "browsergym/isolation": "lite/gym/envs/browsergym/configs/isolation.yaml",
         "waa": "lite/gym/envs/waa/configs/default.yaml",

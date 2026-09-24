@@ -96,8 +96,10 @@ def decode_image(png: bytes) -> Image.Image:
     ``.convert("RGB")`` is load-bearing: palette/L/RGBA screenshots must not
     reach vision processors with a different mode or tensor shape.
     """
-    img = Image.open(io.BytesIO(png))
-    return img.convert("RGB") if img.mode != "RGB" else img
+    # Detach pixels from the source stream even for RGB PNGs; retaining the
+    # lazy Image.open object also retains its compressed BytesIO per turn.
+    with io.BytesIO(png) as source, Image.open(source) as img:
+        return img.convert("RGB")
 
 
 def png_from_b64(s: str | None) -> bytes | None:

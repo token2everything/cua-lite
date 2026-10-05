@@ -13,6 +13,7 @@ result root. Run `create -> wait-ready -> stage -> prepare -> startup -> full`.
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
 import io
 import json
@@ -493,13 +494,16 @@ class Campaign:
 
     def _bundle(self) -> bytes:
         archive = io.BytesIO()
-        with tarfile.open(fileobj=archive, mode="w:gz") as bundle:
-            for name in BUNDLE_FILES:
-                bundle.add(self.root / name, arcname=name, recursive=False)
-            for worker in self.plan["workers"]:
-                for name in ("tasks.tsv", "capabilities.txt"):
-                    relative = f"workers/{worker}/{name}"
-                    bundle.add(self.root / relative, arcname=relative, recursive=False)
+        # A stable gzip header lets a timed-out stage retry match receipts
+        # already written by other workers for these same source files.
+        with gzip.GzipFile(fileobj=archive, mode="wb", mtime=0) as compressed:
+            with tarfile.open(fileobj=compressed, mode="w") as bundle:
+                for name in BUNDLE_FILES:
+                    bundle.add(self.root / name, arcname=name, recursive=False)
+                for worker in self.plan["workers"]:
+                    for name in ("tasks.tsv", "capabilities.txt"):
+                        relative = f"workers/{worker}/{name}"
+                        bundle.add(self.root / relative, arcname=relative, recursive=False)
         return archive.getvalue()
 
     def stage(self, workers: list[str]) -> None:

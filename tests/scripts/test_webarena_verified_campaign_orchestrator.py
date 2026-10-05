@@ -52,6 +52,8 @@ def campaign(tmp_path):
         "NAME_PREFIX=wav-test\nMODEL_PROFILE=glm53flash\n"
     )
     (root / "image-lock.env").write_text("QWENRUNNER_RUNTIME_IMAGE=pinned\n")
+    for name in ("prepare-worker.sh", "run-case.sh", "run-worker.sh"):
+        (root / name).write_text("#!/usr/bin/env bash\n")
     (root / "EXPERIMENT_CONFIG.json").write_text(
         json.dumps({"run_id": RUN_ID, "model": "glm-5.3-flash"})
     )
@@ -118,6 +120,16 @@ def test_create_is_owned_and_idempotent(campaign):
     detail = campaign._owned_detail("01")
     assert detail["metadata"]["run_id"] == RUN_ID
     assert detail["metadata"]["plan_sha256"] == campaign.plan_sha
+
+
+def test_stage_bundle_is_stable_across_retries(campaign):
+    first = campaign._bundle()
+    second = campaign._bundle()
+
+    assert first == second
+    assert first[4:8] == b"\0" * 4
+    with tarfile.open(fileobj=io.BytesIO(first), mode="r:gz") as bundle:
+        assert bundle.extractfile("EXPERIMENT_CONFIG.json") is not None
 
 
 def test_create_reconciles_ambiguous_post_by_nonce(campaign):

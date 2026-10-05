@@ -28,6 +28,8 @@
   "fold_size": 10,
   "sandbox_count": 50,
   "sandbox_plan": "disk-aware capability balance; four map workers, 32 map cases each",
+  "campaign_script_revision": "v7-gitlab-readiness",
+  "campaign_run_case_sha256": "94d2ad0bfa0a477c29d622fee639e6f167d630bea0986793f4422447de715af5",
   "per_sandbox_case_concurrency": 1,
   "startup_gate": "one archived, hash-bound terminal case per worker before full-shard launch",
   "task_attempts": "one terminal scored attempt; at most three shard relaunches for missing validated receipts",

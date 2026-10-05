@@ -1,5 +1,24 @@
 ## Unreleased
 
+### V15 — GLM desktop pacing independent of a closed tab
+
+GLM's explicit WAIT and post-action delay now use the desktop clock instead
+of the setup-selected Playwright page. Closing that tab previously let the GUI
+action execute, then raised TargetClosedError during the delay even when another
+page remained. This does not reopen pages, select a replacement tab, replay the
+action, or change focus. WAIT's existing millisecond rounding is preserved.
+Qwen's page-bound post-action delay remains unchanged. All provider parameters,
+prompts, parsers, retries, budgets, and official scoring remain unchanged.
+
+Regression: 252 relevant tests passed, including closed-tab pacing and unchanged
+Qwen behavior. A real Playwright 1.44.0 / Chromium 125 two-page test reproduces
+the old error. The new delays leave the surviving page and focus unchanged;
+requests completed during both delays retain byte-identical response bodies
+in HAR and trace after context closure. Python event callbacks are deferred
+while sleeping, but this runner has no such callback after its startup listener
+is removed. No model API was called by that browser test. Online V15 campaign
+verification is pending; rollback targets `wav-infra-v14-read-deadline`.
+
 ### V14 — GLM long-reasoning read deadline
 
 A credential-rotated V13 task 66 step 45 request failed at the 130-second

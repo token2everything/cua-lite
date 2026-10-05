@@ -1866,7 +1866,8 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                         if action == "WAIT":
                             if glm_protocol and turn.wait_seconds is not None:
                                 started_wait = time.monotonic()
-                                page.wait_for_timeout(math.ceil(turn.wait_seconds * 1000))
+                                # Desktop pacing must survive closing the setup-selected tab.
+                                time.sleep(math.ceil(turn.wait_seconds * 1000) / 1000)
                                 trajectory["wait_seconds_requested"] = turn.wait_seconds
                                 trajectory["wait_seconds_elapsed"] = time.monotonic() - started_wait
                             trajectory["executed_actions"].append("WAIT")
@@ -1880,7 +1881,10 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                             execute_safe_pyautogui(action, pyautogui)
                             trajectory["executed_actions"].append(action)
                             if POST_ACTION_DELAY_SECONDS:
-                                page.wait_for_timeout(int(POST_ACTION_DELAY_SECONDS * 1000))
+                                if glm_protocol:
+                                    time.sleep(POST_ACTION_DELAY_SECONDS)
+                                else:
+                                    page.wait_for_timeout(int(POST_ACTION_DELAY_SECONDS * 1000))
                 except BaseException as caught:
                     trajectory["error"] = {
                         "type": type(caught).__name__,

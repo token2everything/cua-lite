@@ -722,7 +722,15 @@ def test_glm_profile_prefers_its_key_and_qwen_keeps_original_key(monkeypatch):
 
 
 def run_fake_glm_case(
-    tmp_path, monkeypatch, turns, evaluation=None, *, setup_error=None, reserve_steps=0
+    tmp_path,
+    monkeypatch,
+    turns,
+    evaluation=None,
+    *,
+    setup_error=None,
+    reserve_steps=0,
+    close_initial_page_on_action=False,
+    model_profile="glm53flash",
 ):
     """Exercise the runner without a browser, sandbox, or model API."""
     from playwright import sync_api
@@ -748,16 +756,21 @@ def run_fake_glm_case(
         def __init__(self):
             self.waits = []
             self.url = "http://example.test"
+            self.closed = False
 
         def bring_to_front(self):
             pass
 
         def wait_for_timeout(self, milliseconds):
+            if self.closed:
+                raise RuntimeError("Target page has been closed")
             self.waits.append(milliseconds)
 
     page = Page()
     page.turn_feedback = []
     page.turn_instructions = []
+    page.sleeps = []
+    page.executions = []
     context = SimpleNamespace(
         pages=[page],
         new_page=lambda: page,
@@ -772,6 +785,7 @@ def run_fake_glm_case(
     class Agent:
         def __init__(self, **kwargs):
             self.model = kwargs["model"]
+            self.turn_feedback = ""
             page.reasoning_effort = kwargs["reasoning_effort"]
             self.last_native_tool_calls = False
             self.last_upstream_parse_error = None
@@ -814,7 +828,15 @@ def run_fake_glm_case(
     monkeypatch.setattr(runner, "load_qwen_agent", lambda *args: object)
     monkeypatch.setattr(runner, "make_pinned_agent_class", lambda *args, **kwargs: Agent)
     monkeypatch.setattr(runner, "screenshot_bytes", lambda *args: b"fake png")
-    monkeypatch.setattr(runner.time, "sleep", lambda seconds: None)
+    monkeypatch.setattr(runner.time, "sleep", page.sleeps.append)
+
+    def execute(action, pyautogui):
+        page.executions.append(action)
+        if close_initial_page_on_action:
+            page.closed = True
+            context.pages = [Page()]
+
+    monkeypatch.setattr(runner, "execute_safe_pyautogui", execute)
     monkeypatch.setattr(
         runner,
         "score_artifacts",
@@ -842,7 +864,7 @@ def run_fake_glm_case(
         repair_invalid_response=True,
         no_thinking=False,
         startup_page_gate=setup_error is not None,
-        model_profile="glm53flash",
+        model_profile=model_profile,
     )
     status = runner.run_case(args)
     trajectories = [
@@ -876,7 +898,8 @@ def test_glm_runner_executes_wait_time_and_then_accepts_final_json(tmp_path, mon
         monkeypatch,
         [(tool_call("wait", time=1.5), ["WAIT"]), ('{"status":"SUCCESS"}', ["DONE"])],
     )
-    assert page.waits == [1500]
+    assert page.waits == []
+    assert page.sleeps == [runner.RESET_SETTLE_SECONDS, 1.5]
     assert trajectories[0]["wait_seconds_requested"] == 1.5
     assert trajectories[0]["executed_actions"] == ["WAIT"]
     assert trajectories[1]["executed_actions"] == ["FINAL_JSON"]
@@ -886,6 +909,54 @@ def test_glm_runner_executes_wait_time_and_then_accepts_final_json(tmp_path, mon
     assert status["fixed_parameters"]["reasoning_effort"] == page.reasoning_effort == "max"
     assert status["fixed_parameters"]["timeout_seconds"] == 130.0
     assert status["fixed_parameters"]["read_timeout_seconds"] == 600.0
+
+
+def test_glm_desktop_delay_and_wait_survive_closing_initial_page(tmp_path, monkeypatch):
+    action = "pyautogui.click(497, 20)"
+    status, trajectories, page = run_fake_glm_case(
+        tmp_path,
+        monkeypatch,
+        [
+            (tool_call("left_click", coordinate=[497, 21]), [action]),
+            (tool_call("wait", time=1.5001), ["WAIT"]),
+            ('{"status":"SUCCESS"}', ["DONE"]),
+        ],
+        close_initial_page_on_action=True,
+    )
+    assert page.closed
+    assert page.waits == []
+    assert page.sleeps == [runner.RESET_SETTLE_SECONDS, runner.POST_ACTION_DELAY_SECONDS, 1.501]
+    assert page.executions == [action]
+    assert [row["executed_actions"] for row in trajectories] == [[action], ["WAIT"], ["FINAL_JSON"]]
+    assert trajectories[1]["wait_seconds_requested"] == 1.5001
+    assert all(row["error"] is None for row in trajectories)
+    assert status["status"] == "completed"
+
+
+def test_qwen_post_action_delay_retains_page_wait(tmp_path, monkeypatch):
+    action = "pyautogui.click(497, 20)"
+    status, _, page = run_fake_glm_case(
+        tmp_path,
+        monkeypatch,
+        [("Click", [action]), ('{"status":"SUCCESS"}', ["DONE"])],
+        model_profile="qwen",
+    )
+    assert page.executions == [action]
+    assert page.waits == [int(runner.POST_ACTION_DELAY_SECONDS * 1000)]
+    assert page.sleeps == [runner.RESET_SETTLE_SECONDS]
+    assert status["status"] == "completed"
+
+
+def test_qwen_closed_page_post_action_delay_is_unchanged(tmp_path, monkeypatch):
+    action = "pyautogui.click(497, 20)"
+    with pytest.raises(RuntimeError, match="Target page has been closed"):
+        run_fake_glm_case(
+            tmp_path,
+            monkeypatch,
+            [("Click", [action])],
+            close_initial_page_on_action=True,
+            model_profile="qwen",
+        )
 
 
 def test_glm_runner_screenshot_refreshes_without_waiting(tmp_path, monkeypatch):

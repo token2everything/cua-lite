@@ -132,6 +132,49 @@ def test_stage_bundle_is_stable_across_retries(campaign):
         assert bundle.extractfile("EXPERIMENT_CONFIG.json") is not None
 
 
+def test_large_upload_assembles_verified_chunks(monkeypatch):
+    client = orchestrator.SandboxClient(
+        {
+            "BASE": "https://sandbox.example.test",
+            "PROJECT": "test",
+            "OPEN_SANDBOX_ACCESS_KEY": "access",
+            "OPEN_SANDBOX_SECRET_KEY": "secret",
+            "GLM_TEST_API_KEY": "model-secret",
+            "OPENAI_BASE_URL": "https://model.example.test/v1",
+        }
+    )
+    uploaded = []
+    commands = []
+
+    class Response:
+        def raise_for_status(self):
+            pass
+
+    def post(url, *, files, timeout):
+        metadata = json.loads(files[0][1][1])
+        uploaded.append((metadata["path"], files[1][1][1].read()))
+        return Response()
+
+    monkeypatch.setattr(orchestrator.requests, "post", post)
+    monkeypatch.setattr(
+        client,
+        "checked_command",
+        lambda sandbox_id, command, *, timeout_ms: commands.append(command),
+    )
+    payload = b"a" * (1024 * 1024) + b"b"
+
+    client.upload("owned-1", "/tmp/bundle.tar.gz", payload)
+
+    assert uploaded == [
+        ("/tmp/bundle.tar.gz.part-0000", payload[: 1024 * 1024]),
+        ("/tmp/bundle.tar.gz.part-0001", b"b"),
+    ]
+    assert len(commands) == 1
+    assert "cat /tmp/bundle.tar.gz.part-0000 /tmp/bundle.tar.gz.part-0001" in commands[0]
+    assert hashlib.sha256(payload).hexdigest() in commands[0]
+    assert "chmod 600 /tmp/bundle.tar.gz.assembled" in commands[0]
+
+
 def test_create_reconciles_ambiguous_post_by_nonce(campaign):
     client = FakeClient()
     campaign.client = client

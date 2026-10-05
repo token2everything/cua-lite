@@ -218,6 +218,27 @@ class SandboxClient:
             )
 
     def upload(self, sandbox_id: str, remote_path: str, data: bytes, *, mode: int = 600) -> None:
+        if len(data) > 1024 * 1024:
+            # The sandbox file endpoint can stall on a 16 MiB multipart POST.
+            # Publish small parts first, then atomically replace the target
+            # only after the assembled payload matches its local digest.
+            part_paths = []
+            for offset in range(0, len(data), 1024 * 1024):
+                part_path = f"{remote_path}.part-{offset // (1024 * 1024):04d}"
+                self.upload(sandbox_id, part_path, data[offset : offset + 1024 * 1024])
+                part_paths.append(part_path)
+            assembled = f"{remote_path}.assembled"
+            digest = hashlib.sha256(data).hexdigest()
+            self.checked_command(
+                sandbox_id,
+                f"cat {' '.join(map(shlex.quote, part_paths))} > {shlex.quote(assembled)} && "
+                f"sha256sum {shlex.quote(assembled)} | grep -q '^{digest} ' && "
+                f"chmod {mode} {shlex.quote(assembled)} && "
+                f"mv {shlex.quote(assembled)} {shlex.quote(remote_path)} && "
+                f"rm -f {' '.join(map(shlex.quote, part_paths))}",
+                timeout_ms=300_000,
+            )
+            return
         metadata = {"path": remote_path, "owner": "root", "group": "root", "mode": mode}
         response = requests.post(
             f"{self.base}/v1/sandboxes/{sandbox_id}/proxy/44772/files/upload",

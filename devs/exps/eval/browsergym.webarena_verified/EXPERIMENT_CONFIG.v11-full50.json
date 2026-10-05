@@ -1,0 +1,52 @@
+{
+  "run_id": "wav-glm53flash-infra-v11-full50-20261005",
+  "stage": "versioned-full-evaluation-with-protocol-startup-audit",
+  "benchmark": "webarena-verified",
+  "benchmark_version": "1.2.3",
+  "task_count": 812,
+  "dataset_sha256": "d65275660814663375028e9017e1f929e3c38321041b125795e2713b52243d30",
+  "entrypoint": "scripts/webarena_verified_qwen.py",
+  "model": "glm-5.3-flash",
+  "model_key_environment_variable": "GLM_TEST_API_KEY",
+  "argv": [
+    "--model-profile",
+    "glm53flash",
+    "--startup-page-gate",
+    "--max-steps",
+    "150",
+    "--final-response-reserve-steps",
+    "7",
+    "--layered-step-budget",
+    "--repair-invalid-response"
+  ],
+  "thinking": true,
+  "reasoning_effort": "max",
+  "max_tokens": 32768,
+  "temperature": 0,
+  "top_p": 0.9,
+  "coordinate_type": "absolute",
+  "screen_size": [
+    1920,
+    1080
+  ],
+  "history_n": 100,
+  "image_max": 20,
+  "fold_size": 10,
+  "sandbox_count": 50,
+  "sandbox_plan": "same V8 disk-aware capability balance; four map workers, 32 map cases each",
+  "campaign_script_revision": "v7-gitlab-stable",
+  "campaign_run_case_sha256": "1e21a09c8d3a4e0856378d131fbc9cbfeef05c4a5a700e058142384f449766e6",
+  "per_sandbox_case_concurrency": 1,
+  "startup_gate": "one archived, hash-bound terminal case per worker; inspect every protocol failure before full-shard launch",
+  "task_attempts": "one terminal scored attempt; at most three shard relaunches for missing validated receipts",
+  "evaluator": "official-webarena-verified-1.2.3-all-or-nothing",
+  "score_policy": "evaluator errors remain unscored; no 812-denominator accuracy until all official scores exist",
+  "verification_requirements": [
+    "pinned-parser replay accepts both V10 task 66 table wrappers and prior V9 task 28 wrappers without changing actions or coordinates",
+    "literal action text, multiple calls, incomplete values, and malformed wrappers retain their meaning or rejection",
+    "all nine fixed-defect canary IDs and task 66 appear among the fifty startup cases",
+    "repair and remaining-budget feedback follow the failed response in the current observation message",
+    "all fifty workers retain startup, evaluation, and locally hash-verified archive evidence",
+    "any startup protocol failure is classified as model output or a remaining unambiguous transport defect before full launch"
+  ]
+}

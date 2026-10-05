@@ -134,12 +134,21 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--repair-invalid-response",
         action=argparse.BooleanOptionalAction,
         default=True,
-        help="Return one invalid terminal response to the model for correction within the step budget.",
+        help=(
+            "Return one invalid terminal response to the model for correction "
+            "within the step budget."
+        ),
     )
     parser.add_argument(
         "--no-thinking",
         action="store_true",
         help="Disable thinking for an explicitly labeled comparison run.",
+    )
+    parser.add_argument(
+        "--startup-page-gate",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Verify configured start pages and reject HTTP/error pages before the model starts.",
     )
     args = parser.parse_args(argv)
     if args.max_steps < 1:
@@ -631,9 +640,186 @@ def build_public_instruction(config: dict[str, Any], response_schema: dict[str, 
     )
 
 
-def resolve_step_budget(
-    config: dict[str, Any], base_steps: int, *, layered: bool
-) -> int:
+def select_healthy_start_page(
+    context: Any,
+    start_urls: list[str],
+    navigation_responses: list[tuple[Any, str, int]],
+    receipt_path: Path,
+    *,
+    sleep_fn: Callable[[float], None] = time.sleep,
+) -> Any:
+    """Select the last configured start page after checking every start page."""
+
+    def url_key(url: str) -> tuple[str, str, str, str]:
+        parts = urlsplit(url)
+        return parts.scheme, parts.netloc, parts.path.rstrip("/") or "/", parts.query
+
+    document_script = (
+        "() => ({title: document.title, "
+        "body: document.body?.innerText?.slice(0, 512) ?? '', "
+        "hasBody: !!document.body, readyState: document.readyState})"
+    )
+    error_page_pattern = re.compile(
+        r"^(?:404|500|502|503|504)\b|"
+        r"^(?:internal server error|application error|service unavailable)\b",
+        re.IGNORECASE,
+    )
+    pages = list(context.pages)
+    receipt: dict[str, Any] = {
+        "version": 1,
+        "result": "failed",
+        "start_urls": start_urls,
+        "pages": [
+            {
+                "index": index,
+                "url": page.url,
+                "document_responses": [
+                    {"url": url, "status": status}
+                    for response_page, url, status in navigation_responses
+                    if response_page is page
+                ],
+            }
+            for index, page in enumerate(pages)
+        ],
+        "checks": [],
+        "selected_page_index": None,
+        "selected_page_url": None,
+    }
+    if not start_urls:
+        receipt["error"] = "No configured start URLs"
+        _atomic_json(receipt_path, receipt)
+        raise RuntimeError("Startup page gate failed: no configured start URLs")
+
+    # BrowserGym opens a new page for each start URL except the first. Work
+    # backwards so duplicate URLs still select distinct task pages in order.
+    unused = list(enumerate(pages))
+    selected: list[tuple[int, Any, str]] = []
+    for start_url in reversed(start_urls):
+        matches = [
+            (index, page)
+            for index, page in unused
+            if url_key(page.url) == url_key(start_url)
+            or any(
+                response_page is page and url_key(response_url) == url_key(start_url)
+                for response_page, response_url, _ in navigation_responses
+            )
+        ]
+        if not matches:
+            receipt["error"] = f"No page matches configured start URL {start_url!r}"
+            _atomic_json(receipt_path, receipt)
+            raise RuntimeError(f"Startup page gate failed: {receipt['error']}")
+
+        def priority(candidate: tuple[int, Any]) -> tuple[bool, bool, int]:
+            responses = [
+                status
+                for response_page, _, status in navigation_responses
+                if response_page is candidate[1]
+            ]
+            status = responses[-1] if responses else None
+            status_ok = isinstance(status, int) and 200 <= status < 400
+            try:
+                document = candidate[1].evaluate(document_script)
+                title = str(document.get("title") or "").strip()
+                body = str(document.get("body") or "").strip()
+                visible_error = bool(error_page_pattern.search(title)) or bool(
+                    error_page_pattern.search(body)
+                )
+            except Exception:
+                visible_error = True
+            return status_ok and not visible_error, status_ok, candidate[0]
+
+        index, page = max(matches, key=priority)
+        unused.remove((index, page))
+        selected.append((index, page, start_url))
+    selected.reverse()
+
+    for index, page, start_url in selected:
+        check: dict[str, Any] = {"page_index": index, "start_url": start_url, "attempts": []}
+        receipt["checks"].append(check)
+        for attempt in range(3):
+            observed = [
+                {"url": url, "status": status}
+                for response_page, url, status in navigation_responses
+                if response_page is page
+            ]
+            status = observed[-1]["status"] if observed else None
+            navigation_error = None
+            if attempt:
+                try:
+                    response = page.goto(start_url, wait_until="domcontentloaded", timeout=30000)
+                    status = response.status if response is not None else None
+                except Exception as caught:
+                    navigation_error = f"{type(caught).__name__}: {caught}"
+            title = ""
+            body_error_excerpt = None
+            try:
+                page.wait_for_load_state("domcontentloaded", timeout=10000)
+                document = page.evaluate(document_script)
+                title = str(document.get("title") or "")
+                body = str(document.get("body") or "").strip()
+                error_page = bool(error_page_pattern.search(title.strip())) or bool(
+                    error_page_pattern.search(body)
+                )
+                if error_page:
+                    body_error_excerpt = body[:160]
+                has_body = document.get("hasBody") is True
+                ready = document.get("readyState") in {"interactive", "complete"}
+            except Exception as caught:
+                navigation_error = navigation_error or f"{type(caught).__name__}: {caught}"
+                error_page = False
+                has_body = False
+                ready = False
+            actual_parts = urlsplit(page.url)
+            expected_parts = urlsplit(start_url)
+            response_came_from_start = any(
+                response_page is page and url_key(url) == url_key(start_url)
+                for response_page, url, _ in navigation_responses
+            )
+            redirected_to_login = url_key(page.url) != url_key(start_url) and bool(
+                re.search(r"/(?:users/sign_in|customer/account/login|login)/?$", actual_parts.path)
+            )
+            healthy = (
+                navigation_error is None
+                and actual_parts.scheme == expected_parts.scheme
+                and actual_parts.netloc == expected_parts.netloc
+                and (url_key(page.url) == url_key(start_url) or response_came_from_start)
+                and not redirected_to_login
+                and isinstance(status, int)
+                and 200 <= status < 400
+                and has_body
+                and ready
+                and not error_page
+            )
+            check["attempts"].append(
+                {
+                    "attempt": attempt + 1,
+                    "url": page.url,
+                    "document_status": status,
+                    "title": title,
+                    "body_error_excerpt": body_error_excerpt,
+                    "navigation_error": navigation_error,
+                    "healthy": healthy,
+                    "navigation_responses": observed,
+                }
+            )
+            if healthy:
+                break
+            if attempt < 2:
+                sleep_fn(2**attempt)
+        if not check["attempts"][-1]["healthy"]:
+            receipt["error"] = f"Start URL {start_url!r} did not reach a healthy page"
+            _atomic_json(receipt_path, receipt)
+            raise RuntimeError(f"Startup page gate failed: {receipt['error']}")
+
+    selected_index, selected_page, _ = selected[-1]
+    receipt["result"] = "passed"
+    receipt["selected_page_index"] = selected_index
+    receipt["selected_page_url"] = selected_page.url
+    _atomic_json(receipt_path, receipt)
+    return selected_page
+
+
+def resolve_step_budget(config: dict[str, Any], base_steps: int, *, layered: bool) -> int:
     """Select the case budget from the base, site, and intent policies."""
     if not layered:
         return base_steps
@@ -860,6 +1046,7 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
         response_feedback = ""
         task = None
         error: BaseException | None = None
+        startup_failure = False
         try:
             xvfb_context = xvfb(args.display)
             xvfb_context.__enter__()
@@ -914,8 +1101,55 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
             page = context.new_page()
             task = WebArenaVerifiedTask(seed=0, task_id=args.task_id)
             tracing_started = True
-            task.setup(page)
-            page = context.pages[-1]
+            navigation_responses: list[tuple[Any, str, int]] = []
+            if args.startup_page_gate:
+
+                def record_document_response(response: Any) -> None:
+                    if not response.request.is_navigation_request():
+                        return
+                    try:
+                        response_page = response.frame.page
+                        if response.frame is not response_page.main_frame:
+                            return
+                    except Exception:
+                        response_page = None
+                    navigation_responses.append((response_page, response.url, response.status))
+
+                context.on("response", record_document_response)
+            try:
+                task.setup(page)
+                if args.startup_page_gate:
+                    page = select_healthy_start_page(
+                        context,
+                        list(task.config.get("start_urls") or []),
+                        navigation_responses,
+                        output / "startup_receipt.json",
+                    )
+                else:
+                    page = context.pages[-1]
+            except BaseException as caught:
+                if args.startup_page_gate:
+                    startup_failure = True
+                    startup_receipt_path = output / "startup_receipt.json"
+                    if not startup_receipt_path.is_file():
+                        _atomic_json(
+                            startup_receipt_path,
+                            {
+                                "version": 1,
+                                "result": "failed",
+                                "phase": "task.setup",
+                                "start_urls": list(task.config.get("start_urls") or []),
+                                "pages": [
+                                    {"index": index, "url": open_page.url}
+                                    for index, open_page in enumerate(context.pages)
+                                ],
+                                "error": f"{type(caught).__name__}: {caught}",
+                            },
+                        )
+                raise
+            finally:
+                if args.startup_page_gate:
+                    context.remove_listener("response", record_document_response)
             response_schema = FinalAgentResponse.model_json_schema()
             goal = build_public_instruction(task.config, response_schema)
             case_max_steps = resolve_step_budget(
@@ -994,7 +1228,9 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                         not actions or any(action in {"DONE", "FAIL"} for action in actions)
                     ):
                         try:
-                            normalize_agent_response(agent.last_provider_content, FinalAgentResponse)
+                            normalize_agent_response(
+                                agent.last_provider_content, FinalAgentResponse
+                            )
                         except (json.JSONDecodeError, TypeError, ValueError) as caught:
                             trajectory["response_validation_error"] = str(caught)
                             if not repair_used and remaining > 1:
@@ -1131,7 +1367,7 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                     error = error or caught
 
         evaluation = None
-        if task is not None and har_path.is_file():
+        if task is not None and har_path.is_file() and not startup_failure:
             try:
                 evaluation = score_artifacts(
                     task,
@@ -1145,6 +1381,10 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                 }
                 if trace_path.is_file():
                     evaluation["input_receipt"]["playwright_trace"] = artifact_identity(trace_path)
+                if args.startup_page_gate:
+                    evaluation["input_receipt"]["startup_receipt"] = artifact_identity(
+                        output / "startup_receipt.json"
+                    )
                 _atomic_json(output / "evaluation.json", evaluation)
             except BaseException as caught:
                 error = error or caught
@@ -1157,8 +1397,8 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
             "truncated": truncated,
             "terminal_action": terminal_action,
             "response_parse_error": response_parse_error,
-                "response_repair_used": repair_used,
-                "structured_repair_used": repair_used,
+            "response_repair_used": repair_used,
+            "structured_repair_used": repair_used,
             "fixed_parameters": {
                 "max_steps": case_max_steps,
                 "base_max_steps": args.max_steps,
@@ -1178,6 +1418,10 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                 "post_action_delay_seconds": POST_ACTION_DELAY_SECONDS,
             },
         }
+        if args.startup_page_gate:
+            status["fixed_parameters"]["startup_page_gate"] = True
+            if startup_failure:
+                status["failure_phase"] = "startup"
         if error:
             status["error"] = {
                 "type": type(error).__name__,

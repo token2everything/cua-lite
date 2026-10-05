@@ -259,7 +259,10 @@ def test_structured_repair_request_uses_json_schema_response_format(tmp_path):
     agent, captured = build_agent(tmp_path, outcomes=[FakeResponse(content='{"status":"SUCCESS"}')])
     schema = {"type": "object", "properties": {"status": {"type": "string"}}}
     agent.structured_response_schema = schema
-    assert agent.call_llm({"messages": []}, runner.MODEL) == '<think>\nreason\n</think>\n\n{"status":"SUCCESS"}'
+    assert (
+        agent.call_llm({"messages": []}, runner.MODEL)
+        == '<think>\nreason\n</think>\n\n{"status":"SUCCESS"}'
+    )
     assert captured[0]["response_format"] == {
         "type": "json_schema",
         "json_schema": {
@@ -460,3 +463,180 @@ def test_normalize_origin_to_v1():
     assert runner.normalize_api_base("https://gateway.example/custom/v1/") == (
         "https://gateway.example/custom/v1"
     )
+
+
+class FakeStartPage:
+    def __init__(self, url, *, status=200, title="Task page", body="Task content", reloads=None):
+        self.url = url
+        self.status = status
+        self.title = title
+        self.body = body
+        self.reloads = list(reloads or [])
+        self.goto_calls = []
+
+    def wait_for_load_state(self, state, *, timeout):
+        assert state == "domcontentloaded"
+        assert timeout == 10000
+
+    def evaluate(self, script):
+        assert "document.body" in script
+        return {
+            "title": self.title,
+            "body": self.body,
+            "hasBody": True,
+            "readyState": "complete",
+        }
+
+    def goto(self, url, *, wait_until, timeout):
+        self.goto_calls.append(url)
+        assert wait_until == "domcontentloaded"
+        assert timeout == 30000
+        if self.reloads:
+            self.status, self.title, self.body = self.reloads.pop(0)
+        self.url = url
+        return SimpleNamespace(status=self.status)
+
+
+@pytest.mark.parametrize(
+    "task_id,start_url,task_url,error_url,error_status",
+    [
+        (
+            0,
+            "http://localhost:7780/admin",
+            "http://localhost:7780/admin/admin/dashboard/",
+            "http://localhost:7780/admin",
+            502,
+        ),
+        (
+            3,
+            "http://localhost:7780/admin",
+            "http://localhost:7780/admin/admin/dashboard/",
+            "http://localhost:7780/admin",
+            200,
+        ),
+        (
+            449,
+            "http://127.0.0.1:8023",
+            "http://127.0.0.1:8023/",
+            "http://127.0.0.1:8023/users/sign_in",
+            502,
+        ),
+    ],
+)
+def test_startup_gate_selects_task_page_before_leaked_login_error_tab(
+    tmp_path, task_id, start_url, task_url, error_url, error_status
+):
+    task_page = FakeStartPage(task_url, body="Authenticated task page")
+    failed_login = FakeStartPage(
+        error_url, status=error_status, title="502 Bad Gateway", body="502 Bad Gateway"
+    )
+    context = SimpleNamespace(pages=[task_page, failed_login])
+    receipt_path = tmp_path / f"startup_{task_id}.json"
+
+    selected = runner.select_healthy_start_page(
+        context,
+        [start_url],
+        [
+            (task_page, start_url, 302),
+            (task_page, task_url, 200),
+            (failed_login, error_url, error_status),
+        ],
+        receipt_path,
+        sleep_fn=lambda _: None,
+    )
+
+    assert selected is task_page
+    receipt = json.loads(receipt_path.read_text())
+    assert receipt["result"] == "passed"
+    assert receipt["selected_page_index"] == 0
+    assert receipt["pages"][1]["url"] == failed_login.url
+    assert receipt["pages"][1]["document_responses"][-1]["status"] == error_status
+    assert receipt["checks"][0]["attempts"][0]["document_status"] == 200
+
+
+def test_startup_gate_preserves_last_configured_page_with_multiple_start_urls(tmp_path):
+    first_url = "http://localhost:8080"
+    second_url = "http://localhost:7780/admin"
+    first = FakeStartPage(first_url, title="Reddit")
+    second = FakeStartPage(second_url, title="Admin")
+    leaked = FakeStartPage("http://localhost:7780/admin/login", title="404 Not Found")
+    context = SimpleNamespace(pages=[first, second, leaked])
+
+    selected = runner.select_healthy_start_page(
+        context,
+        [first_url, second_url],
+        [(first, first_url, 200), (second, second_url, 200), (leaked, leaked.url, 404)],
+        tmp_path / "receipt.json",
+        sleep_fn=lambda _: None,
+    )
+
+    assert selected is second
+    receipt = json.loads((tmp_path / "receipt.json").read_text())
+    assert [check["page_index"] for check in receipt["checks"]] == [0, 1]
+    assert receipt["selected_page_index"] == 1
+
+
+def test_startup_gate_retries_502_and_records_recovered_response(tmp_path):
+    start_url = "http://127.0.0.1:8023"
+    page = FakeStartPage(
+        start_url,
+        status=502,
+        title="502 Bad Gateway",
+        body="502 Bad Gateway",
+        reloads=[(200, "GitLab", "Projects")],
+    )
+    sleeps = []
+
+    selected = runner.select_healthy_start_page(
+        SimpleNamespace(pages=[page]),
+        [start_url],
+        [(page, start_url, 502)],
+        tmp_path / "receipt.json",
+        sleep_fn=sleeps.append,
+    )
+
+    assert selected is page
+    assert page.goto_calls == [start_url]
+    assert sleeps == [1]
+    attempts = json.loads((tmp_path / "receipt.json").read_text())["checks"][0]["attempts"]
+    assert [(item["document_status"], item["healthy"]) for item in attempts] == [
+        (502, False),
+        (200, True),
+    ]
+
+
+def test_startup_gate_fails_before_model_on_persistent_error_page(tmp_path):
+    start_url = "http://127.0.0.1:8023"
+    page = FakeStartPage(start_url, status=200, title="502 Bad Gateway", body="502 Bad Gateway")
+    receipt_path = tmp_path / "receipt.json"
+
+    with pytest.raises(RuntimeError, match="Startup page gate failed"):
+        runner.select_healthy_start_page(
+            SimpleNamespace(pages=[page]),
+            [start_url],
+            [(page, start_url, 200)],
+            receipt_path,
+            sleep_fn=lambda _: None,
+        )
+
+    receipt = json.loads(receipt_path.read_text())
+    assert receipt["result"] == "failed"
+    assert len(receipt["checks"][0]["attempts"]) == 3
+    assert receipt["selected_page_index"] is None
+
+
+def test_startup_page_gate_is_opt_in_for_existing_qwen_cli():
+    required = [
+        "--task-id",
+        "0",
+        "--osworld-root",
+        "/tmp/osworld",
+        "--baseline-receipt",
+        "/tmp/receipt",
+        "--output-dir",
+        "/tmp/output",
+        "--lock-dir",
+        "/tmp/lock",
+    ]
+    assert runner._parse_args(required).startup_page_gate is False
+    assert runner._parse_args([*required, "--startup-page-gate"]).startup_page_gate is True

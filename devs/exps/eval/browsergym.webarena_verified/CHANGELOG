@@ -1,5 +1,25 @@
 ## Unreleased
 
+### V16 — GLM paired inline-code call projection
+
+V15 task 47 returned a unique, complete click XML call inside paired single
+backticks on both initial and repair turns. The pinned parser recovered the
+correct click, but the final-content classifier rejected the closing markup.
+The existing GLM projection owner now removes only that adjacent, matching
+presentation wrapper. Raw provider content/history, literal text, the existing
+prefix meaning, malformed-call rejection, and Qwen's path remain unchanged.
+The old official zero remains valid under its frozen policy and is not revised
+or treated as proof that the task would succeed after projection.
+
+Regression: 272 relevant tests passed; 7 new failures reproduced the old gap.
+Actual pinned-parser replay preserved all 660 Qwen turns and 2,410 GLM turns;
+only task 47's two formerly rejected wrappers now classify as the same
+click(1183,108). Actual runtime SDK 3.19.2 passed 36 networking-disabled
+transport scenarios. No model API was called by these checks. Independent
+review verified field, coordinate, literal-text, and Qwen counterexamples.
+V16 requires fresh online startup evidence before its full run; rollback
+targets `wav-infra-v15-desktop-clock`.
+
 ### V15 — GLM desktop pacing independent of a closed tab
 
 GLM's explicit WAIT and post-action delay now use the desktop clock instead

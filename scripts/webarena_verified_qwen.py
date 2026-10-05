@@ -715,6 +715,11 @@ def make_pinned_agent_class(
                     # Project balanced, empty wrappers immediately around the
                     # call. Prefix prose and literal type/text remain untouched.
                     prefix, suffix = response[: block.start()], response[block.end() :]
+                    inline_code = re.search(r"(?<!`)`\s*$", prefix)
+                    if inline_code is not None and suffix.strip() == "`":
+                        response = prefix[: inline_code.start()] + block.group(0)
+                        block = next(_GLM_TOOL_BLOCK.finditer(response))
+                        prefix, suffix = response[: block.start()], response[block.end() :]
                     cursor = len(prefix)
                     opening_names = []
                     for tag in reversed(list(_GLM_WRAPPER_TAG.finditer(prefix))):

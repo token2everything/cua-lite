@@ -343,6 +343,137 @@ def test_glm_projects_balanced_observed_wrappers_around_complete_call(tmp_path, 
 
 
 @pytest.mark.parametrize(
+    "prefix", ["", "Action: Click My Account.\n", "Action: Click `My Account`.\n"]
+)
+@pytest.mark.parametrize("native", [False, True])
+def test_glm_projects_paired_inline_code_around_one_complete_call(tmp_path, prefix, native):
+    if native:
+        call = (
+            "<tool_call><function=computer_use><action>left_click</action>"
+            "<coordinate>[1183, 109]</coordinate></function></tool_call>"
+        )
+    else:
+        call = tool_call("left_click", coordinate=[1183, 109]).split("\n", 1)[1]
+    content = prefix + "`" + call + "`\n"
+    agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "glm53flash")
+    response = agent.call_llm({"messages": []}, agent.model)
+    _, actions = agent._parse_response(
+        response,
+        original_width=1920,
+        original_height=1080,
+        processed_width=1920,
+        processed_height=1088,
+    )
+    assert response == agent.last_provider_content == content
+    assert agent.last_projected_content.startswith(prefix + "<tool_call>")
+    assert agent.last_projected_content.endswith("</tool_call>")
+    turn = classify(agent.last_projected_content, actions)
+    assert turn.kind == "action"
+    assert turn.coordinate == (1183, 109)
+    assert turn.desktop_coordinate == (1183, 108)
+
+
+@pytest.mark.parametrize(
+    "prefix,suffix",
+    [
+        ("", "`"),
+        ("``", "`"),
+        ("`", "``"),
+        ("```", "`"),
+        ("`", "```"),
+        ("`", "` extra text"),
+        ("` unexpected text ", "`"),
+        ("`", '`\n```json\n{"status":"SUCCESS"}\n```'),
+    ],
+)
+def test_glm_inline_code_projection_keeps_nonmatching_wrappers_rejected(tmp_path, prefix, suffix):
+    call = tool_call("left_click", coordinate=[1183, 109]).split("\n", 1)[1]
+    content = "Action: Click My Account.\n" + prefix + call + suffix
+    agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "glm53flash")
+    agent.last_provider_content = content
+    _, actions = agent._parse_response(
+        content,
+        original_width=1920,
+        original_height=1080,
+        processed_width=1920,
+        processed_height=1088,
+    )
+    assert agent.last_projected_content == content
+    assert classify(agent.last_projected_content, actions).kind == "action_error"
+
+
+@pytest.mark.parametrize("body", ["two_calls", "missing_coordinate", "invalid_coordinate"])
+def test_glm_inline_code_does_not_bypass_call_validation(tmp_path, body):
+    if body == "two_calls":
+        call = tool_call("left_click", coordinate=[1183, 109]).split("\n", 1)[1] * 2
+    elif body == "missing_coordinate":
+        call = tool_call("mouse_move").split("\n", 1)[1]
+    else:
+        call = tool_call("left_click", coordinate=[1920, 109]).split("\n", 1)[1]
+    content = "Action: Click My Account.\n`" + call + "`"
+    agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "glm53flash")
+    agent.last_provider_content = content
+    _, actions = agent._parse_response(
+        content,
+        original_width=1920,
+        original_height=1080,
+        processed_width=1920,
+        processed_height=1088,
+    )
+    assert agent.last_provider_content == content
+    assert classify(agent.last_projected_content, actions).kind == "action_error"
+
+
+def test_glm_inline_code_keeps_literal_backticks_inside_type_text(tmp_path):
+    text = '{"label": "`My Account`", "markdown": "```code```"}'
+    call = tool_call("type", text=text).split("\n", 1)[1]
+    content = "Action: Type text.\n`" + call + "`"
+    agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "glm53flash")
+    agent.last_provider_content = content
+    _, actions = agent._parse_response(
+        content,
+        original_width=1920,
+        original_height=1080,
+        processed_width=1920,
+        processed_height=1088,
+    )
+    assert agent.last_provider_content == content
+    assert actions == [f"pyautogui.typewrite({json.dumps(text)})"]
+    assert classify(agent.last_projected_content, actions).kind == "action"
+
+
+def test_glm_unpaired_prefix_keeps_existing_action_meaning(tmp_path):
+    call = tool_call("left_click", coordinate=[1183, 109]).split("\n", 1)[1]
+    content = "Action: Click My Account.\n`" + call
+    agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "glm53flash")
+    agent.last_provider_content = content
+    _, actions = agent._parse_response(
+        content,
+        original_width=1920,
+        original_height=1080,
+        processed_width=1920,
+        processed_height=1088,
+    )
+    assert agent.last_projected_content == content
+    assert classify(agent.last_projected_content, actions).kind == "action"
+
+
+def test_qwen_keeps_inline_code_response_unchanged(tmp_path):
+    content = "Action: Click My Account.\n`" + tool_call("left_click", coordinate=[1183, 109]) + "`"
+    agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "qwen")
+    agent.last_provider_content = content
+    _, actions = agent._parse_response(
+        content,
+        original_width=1920,
+        original_height=1080,
+        processed_width=1920,
+        processed_height=1088,
+    )
+    assert agent.parsed == content
+    assert actions == ["pyautogui.click(100, 100)"]
+
+
+@pytest.mark.parametrize(
     "prefix,suffix",
     [
         ("<html><body>", "</html></body>"),

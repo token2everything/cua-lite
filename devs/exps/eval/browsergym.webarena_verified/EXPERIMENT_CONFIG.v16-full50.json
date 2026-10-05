@@ -1,0 +1,83 @@
+{
+  "run_id": "wav-glm53flash-infra-v16-full50-20261006",
+  "stage": "versioned-full-evaluation-with-protocol-startup-audit",
+  "benchmark": "webarena-verified",
+  "benchmark_version": "1.2.3",
+  "task_count": 812,
+  "dataset_sha256": "d65275660814663375028e9017e1f929e3c38321041b125795e2713b52243d30",
+  "entrypoint": "scripts/webarena_verified_qwen.py",
+  "model": "glm-5.3-flash",
+  "model_key_environment_variable": "GLM_TEST_API_KEY",
+  "argv": [
+    "--model-profile",
+    "glm53flash",
+    "--startup-page-gate",
+    "--max-steps",
+    "150",
+    "--final-response-reserve-steps",
+    "7",
+    "--layered-step-budget",
+    "--repair-invalid-response"
+  ],
+  "thinking": true,
+  "reasoning_effort": "max",
+  "max_tokens": 32768,
+  "temperature": 0,
+  "top_p": 0.9,
+  "coordinate_type": "absolute",
+  "screen_size": [
+    1920,
+    1080
+  ],
+  "history_n": 100,
+  "image_max": 20,
+  "fold_size": 10,
+  "sandbox_count": 50,
+  "sandbox_plan": "same V8 disk-aware capability balance; four map workers, 32 map cases each",
+  "campaign_script_revision": "v7-gitlab-stable",
+  "campaign_run_case_sha256": "1e21a09c8d3a4e0856378d131fbc9cbfeef05c4a5a700e058142384f449766e6",
+  "per_sandbox_case_concurrency": 1,
+  "startup_gate": "one archived, hash-bound terminal case per worker; inspect every protocol failure before full-shard launch",
+  "task_attempts": "one terminal scored attempt; at most three shard relaunches for missing validated receipts",
+  "evaluator": "official-webarena-verified-1.2.3-all-or-nothing",
+  "score_policy": "evaluator errors remain unscored; no 812-denominator accuracy until all official scores exist",
+  "verification_requirements": [
+    "all fifty workers retain startup, evaluation, and locally hash-verified archive evidence",
+    "inspect every startup protocol failure before full launch",
+    "one complete call wrapped by adjacent paired single backticks projects at the GLM provider boundary; raw content/history remain unchanged",
+    "multiple calls, mismatched backtick counts, nonempty suffixes, duplicate parameters, and invalid coordinates remain rejected",
+    "existing prefix-prose meaning, literal text, newline normalization, transport deadlines and desktop pacing remain unchanged",
+    "actual pinned parser replays task 47 steps 0/1 as click(1183,108); no prior raw score is revised or automatically passed",
+    "all type payloads equal the provider literal after existing XML-padding and newline normalization; successful commits are checked for JSON semantics without assuming editor byte identity",
+    "runtime SDK 3.19.2 verifies GLM five-wire outer retry limit and connect/write/pool130 read600 without model API calls",
+    "Qwen-only AST and actual pinned-parser history remain unchanged relative to V15",
+    "all model sampling parameters, prompts, step budgets, GUI coordinates and official GT/scoring remain unchanged",
+    "fresh V16 startup covers task 47 plus prior defect controls; V15 scores are not substituted"
+  ],
+  "model_retry_policy": {
+    "logged_outer_attempts": 5,
+    "sdk_max_retries": 0,
+    "timeout_seconds": {
+      "connect": 130,
+      "read": 600,
+      "write": 130,
+      "pool": 130
+    },
+    "qwen_sdk_defaults_unchanged": true
+  },
+  "desktop_pacing_policy": {
+    "glm_explicit_wait": "desktop clock; ceil(seconds * 1000) / 1000",
+    "glm_post_action_delay_seconds": 0.35,
+    "qwen_page_wait_unchanged": true,
+    "select_or_reopen_tabs": false,
+    "replay_executed_actions": false
+  },
+  "call_markup_projection_policy": {
+    "owner": "GLM provider _parse_response",
+    "paired_single_backtick_around_one_complete_call": true,
+    "raw_content_and_history_unchanged": true,
+    "classifier_suffix_policy_unchanged": true,
+    "unpaired_prefix_meaning_unchanged": true,
+    "literal_text_unchanged": true
+  }
+}

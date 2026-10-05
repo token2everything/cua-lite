@@ -1,9 +1,10 @@
 {
   "infra_version": "webarena-verified-v0-baseline",
-  "rollback_ready": false,
-  "rollback_blocker": "The repository pipeline files are still uncommitted; freeze this worktree in a commit before V1.",
+  "rollback_ready": true,
+  "baseline_commit": "ae3738681f8255815d84142c108256fe713c8b4d",
   "git_commit": "7125dc89c9b47e08afaedaa281c2f067e374c421",
-  "worktree_pipeline_state": "dirty",
+  "source_worktree_pipeline_state": "dirty",
+  "worktree_pipeline_state": "clean",
   "repository_runner_sha256": "a8559bbc08505b0763ec6eddeaf9844780865b5dacf17ad704d965d2028e5c6d",
   "archived_run_id": "wav-glm53-flash-qwenrunner-structured-150-full120-20261004",
   "archived_runner_sha256": "666217eda9dd4bfdd83b7b58523373774d6493a9a0ae7442cb613c0c5704e5c6",

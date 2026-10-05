@@ -324,6 +324,12 @@ def test_glm_projects_observed_list_wrapper_and_inline_keys(tmp_path):
         "<table>" + tool_call("left_click", coordinate=[558, 113]).split("\n", 1)[1] + "</table>",
         "<table><function=computer_use><parameter=action>left_click</parameter>"
         "<parameter=coordinate>[558, 113]</parameter></function></table>",
+        "<nav>" + tool_call("left_click", coordinate=[1183, 109]).split("\n", 1)[1] + "</nav>",
+        "<nav><function=computer_use><parameter=action>left_click</parameter>"
+        "<parameter=coordinate>[1183, 109]</parameter></function></nav>",
+        "<html><body><nav>"
+        + tool_call("left_click", coordinate=[1183, 109]).split("\n", 1)[1]
+        + "</nav></body></html>",
     ],
 )
 def test_glm_projects_balanced_observed_wrappers_around_complete_call(tmp_path, call):
@@ -403,14 +409,15 @@ def test_glm_inline_code_projection_keeps_nonmatching_wrappers_rejected(tmp_path
 
 
 @pytest.mark.parametrize("body", ["two_calls", "missing_coordinate", "invalid_coordinate"])
-def test_glm_inline_code_does_not_bypass_call_validation(tmp_path, body):
+@pytest.mark.parametrize("prefix,suffix", [("`", "`"), ("<nav>", "</nav>")])
+def test_glm_presentation_wrappers_do_not_bypass_call_validation(tmp_path, body, prefix, suffix):
     if body == "two_calls":
         call = tool_call("left_click", coordinate=[1183, 109]).split("\n", 1)[1] * 2
     elif body == "missing_coordinate":
         call = tool_call("mouse_move").split("\n", 1)[1]
     else:
         call = tool_call("left_click", coordinate=[1920, 109]).split("\n", 1)[1]
-    content = "Action: Click My Account.\n`" + call + "`"
+    content = "Action: Click My Account.\n" + prefix + call + suffix
     agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "glm53flash")
     agent.last_provider_content = content
     _, actions = agent._parse_response(
@@ -458,8 +465,14 @@ def test_glm_unpaired_prefix_keeps_existing_action_meaning(tmp_path):
     assert classify(agent.last_projected_content, actions).kind == "action"
 
 
-def test_qwen_keeps_inline_code_response_unchanged(tmp_path):
-    content = "Action: Click My Account.\n`" + tool_call("left_click", coordinate=[1183, 109]) + "`"
+@pytest.mark.parametrize("prefix,suffix", [("`", "`"), ("<nav>", "</nav>")])
+def test_qwen_keeps_glm_presentation_wrappers_unchanged(tmp_path, prefix, suffix):
+    content = (
+        "Action: Click My Account.\n"
+        + prefix
+        + tool_call("left_click", coordinate=[1183, 109])
+        + suffix
+    )
     agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "qwen")
     agent.last_provider_content = content
     _, actions = agent._parse_response(
@@ -485,6 +498,12 @@ def test_qwen_keeps_inline_code_response_unchanged(tmp_path):
         ("<table>", "</table>extra text"),
         ("<table>unexpected text", "</table>"),
         ('<table class="action">', "</table>"),
+        ("<nav>", "</body>"),
+        ("<nav>", "</nav>extra text"),
+        ("<nav>", "</nav></nav>"),
+        ("<nav>unexpected text", "</nav>"),
+        ('<nav class="action">', "</nav>"),
+        ("<html><nav>", "</html></nav>"),
     ],
 )
 def test_glm_wrapper_projection_keeps_mismatched_or_nonempty_wrappers_rejected(
@@ -512,6 +531,7 @@ def test_glm_wrapper_projection_keeps_mismatched_or_nonempty_wrappers_rejected(
         "Action: <li>Click Forums.</li>\n",
         "<table><tr><td>Action: Click Forums.</td></tr></table>\n",
         "Action: Type the literal markup <table>\n",
+        "Action: Type the literal markup <nav>\n",
     ],
 )
 def test_glm_keeps_unprojected_prefix_text_and_its_existing_action_meaning(tmp_path, prefix):
@@ -598,6 +618,7 @@ def test_glm_projection_keeps_incomplete_ambiguous_and_invalid_fields_rejected(t
         "<li><function=computer_use><action>left_click</action>"
         "<coordinate>50, 70</coordinate></function></li>",
         "<table>literal HTML text</table>",
+        "<nav>literal HTML text</nav>",
     ],
 )
 def test_glm_projection_preserves_tag_like_type_text(tmp_path, text):
@@ -633,6 +654,7 @@ def test_glm_projection_preserves_tag_like_type_text(tmp_path, text):
         "first\r\nsecond\rthird\n",
         'print("quoted")\n# literal {braces} and [brackets]',
         "<table>literal HTML</table>",
+        "<nav>literal HTML</nav>",
         "say \"hello\" and 'goodbye' \\ backslash",
         "  ",
         "\n\n",

@@ -152,7 +152,7 @@ _GLM_NATIVE_FIELD_BLOCK = re.compile(
     r"|<keys=(?P<keys>\[[^<>\n]*\])>",
     re.DOTALL,
 )
-_GLM_WRAPPER_NAMES = "li|head|html|body|table"
+_GLM_WRAPPER_NAMES = "li|head|html|body|table|nav"
 _GLM_FUNCTION_WRAPPER_BLOCK = re.compile(
     rf"<(?P<wrapper>{_GLM_WRAPPER_NAMES})>\s*"
     r"(?P<function><function=computer_use>.*?</function>)\s*</(?P=wrapper)>",

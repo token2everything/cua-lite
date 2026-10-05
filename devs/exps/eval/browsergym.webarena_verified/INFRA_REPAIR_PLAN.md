@@ -60,7 +60,8 @@ digests、配置 SHA 和入口命令。原始 V0 归档只读保存，不能重�
 2. 登录/导航重试用 `finally` 清理失败 tab；对 4xx/5xx 和 known error body
    做有限重试，重试耗尽写 `startup_failed`，不进入 scored episode。
 3. 生成 `startup_receipt.json`：页面列表、选中 page index/url/title、每个起始
-   URL 的响应状态、错误页标记、认证状态、reset generation 和 site image digests。
+   URL 的响应状态与错误页标记。认证状态、reset generation 和 site image digests
+   由能证明这些事实的 coordinator/baseline owner 提供，不从截图或 URL 猜测。
 4. completion receipt 必须绑定 startup receipt 的 SHA；`status=completed` 不能
    由 parser DONE 单独产生。
 
@@ -99,26 +100,29 @@ terminal；合法 JSON final 仍能结束；相同截图坐标不越屏；wait �
 
 1. `score_artifacts` 同时记录 HAR/trace 的 evaluator status、error、assertions、
    task/evaluator id 和事件顺序摘要；`status=ERROR` 或 assertion error 不能
-   伪装成普通 score 0。
-2. 对 `dummy_bin` 任务补齐官方规定的未提交表单状态证据。先找到并固定事件
-   的生产 owner，再写 positive/negative replay；禁止通过真实 Submit 伪造事件。
-3. evaluator schema 明确 JSON 数组与 alternatives 的区别。单元素数组必须
-   有回归测试；若数据字段确实是 scalar，修改 dataset schema，而不是修改正式
-   得分结果。
-4. 对 271、481、488、599 这类有效业务动作使用路径等价性测试；只有确认官方
-   evaluator 契约后才升级 evaluator/package，保留旧 evaluator hash。
+   伪装成普通 score 0。官方原始分数保持不变。
+2. `dummy_bin` 事件当前没有已知的官方生产路径。先记录表单末态的独立诊断证据，
+   向基准方核实证据合同；未经确认不得向正式 HAR/trace 注入合成事件，也不得
+   通过真实 Submit 伪造事件。
+3. singleton 数组的 schema 修订、替代路径评分都属于数据集/评价器合同变更，
+   必须发布单独的 evaluator/package 和 checksum，并与官方 1.2.3 原始分数并列。
+   修改共享 dataset JSON 不会改变 BrowserGym 实际加载的包内数据集。
+4. 271、481、488、599 的业务等价证据仅作探索性分析；官方 evaluator 检查
+   指定 URL、方法和状态码，在合同变更前仍保留官方 0 分。
 
 固定回归集：`195, 271, 481, 488, 599, 689, 699, 700, 811`。
-通过条件：case 195 的 format-only 反事实可复现；811 不再抛 singleton
-alternatives；草稿任务能在不提交的情况下产生规定证据；HAR/trace 结果不仅
-数字相同，status/assertions/事件身份也一致。
+通过条件：case 195 的 format-only 反事实可复现；独立 fork 中的 811 不再抛
+   singleton alternatives，699/700 仍不因消除异常而补分；草稿任务有可审计的
+   未提交表单末态诊断证据，官方证据合同未知时不补分；HAR/trace 结果不仅数字
+   相同，status/assertions/事件身份也一致。
 
 ### V4：并发、隔离与全量实验
 
 目标是把已修复版本用于可发表的全量成绩。
 
-1. publishable full run 强制 strict backend isolation；没有 full reset endpoint、
-   reset generation 或完整 startup receipt 时直接拒绝启动。
+1. publishable full run 强制 strict backend isolation；没有可验证的独立干净
+   backend、完整 baseline/startup receipt 时直接拒绝启动。当前站点镜像采用
+   每题新建站点容器，不得臆造不存在的 full reset endpoint 或 generation。
 2. mutation 任务按 catalog dependency DAG 单 worker 串行；禁止
    `fast-write-shards` 进入可发表 run，除非每个 worker 使用独立干净 backend。
 3. read/write scheduler、gateway 和 direct runner 只能由一个 canonical entrypoint
@@ -175,3 +179,6 @@ manifest 和对应 commit 重新启动新的 `EVAL_RUN_ID`；不修改旧 run �
 每个阶段报告三种数字：官方 raw score、按证据完整性排除后的可比 score、
 infra failure 数。不能把离线反事实修复结果混入正式成绩，也不能用选择后的
 有效子集估计全量真实能力。
+
+Qwen 默认入口、模型参数和 parser 行为是回归基线；启动健康门禁与 GLM 协议
+修复必须显式启用。每个版本先运行 Qwen 离线协议回归，再运行 GLM canary。

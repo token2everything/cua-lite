@@ -42,6 +42,15 @@
     "site_image_digests": {"type": "object", "additionalProperties": {"type": "string"}},
     "config_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "experiment_config": {"type": "string"},
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "offline_tests_passed": {"type": "integer", "minimum": 0},
+        "online_canary_status": {"type": "string", "enum": ["pending", "passed", "failed"]},
+        "qwen_default_unchanged": {"type": "boolean"}
+      }
+    },
     "official_score": {
       "type": "object",
       "required": ["passed", "total", "rate"],

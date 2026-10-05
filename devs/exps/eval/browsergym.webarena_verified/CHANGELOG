@@ -1,5 +1,13 @@
 ## Unreleased
 
+### V1 — Startup page gate
+
+The direct runner now offers an opt-in startup page gate. It selects the healthy
+task page even when a failed login retry leaves another tab open, checks main
+document status and visible error pages, retries bounded failures, and records
+a startup receipt tied to the evaluation inputs. The default Qwen path is
+unchanged. Offline runner/catalog regression: 46 passed; online canary pending.
+
 ### 2026-10-05 — Infra repair plan
 
 Added the versioned WebArena-Verified repair plan and manifest schema. The GLM

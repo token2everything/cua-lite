@@ -18,6 +18,7 @@ import importlib.metadata
 import inspect
 import json
 import logging
+import math
 import os
 import re
 import secrets
@@ -29,7 +30,7 @@ from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from io import BytesIO
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 from urllib.parse import urlsplit, urlunsplit
 
 from requests.exceptions import SSLError
@@ -38,6 +39,7 @@ from lite.agents.core.agent.utils.request_logs import redact, write_log
 
 OSWORLD_SHA = "b138d348256078fa634fc3b73567a7337c793e6b"
 MODEL = "qwen3.8-max"
+GLM_MODEL = "glm-5.3-flash"
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 # The full campaign gives every task a 100-turn ceiling.  The reserve window
@@ -103,6 +105,46 @@ _SAFE_PYAUTOGUI_METHODS = frozenset(
         "mouseUp",
     }
 )
+_GLM_ACTIONS = frozenset(
+    {
+        "key",
+        "key_down",
+        "key_up",
+        "type",
+        "mouse_move",
+        "left_click",
+        "left_click_drag",
+        "right_click",
+        "middle_click",
+        "double_click",
+        "triple_click",
+        "scroll",
+        "hscroll",
+        "screenshot",
+        "wait",
+        "terminate",
+        "call_user",
+        "left_mouse_down",
+        "left_mouse_up",
+    }
+)
+_GLM_COORDINATE_ACTIONS = frozenset(
+    {
+        "mouse_move",
+        "left_click",
+        "left_click_drag",
+        "right_click",
+        "middle_click",
+        "double_click",
+        "triple_click",
+        "left_mouse_down",
+        "left_mouse_up",
+    }
+)
+_GLM_REQUIRED_COORDINATE_ACTIONS = frozenset({"mouse_move", "left_click_drag"})
+_GLM_TOOL_BLOCK = re.compile(r"<tool_call>\s*(.*?)\s*</tool_call>", re.DOTALL)
+_GLM_FUNCTION_BLOCK = re.compile(r"\s*<function=computer_use>\s*(.*?)\s*</function>\s*", re.DOTALL)
+_GLM_PARAMETER_BLOCK = re.compile(r"<parameter=([^>]+)>\s*(.*?)\s*</parameter>", re.DOTALL)
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -118,8 +160,14 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Sandbox-global lock directory mounted identically for every case.",
     )
     parser.add_argument("--base-url", default=os.environ.get("OPENAI_BASE_URL"))
-    parser.add_argument("--api-key", default=os.environ.get("OPENAI_API_KEY"))
+    parser.add_argument("--api-key")
     parser.add_argument("--display", default=":99")
+    parser.add_argument(
+        "--model-profile",
+        choices=("qwen", "glm53flash"),
+        default="qwen",
+        help="Select the pinned Qwen behavior or the GLM-specific action contract.",
+    )
     parser.add_argument("--max-steps", type=int, default=MAX_STEPS)
     parser.add_argument(
         "--layered-step-budget",
@@ -151,6 +199,11 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Verify configured start pages and reject HTTP/error pages before the model starts.",
     )
     args = parser.parse_args(argv)
+    if args.api_key is None:
+        if args.model_profile == "glm53flash":
+            args.api_key = os.environ.get("GLM_TEST_API_KEY") or os.environ.get("OPENAI_API_KEY")
+        else:
+            args.api_key = os.environ.get("OPENAI_API_KEY")
     if args.max_steps < 1:
         parser.error("--max-steps must be positive")
     if not 0 <= args.final_response_reserve_steps < args.max_steps:
@@ -422,8 +475,12 @@ def _dump_model(value: Any) -> Any:
     return {"repr": repr(value)}
 
 
-def make_pinned_agent_class(base_class: type, openai_module: Any) -> type:
+def make_pinned_agent_class(
+    base_class: type, openai_module: Any, *, model_profile: str = "qwen"
+) -> type:
     """Subclass only the audited agent's transport boundary."""
+    if model_profile not in {"qwen", "glm53flash"}:
+        raise ValueError(f"unsupported model profile: {model_profile}")
 
     class PinnedQwenAgent(base_class):
         def __init__(
@@ -447,6 +504,10 @@ def make_pinned_agent_class(base_class: type, openai_module: Any) -> type:
             self.request_index = 0
             self.last_provider_content = ""
             self.last_reasoning_content = ""
+            self.last_native_tool_calls = False
+            self.last_upstream_parse_error: str | None = None
+            self.last_processed_size: tuple[int, int] | None = None
+            self.last_original_size: tuple[int, int] | None = None
             self.structured_response_schema: dict[str, Any] | None = None
 
         def call_llm(self, payload: dict[str, Any], model: str) -> str:
@@ -516,6 +577,10 @@ def make_pinned_agent_class(base_class: type, openai_module: Any) -> type:
                     content, reasoning, usage, finish_reason = response_content(response)
                     self.last_provider_content = content
                     self.last_reasoning_content = reasoning
+                    if model_profile == "glm53flash":
+                        self.last_native_tool_calls = bool(
+                            getattr(response.choices[0].message, "tool_calls", None)
+                        )
                     write_log(
                         self.request_log_dir,
                         f"step_{index:03d}_response.json",
@@ -548,6 +613,39 @@ def make_pinned_agent_class(base_class: type, openai_module: Any) -> type:
                     self.sleep_fn(min(5.0 * attempt, 30.0))
             assert last_error is not None
             raise last_error
+
+        def _parse_response(
+            self,
+            response: str,
+            *,
+            original_width: int,
+            original_height: int,
+            processed_width: int,
+            processed_height: int,
+        ) -> tuple[str, list[str]]:
+            if model_profile == "glm53flash":
+                self.last_original_size = (original_width, original_height)
+                self.last_processed_size = (processed_width, processed_height)
+                response = self.last_provider_content
+                self.last_upstream_parse_error = None
+                try:
+                    return super()._parse_response(
+                        response,
+                        original_width=original_width,
+                        original_height=original_height,
+                        processed_width=processed_width,
+                        processed_height=processed_height,
+                    )
+                except Exception as caught:
+                    self.last_upstream_parse_error = f"{type(caught).__name__}: {caught}"
+                    return "", []
+            return super()._parse_response(
+                response,
+                original_width=original_width,
+                original_height=original_height,
+                processed_width=processed_width,
+                processed_height=processed_height,
+            )
 
     PinnedQwenAgent.__name__ = "PinnedQwenAgent"
     return PinnedQwenAgent
@@ -839,6 +937,129 @@ def normalize_agent_response(content: str, response_model: Any) -> tuple[Any, st
     return normalized, json.dumps(normalized, ensure_ascii=False, separators=(",", ":"))
 
 
+class GlmTurn(NamedTuple):
+    kind: str
+    error: str | None = None
+    wait_seconds: float | None = None
+    coordinate: tuple[float, float] | None = None
+    desktop_coordinate: tuple[int, int] | None = None
+
+
+def classify_glm_turn(
+    content: str,
+    actions: list[str],
+    response_model: Any,
+    *,
+    processed_size: tuple[int, int],
+    original_size: tuple[int, int],
+    native_tool_calls: bool = False,
+    parser_error: str | None = None,
+) -> GlmTurn:
+    """Classify only GLM's provider content before executing upstream actions."""
+    if native_tool_calls:
+        return GlmTurn("action_error", "native tool calls are unsupported; use computer_use XML")
+    if parser_error is not None:
+        return GlmTurn("action_error", f"invalid computer_use parameters: {parser_error}")
+
+    has_tool_markup = any(
+        marker in content for marker in ("<tool_call", "</tool_call>", "<function=", "<parameter=")
+    )
+    if not has_tool_markup:
+        try:
+            normalize_agent_response(content, response_model)
+        except (json.JSONDecodeError, TypeError, ValueError) as caught:
+            if content.lstrip().startswith(("{", "[", "```")):
+                return GlmTurn("final_error", str(caught))
+            return GlmTurn("action_error", "response is neither a computer_use call nor final JSON")
+        return GlmTurn("final")
+
+    blocks = list(_GLM_TOOL_BLOCK.finditer(content))
+    if len(blocks) != 1 or content.count("<tool_call>") != 1 or content.count("</tool_call>") != 1:
+        return GlmTurn("action_error", "expected exactly one complete computer_use tool call")
+    if content[blocks[0].end() :].strip():
+        return GlmTurn("action_error", "computer_use tool call must be the final content")
+    function = _GLM_FUNCTION_BLOCK.fullmatch(blocks[0].group(1))
+    if function is None:
+        return GlmTurn("action_error", "tool call must use function=computer_use")
+    parameter_body = function.group(1)
+    matches = list(_GLM_PARAMETER_BLOCK.finditer(parameter_body))
+    if not matches or _GLM_PARAMETER_BLOCK.sub("", parameter_body).strip():
+        return GlmTurn("action_error", "malformed computer_use parameters")
+
+    params: dict[str, Any] = {}
+    for match in matches:
+        name, value = match.group(1), match.group(2).strip()
+        if name in params:
+            return GlmTurn("action_error", f"duplicate computer_use parameter: {name}")
+        if value.startswith(("[", "{")):
+            try:
+                params[name] = json.loads(value)
+                continue
+            except json.JSONDecodeError:
+                pass
+        params[name] = value
+
+    action = params.get("action")
+    if not isinstance(action, str) or action not in _GLM_ACTIONS:
+        return GlmTurn("action_error", f"unsupported computer_use action: {action!r}")
+    if action in {"terminate", "call_user"}:
+        if action == "terminate" and params.get("status", "success") not in {"success", "failure"}:
+            return GlmTurn("action_error", "terminate status must be success or failure")
+        return GlmTurn("final_error", "terminal tool call requires final JSON without a tool call")
+
+    coordinate = None
+    desktop_coordinate = None
+    if action in _GLM_COORDINATE_ACTIONS:
+        if "coordinate" not in params:
+            if action in _GLM_REQUIRED_COORDINATE_ACTIONS:
+                return GlmTurn("action_error", f"{action} requires coordinate")
+        else:
+            raw = params["coordinate"]
+            if (
+                not isinstance(raw, list)
+                or len(raw) != 2
+                or any(
+                    isinstance(value, bool) or not isinstance(value, (int, float)) for value in raw
+                )
+                or any(not math.isfinite(value) for value in raw)
+            ):
+                return GlmTurn("action_error", "coordinate must be two finite numeric pixels")
+            width, height = processed_size
+            x, y = raw
+            if not (0 <= x < width and 0 <= y < height):
+                return GlmTurn(
+                    "action_error",
+                    f"coordinate {raw} is outside processed screenshot {width}x{height}",
+                )
+            coordinate = (float(x), float(y))
+            desktop_coordinate = (
+                int(x * original_size[0] / width),
+                int(y * original_size[1] / height),
+            )
+
+    wait_seconds = None
+    if action == "wait":
+        try:
+            wait_seconds = float(params["time"])
+        except (KeyError, TypeError, ValueError):
+            return GlmTurn("action_error", "wait requires a numeric time in seconds")
+        if not math.isfinite(wait_seconds) or not 0 < wait_seconds <= 30:
+            return GlmTurn(
+                "action_error", "wait time must be greater than 0 and at most 30 seconds"
+            )
+
+    if not actions or any(code in {"DONE", "FAIL"} for code in actions):
+        return GlmTurn("action_error", "computer_use action produced no executable action")
+    if action in {"wait", "screenshot"} and actions != ["WAIT"]:
+        return GlmTurn("action_error", f"{action} must produce only WAIT")
+    return GlmTurn(
+        "action",
+        wait_seconds=wait_seconds,
+        coordinate=coordinate,
+        desktop_coordinate=desktop_coordinate,
+    )
+
+
 def score_artifacts(
     task: Any,
     agent_response_raw: str,
@@ -1009,6 +1230,9 @@ def xvfb(display: str) -> Iterator[None]:
 def run_case(args: argparse.Namespace) -> dict[str, Any]:
     from lite.gym.envs.browsergym import webarena_verified
 
+    model_profile = getattr(args, "model_profile", "qwen")
+    glm_protocol = model_profile == "glm53flash"
+    model_id = GLM_MODEL if glm_protocol else MODEL
     records = webarena_verified.task_records()
     if args.task_id < 0 or args.task_id >= len(records):
         raise ValueError(f"task ID must be in the pinned range 0..{len(records) - 1}")
@@ -1041,6 +1265,10 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
         truncated = False
         terminal_action = None
         repair_used = False
+        glm_final_repair_used = False
+        glm_action_repair_count = 0
+        glm_action_repair_streak = 0
+        glm_protocol_failure = None
         structured_repair_pending = False
         finalization_attempts = 0
         response_feedback = ""
@@ -1059,19 +1287,19 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
             patch_pyautogui(pyautogui)
             cursor_class = load_cursor_class(root)
             qwen_base = load_qwen_agent(root)
-            agent_class = make_pinned_agent_class(qwen_base, openai)
+            agent_class = make_pinned_agent_class(qwen_base, openai, model_profile=model_profile)
             cwd_context = working_directory(output)
             cwd_context.__enter__()
             agent = agent_class(
                 platform="ubuntu",
-                model=MODEL,
+                model=model_id,
                 max_tokens=MAX_TOKENS,
                 top_p=TOP_P,
                 temperature=TEMPERATURE,
                 action_space="pyautogui",
                 observation_type="screenshot",
                 history_n=HISTORY_N,
-                coordinate_type="relative",
+                coordinate_type="absolute" if glm_protocol else "relative",
                 image_max=IMAGE_MAX,
                 fold_size=FOLD_SIZE,
                 add_thought_prefix=False,
@@ -1081,7 +1309,7 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                 request_log_dir=output / "requests",
                 request_image_dir=output / "images",
                 preserve_thinking=True,
-                reasoning_effort="xhigh",
+                reasoning_effort="max" if glm_protocol else "xhigh",
             )
             agent.reset(logging.getLogger("webarena_verified.qwen"))
 
@@ -1198,6 +1426,7 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                     if response_feedback:
                         turn_goal += "\n\n" + response_feedback
                         response_feedback = ""
+                    expect_final_json = structured_repair_pending
                     agent.structured_response_schema = (
                         response_schema if structured_repair_pending else None
                     )
@@ -1222,10 +1451,80 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                     raise
                 terminal = False
                 try:
+                    # The GLM projection classifies provider content before the
+                    # upstream parser's implicit DONE can reach the executor.
+                    if glm_protocol:
+                        turn = classify_glm_turn(
+                            agent.last_provider_content,
+                            actions,
+                            FinalAgentResponse,
+                            processed_size=agent.last_processed_size,
+                            original_size=agent.last_original_size,
+                            native_tool_calls=agent.last_native_tool_calls,
+                            parser_error=agent.last_upstream_parse_error,
+                        )
+                        if expect_final_json and turn.kind != "final":
+                            turn = GlmTurn(
+                                "final_error",
+                                "structured final repair did not return valid final JSON: "
+                                f"{turn.error or turn.kind}",
+                            )
+                        trajectory["turn_kind"] = turn.kind
+                        trajectory["action_source"] = "provider_content"
+                        if turn.coordinate is not None:
+                            trajectory["coordinate"] = list(turn.coordinate)
+                            trajectory["desktop_coordinate"] = list(turn.desktop_coordinate)
+                        if turn.kind in {"action_error", "final_error"}:
+                            error_field = (
+                                "action_parse_error"
+                                if turn.kind == "action_error"
+                                else "response_validation_error"
+                            )
+                            trajectory[error_field] = turn.error
+                            can_repair = args.repair_invalid_response and remaining > 1
+                            if turn.kind == "action_error":
+                                can_repair = can_repair and glm_action_repair_streak == 0
+                                if can_repair:
+                                    glm_action_repair_count += 1
+                                    glm_action_repair_streak += 1
+                                    response_feedback = (
+                                        f"Invalid computer_use response: {turn.error}. "
+                                        "No action was executed. Return one valid computer_use "
+                                        "XML call with Action and parameter tags, or final JSON "
+                                        "if complete. Use absolute processed screenshot pixels."
+                                    )
+                            else:
+                                can_repair = can_repair and not glm_final_repair_used
+                                if can_repair:
+                                    glm_final_repair_used = True
+                                    structured_repair_pending = True
+                                    response_feedback = (
+                                        f"Your final response was invalid: {turn.error}. "
+                                        "No action from that turn was executed. Return only one "
+                                        "JSON object matching final_response_schema; report only "
+                                        "facts verified from the visible UI."
+                                    )
+                            if can_repair:
+                                trajectory["repair_requested"] = turn.kind
+                                continue
+                            glm_protocol_failure = turn.error
+                            response_parse_error = turn.error
+                            final_content = agent.last_provider_content
+                            trajectory["protocol_failure"] = turn.kind
+                            break
+                        glm_action_repair_streak = 0
+                        if turn.kind == "final":
+                            final_content = agent.last_provider_content
+                            terminal_action = "FINAL_JSON"
+                            trajectory["executed_actions"].append("FINAL_JSON")
+                            terminal = True
+                            break
                     # Upstream maps malformed or empty tool output to DONE. Validate at
                     # this benchmark boundary before accepting it as a final response.
-                    if args.repair_invalid_response and (
-                        not actions or any(action in {"DONE", "FAIL"} for action in actions)
+                    if (
+                        not glm_protocol
+                        and args.repair_invalid_response
+                        and (not actions or any(action in {"DONE", "FAIL"} for action in actions))
                     ):
                         try:
                             normalize_agent_response(
@@ -1275,6 +1574,11 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                         continue
                     for action in actions:
                         if action == "WAIT":
+                            if glm_protocol and turn.wait_seconds is not None:
+                                started_wait = time.monotonic()
+                                page.wait_for_timeout(math.ceil(turn.wait_seconds * 1000))
+                                trajectory["wait_seconds_requested"] = turn.wait_seconds
+                                trajectory["wait_seconds_elapsed"] = time.monotonic() - started_wait
                             trajectory["executed_actions"].append("WAIT")
                         elif action in {"DONE", "FAIL"}:
                             final_content = agent.last_provider_content
@@ -1306,7 +1610,17 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                 final_content = ""
 
             _atomic_text(output / "agent_response_raw.txt", final_content)
-            if truncated:
+            if glm_protocol_failure is not None:
+                _atomic_json(
+                    output / "agent_response.json",
+                    {
+                        "raw_content": final_content,
+                        "valid": False,
+                        "error": glm_protocol_failure,
+                        "protocol_failure": True,
+                    },
+                )
+            elif truncated:
                 response_parse_error = "maximum step limit reached before a final response"
                 _atomic_json(
                     output / "agent_response.json",
@@ -1390,15 +1704,21 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                 error = error or caught
         status = {
             "task_id": args.task_id,
-            "status": "failed" if error else "completed",
+            "status": (
+                "failed"
+                if error
+                else "model_protocol_failed"
+                if glm_protocol_failure
+                else "completed"
+            ),
             "score": evaluation["score"] if evaluation else None,
-            "model": MODEL,
+            "model": model_id,
             "thinking": not args.no_thinking,
             "truncated": truncated,
             "terminal_action": terminal_action,
             "response_parse_error": response_parse_error,
-            "response_repair_used": repair_used,
-            "structured_repair_used": repair_used,
+            "response_repair_used": glm_final_repair_used if glm_protocol else repair_used,
+            "structured_repair_used": glm_final_repair_used if glm_protocol else repair_used,
             "fixed_parameters": {
                 "max_steps": case_max_steps,
                 "base_max_steps": args.max_steps,
@@ -1408,7 +1728,7 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                 "history_n": HISTORY_N,
                 "image_max": IMAGE_MAX,
                 "fold_size": FOLD_SIZE,
-                "coordinate_type": "relative",
+                "coordinate_type": "absolute" if glm_protocol else "relative",
                 "screen": [SCREEN_WIDTH, SCREEN_HEIGHT],
                 "temperature": TEMPERATURE,
                 "top_p": TOP_P,
@@ -1422,6 +1742,11 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
             status["fixed_parameters"]["startup_page_gate"] = True
             if startup_failure:
                 status["failure_phase"] = "startup"
+        if glm_protocol:
+            status["model_profile"] = model_profile
+            status["action_repair_count"] = glm_action_repair_count
+            status["model_protocol_error"] = glm_protocol_failure
+            status["fixed_parameters"]["reasoning_effort"] = "max"
         if error:
             status["error"] = {
                 "type": type(error).__name__,

@@ -371,6 +371,15 @@ def test_glm_retry_owner_is_bounded_without_changing_qwen_sdk_defaults(
     }
     if profile == "glm53flash":
         expected_constructor["max_retries"] = 0
+        expected_constructor["timeout"] = runner.httpx.Timeout(
+            runner.MODEL_TIMEOUT_SECONDS, read=runner.GLM_READ_TIMEOUT_SECONDS
+        )
+        assert constructors[0]["timeout"].as_dict() == {
+            "connect": 130.0,
+            "read": 600.0,
+            "write": 130.0,
+            "pool": 130.0,
+        }
     assert constructors == [expected_constructor]
     errors = sorted((tmp_path / "requests").glob("step_000_attempt_*_error.json"))
     assert len(errors) == (outer_attempts - 1 if recover else outer_attempts)
@@ -396,6 +405,41 @@ def test_retry_policy_does_not_swallow_nonretryable_errors(tmp_path, profile):
     assert len(captured) == 1
     assert sleeps == []
     assert not list((tmp_path / "requests").glob("*error.json"))
+
+
+@pytest.mark.parametrize("profile", ["qwen", "glm53flash"])
+def test_transport_error_details_are_glm_only_and_redacted(tmp_path, monkeypatch, profile):
+    inner = TimeoutError("secret-key waiting for headers")
+    error = RetryError("secret-key SDK timeout")
+    error.__cause__ = inner
+    error.status_code = 503
+    error.request_id = "provider-request-123"
+    timestamps = iter([10.0, 140.5, 145.5] if profile == "glm53flash" else [])
+    monkeypatch.setattr(runner.time, "monotonic", lambda: next(timestamps))
+    sleeps = []
+    agent, captured = build_agent(
+        tmp_path,
+        outcomes=[error, FakeResponse(reasoning_content="")],
+        profile=profile,
+        sleep_fn=sleeps.append,
+    )
+    assert agent.call_llm({"messages": []}, runner.MODEL) == "done"
+    assert len(captured) == 2 and captured[0] == captured[1]
+    assert sleeps == [5.0]
+    error_path = tmp_path / "requests/step_000_attempt_01_error.json"
+    logged = json.loads(error_path.read_text())
+    assert "secret-key" not in error_path.read_text()
+    assert logged["type"] == "RetryError"
+    assert logged["message"] == "[redacted] SDK timeout"
+    if profile == "qwen":
+        assert set(logged) == {"type", "message"}
+    else:
+        assert logged["elapsed_seconds"] == 130.5
+        assert logged["causes"] == [
+            {"type": "TimeoutError", "message": "[redacted] waiting for headers"}
+        ]
+        assert logged["http_status"] == 503
+        assert logged["request_id"] == "provider-request-123"
 
 
 @pytest.mark.parametrize("status", [400, 408, 409, 429, 500, 503])

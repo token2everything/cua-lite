@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Any, NamedTuple
 from urllib.parse import urlsplit, urlunsplit
 
+import httpx
 from requests.exceptions import SSLError
 
 from lite.agents.core.agent.utils.request_logs import redact, write_log
@@ -54,6 +55,7 @@ MAX_TOKENS = 32768
 TEMPERATURE = 0.0
 TOP_P = 0.9
 MODEL_TIMEOUT_SECONDS = 130.0
+GLM_READ_TIMEOUT_SECONDS = 600.0
 MODEL_ATTEMPTS = 5
 RESET_SETTLE_SECONDS = 60.0
 EVALUATION_SETTLE_SECONDS = 20.0
@@ -581,6 +583,11 @@ def make_pinned_agent_class(
                 "timeout": MODEL_TIMEOUT_SECONDS,
             }
             if model_profile == "glm53flash":
+                # Long reasoning can finish normally after the Qwen deadline;
+                # keep connect, upload, and pool waits at their existing limits.
+                client_kwargs["timeout"] = httpx.Timeout(
+                    MODEL_TIMEOUT_SECONDS, read=GLM_READ_TIMEOUT_SECONDS
+                )
                 # The logged outer loop owns GLM retries; SDK retries would
                 # multiply its five attempts into up to fifteen wire requests.
                 client_kwargs["max_retries"] = 0
@@ -600,6 +607,8 @@ def make_pinned_agent_class(
             )
             last_error: Exception | None = None
             for attempt in range(1, MODEL_ATTEMPTS + 1):
+                if model_profile == "glm53flash":
+                    attempt_started = time.monotonic()
                 try:
                     request_kwargs = {
                         "model": model,
@@ -649,10 +658,31 @@ def make_pinned_agent_class(
                     ):
                         raise
                     last_error = error
+                    error_log: dict[str, Any] = {
+                        "type": type(error).__name__,
+                        "message": str(error),
+                    }
+                    if model_profile == "glm53flash":
+                        # SDK timeout messages omit whether connecting, writing,
+                        # or waiting for a reply failed. Keep the original cause
+                        # chain at the provider boundary without changing retries.
+                        causes = []
+                        cause = error.__cause__
+                        while cause is not None:
+                            causes.append({"type": type(cause).__name__, "message": str(cause)})
+                            cause = cause.__cause__
+                        error_log.update(
+                            {
+                                "elapsed_seconds": time.monotonic() - attempt_started,
+                                "causes": causes,
+                                "http_status": getattr(error, "status_code", None),
+                                "request_id": getattr(error, "request_id", None),
+                            }
+                        )
                     write_log(
                         self.request_log_dir,
                         f"step_{index:03d}_attempt_{attempt:02d}_error.json",
-                        {"type": type(error).__name__, "message": str(error)},
+                        error_log,
                         secrets,
                     )
                     self.sleep_fn(min(5.0 * attempt, 30.0))
@@ -2009,6 +2039,7 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
             if startup_failure:
                 status["failure_phase"] = "startup"
         if glm_protocol:
+            status["fixed_parameters"]["read_timeout_seconds"] = GLM_READ_TIMEOUT_SECONDS
             status["model_profile"] = model_profile
             status["action_repair_count"] = glm_action_repair_count
             status["model_protocol_error"] = glm_protocol_failure

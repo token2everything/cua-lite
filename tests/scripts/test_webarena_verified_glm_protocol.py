@@ -884,6 +884,8 @@ def test_glm_runner_executes_wait_time_and_then_accepts_final_json(tmp_path, mon
     assert status["model"] == "glm-5.3-flash"
     assert status["fixed_parameters"]["coordinate_type"] == "absolute"
     assert status["fixed_parameters"]["reasoning_effort"] == page.reasoning_effort == "max"
+    assert status["fixed_parameters"]["timeout_seconds"] == 130.0
+    assert status["fixed_parameters"]["read_timeout_seconds"] == 600.0
 
 
 def test_glm_runner_screenshot_refreshes_without_waiting(tmp_path, monkeypatch):

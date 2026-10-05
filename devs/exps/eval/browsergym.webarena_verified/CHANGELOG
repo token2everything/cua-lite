@@ -1,5 +1,31 @@
 ## Unreleased
 
+### V14 — GLM long-reasoning read deadline
+
+A credential-rotated V13 task 66 step 45 request failed at the 130-second
+read limit. An isolated replay restored the identical model body and used the
+same normalized API endpoint: upload finished in 0.268 seconds and a valid
+completion arrived after 284.85 seconds, with 14,018 completion tokens including
+13,628 reasoning tokens. No GUI action or official evaluation ran in this
+diagnostic. Gateway queue time versus inference time is not separately known.
+Two earlier probes accidentally bypassed API-base normalization; their management
+HTML responses are retained but excluded from this conclusion.
+
+GLM now uses a 600-second read limit while connect/write/pool remain 130 seconds.
+Its existing five-attempt retry owner is unchanged. Retry logs retain the
+credential-redacted exception causes, elapsed time, HTTP status and request ID
+when available. Status records the default timeout plus the GLM read override.
+Qwen's client constructor, SDK defaults, parser, and error-log shape stay
+unchanged. Prompts, sampling, the 150-step budget, and official scoring do not
+change. V13 receipts are not substituted into a fresh V14 campaign; rollback
+targets `wav-infra-v13-literal-text`.
+
+Offline regression: 249 relevant tests passed, with Ruff and formatting checks
+clean. Actual runtime SDK 3.19.2 mock transport passed 36 scenarios with networking
+disabled, verifying per-phase deadlines, bounded retries, recovery, and unchanged
+Qwen behavior. No model API was called by these mock checks. Online V14 startup
+verification remains pending.
+
 ### V13 — GLM literal type payload
 
 V10 task 553 step 45 supplied valid multiline JSON, but the pinned parameter

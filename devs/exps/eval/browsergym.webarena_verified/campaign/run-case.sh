@@ -165,6 +165,22 @@ for site in "${sites[@]}"; do
             )
             docker "${docker_args[@]}"
             wait_controller http://127.0.0.1:8024/status
+            # The controller can report success while GitLab's root still
+            # returns 502. Do not hand that page to BrowserGym as a task start.
+            gitlab_ready=false
+            gitlab_deadline=$((SECONDS + 300))
+            while ((SECONDS < gitlab_deadline)); do
+                if curl --max-time 5 -fsSL http://127.0.0.1:8023/ \
+                    >/dev/null 2>&1; then
+                    gitlab_ready=true
+                    break
+                fi
+                sleep 2
+            done
+            if [ "$gitlab_ready" != true ]; then
+                echo "GitLab root did not become healthy within 300 seconds" >&2
+                exit 1
+            fi
             ;;
         wikipedia)
             name="$NAME_PREFIX-wikipedia"

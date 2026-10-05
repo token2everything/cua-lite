@@ -248,6 +248,8 @@ def test_glm_projects_real_native_child_fields_without_changing_raw_history(tmp_
         ("<parameter=coordinate>558, 113</parameter>", (558, 113)),
         ("<parameter=coordinate>1222 908</parameter>", (1222, 908)),
         ("<coordinate>559</coordinate><parameter>113</parameter>", (559, 113)),
+        ("<coordinate> 50 </coordinate><coordinate> 570 </coordinate>", (50, 570)),
+        ("<coordinate> 50 </coordinate><parameter>\n570\n</parameter>", (50, 570)),
         ("<coordinate>1473</coordinate><coordinate>115</coordinate>", (1473, 115)),
         ("<parameter=coordinate>(1204, 561)</parameter>", (1204, 561)),
         ("<parameter=coordinate>[[573, 479]]</parameter>", (573, 479)),
@@ -483,6 +485,85 @@ def test_glm_projection_preserves_tag_like_type_text(tmp_path, text):
     )
     assert f"<parameter=text>{text}</parameter>" in agent.last_projected_content
     assert classify(agent.last_projected_content, actions).kind == "action"
+
+
+@pytest.mark.parametrize("native", [False, True])
+@pytest.mark.parametrize(
+    "text",
+    [
+        '{\n  "urls": ["http://example.test/1", "http://example.test/2"]\n}',
+        '{"enabled": true, "value": null, "n": 1.0}',
+        '["a", {"b": false}, null, 1.0]',
+        "[1, 2, 3]",
+        "{}",
+        "[]",
+        '  {"key": "quoted"}  ',
+        "\n  indented\n\nlast line\n",
+        "first\r\nsecond\rthird\n",
+        'print("quoted")\n# literal {braces} and [brackets]',
+        "<table>literal HTML</table>",
+        "say \"hello\" and 'goodbye' \\ backslash",
+        "  ",
+        "\n\n",
+        "",
+    ],
+)
+def test_glm_type_preserves_literal_after_existing_xml_padding_trim(tmp_path, native, text):
+    class RejectingUpstream(FakeBaseAgent):
+        def _parse_response(self, response, **sizes):
+            raise AssertionError("GLM literal text must not enter the JSON-coercing parser")
+
+    fields = (
+        f"<action>type</action><text>{text}</text>"
+        if native
+        else f"<parameter=action>type</parameter><parameter=text>{text}</parameter>"
+    )
+    content = (
+        f"Action: Enter text\n<tool_call><function=computer_use>{fields}</function></tool_call>"
+    )
+    agent = make_agent(
+        tmp_path, FakeProviderResponse(content, ""), "glm53flash", base_class=RejectingUpstream
+    )
+    agent.last_provider_content = content
+    instruction, actions = agent._parse_response(
+        content,
+        original_width=1920,
+        original_height=1080,
+        processed_width=1920,
+        processed_height=1088,
+    )
+    recorded = []
+    desktop = SimpleNamespace(
+        typewrite=recorded.append,
+        press=lambda key: recorded.append("\n") if key == "enter" else pytest.fail(key),
+    )
+    for action in actions:
+        runner.execute_safe_pyautogui(action, desktop)
+    assert "".join(recorded) == text.strip().replace("\r\n", "\n").replace("\r", "\n")
+    assert instruction == "Enter text"
+    assert classify(agent.last_projected_content, actions).kind == "action"
+    assert agent.last_upstream_parse_error is None
+    assert agent.last_provider_content == content
+    projected_text = text.strip() if native else text
+    assert f"<parameter=text>{projected_text}</parameter>" in agent.last_projected_content
+
+
+def test_glm_literal_type_does_not_bypass_existing_duplicate_parameter_rejection(tmp_path):
+    content = tool_call("type", text='{"a": 1}').replace(
+        "</function>", "<parameter=text>second value</parameter></function>"
+    )
+    agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "glm53flash")
+    agent.last_provider_content = content
+    _, actions = agent._parse_response(
+        content,
+        original_width=1920,
+        original_height=1080,
+        processed_width=1920,
+        processed_height=1088,
+    )
+    turn = classify(agent.last_projected_content, actions)
+    assert turn.kind == "action_error"
+    assert "duplicate" in turn.error
 
 
 @pytest.mark.parametrize("profile", ["glm53flash", "qwen"])

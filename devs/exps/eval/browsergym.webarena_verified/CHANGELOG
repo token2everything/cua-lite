@@ -1,5 +1,24 @@
 ## Unreleased
 
+### V13 — GLM literal type payload
+
+V10 task 553 step 45 supplied valid multiline JSON, but the pinned parameter
+parser JSON-decoded its text and str() rendered a Python dictionary before
+keyboard execution. The GLM provider boundary now renders type actions from
+literal text. Existing XML boundary-padding trim, CRLF normalization,
+multiline Enter handling, prompts, budgets, retries, and official scoring stay
+unchanged. Qwen still uses its original parser path. The GLM classifier uses
+the same literal-text interpretation; duplicate and malformed calls remain
+model-visible action errors.
+
+Offline regression: 245 relevant tests passed. Actual pinned-parser replay
+reproduces the archived corruption and restores task 553's valid JSON without
+calling a model API. Historical replay and independent review verify text
+against the literal after the existing XML padding trim, not merely against
+the old actions. V12 is retired before its remaining startup/full launch;
+all launched attempts and preparation evidence are preserved separately.
+V13 online verification of tasks 552/553 and 28/66 is pending.
+
 ### V12 — One GLM transport retry owner
 
 V10 startup request logs for tasks 6 and 21 contain provider timeouts while

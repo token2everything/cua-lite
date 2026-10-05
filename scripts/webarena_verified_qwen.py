@@ -781,6 +781,38 @@ def make_pinned_agent_class(
                             response = response[:start] + body + response[end:]
                 self.last_projected_content = response
                 self.last_upstream_parse_error = None
+                if len(blocks) == 1 and function is not None:
+                    parameters = list(_GLM_PARAMETER_BLOCK.finditer(body))
+                    action_fields = [field for field in parameters if field.group(1) == "action"]
+                    if len(action_fields) == 1 and action_fields[0].group(2).strip() == "type":
+                        # GLM text is a literal payload, not a JSON-valued
+                        # parameter. The pinned parser JSON-decodes objects and
+                        # arrays, then str() corrupts their quotes/whitespace.
+                        # Keep the existing XML boundary-padding trim and CRLF
+                        # normalization; internal text is never JSON-decoded.
+                        # Render this action at its provider boundary; all
+                        # other actions still use the unchanged pinned parser.
+                        text_fields = [field for field in parameters if field.group(1) == "text"]
+                        text = text_fields[0].group(2) if text_fields else ""
+                        text = text.replace("\r\n", "\n").replace("\r", "\n")
+                        actions = []
+                        chunks = text.split("\n")
+                        for index, chunk in enumerate(chunks):
+                            if chunk or len(chunks) == 1:
+                                actions.append(
+                                    f"pyautogui.typewrite({json.dumps(chunk, ensure_ascii=False)})"
+                                )
+                            if index < len(chunks) - 1:
+                                actions.append('pyautogui.press("enter")')
+                        instruction = (
+                            f"Performing {actions[0].split('.', 1)[1].split('(', 1)[0]} action"
+                        )
+                        for line in response.split("\n"):
+                            stripped = line.strip()
+                            if stripped.lower().startswith("action:"):
+                                instruction = stripped.split(":", 1)[-1].strip() or instruction
+                                break
+                        return instruction, actions
                 try:
                     return super()._parse_response(
                         response,
@@ -1147,10 +1179,11 @@ def classify_glm_turn(
 
     params: dict[str, Any] = {}
     for match in matches:
-        name, value = match.group(1), match.group(2).strip()
+        name = match.group(1)
+        value = match.group(2) if name == "text" else match.group(2).strip()
         if name in params:
             return GlmTurn("action_error", f"duplicate computer_use parameter: {name}")
-        if value.startswith(("[", "{")):
+        if name != "text" and value.startswith(("[", "{")):
             try:
                 params[name] = json.loads(value)
                 continue

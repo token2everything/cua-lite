@@ -15,10 +15,11 @@
   "config_sha256": "5fd9d3683ff08dc1e03d6f766299208575ddedb8f78e5808ed95a3b7212c1a72",
   "experiment_config": "devs/exps/eval/browsergym.webarena_verified/EXPERIMENT_CONFIG.v8-coordinate-canary.json",
   "scoring_policy": "official raw 1.2.3 score; evaluator errors unscored; fork counterfactual separate",
+  "official_score": {"passed": 0, "total": 1, "rate": 0.0},
   "canary_ids": [67],
   "verification": {
     "offline_tests_passed": 117,
-    "online_canary_status": "pending",
+    "online_canary_status": "passed",
     "qwen_default_unchanged": true
   },
   "rollback_to": "webarena-verified-v7-gitlab-stable"

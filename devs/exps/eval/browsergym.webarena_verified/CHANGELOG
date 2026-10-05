@@ -1,5 +1,19 @@
 ## Unreleased
 
+### Analysis V1 — Hash-bound factual case analysis
+
+Added an offline analyzer for published archives, request usage, repair events,
+evaluation assertions, and the QWEN3.8MAX full/single-site/multi-site table axes.
+Missing cases and evaluator errors remain distinct from scored failures; no
+root-cause judgment or score correction is inferred from failure signals.
+
+The analyzer and coordinator now share the existing plan-validation owner.
+Assignment hashes, uniqueness, configured count, and explicit case selection
+are checked before choosing the denominator. A truncated nine-case plan that
+previously misreported 5/8 is rejected; the unchanged archive still reports
+5/9. Regression: 172 relevant tests passed. The running V10 campaign retains
+its original frozen source archive, coordinator, and release tag.
+
 ### V10 — Balanced GLM call wrappers
 
 The V9 task-28 canary emitted the same complete computer_use call inside

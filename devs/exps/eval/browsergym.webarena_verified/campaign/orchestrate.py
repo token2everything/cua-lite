@@ -342,10 +342,12 @@ class Campaign:
         self.client = SandboxClient(_read_env(env_path))
         self.image_sha = _sha(self.root / "image-lock.env")
         self.plan_sha = _sha(self.root / "PLAN_MANIFEST.sha256")
-        self.plan = self._load_plan()
         config = json.loads((self.root / "EXPERIMENT_CONFIG.json").read_text())
         if config["run_id"] != self.run_id or config["model"] != "glm-5.3-flash":
             raise ValueError("experiment config differs from campaign.env")
+        self.plan = self.load_plan(
+            self.root, self.root.parents[1] / "dataset/webarena-verified.json", config
+        )
         with tarfile.open(self.root / "cua-lite-source.tar.gz", "r:gz") as source:
             runner = source.extractfile("./scripts/webarena_verified_qwen.py")
             if runner is None or hashlib.sha256(runner.read()).hexdigest() != self.runner_sha:
@@ -353,24 +355,26 @@ class Campaign:
             if source.extractfile("./scripts/webarena_verified_case_receipt.py") is None:
                 raise ValueError("source archive lacks case receipt validator")
 
-    def _load_plan(self) -> dict[str, Any]:
+    @staticmethod
+    def load_plan(root: Path, catalog_path: Path, config: dict[str, Any]) -> dict[str, Any]:
+        """Load the hash-bound assignment and verify its configured task scope."""
+        root = root.resolve()
         manifest: dict[str, str] = {}
-        for line in (self.root / "PLAN_MANIFEST.sha256").read_text().splitlines():
+        for line in (root / "PLAN_MANIFEST.sha256").read_text().splitlines():
             expected, relative = line.split("  ", 1)
-            path = (self.root / relative).resolve()
-            if self.root not in path.parents or relative in manifest or _sha(path) != expected:
+            path = (root / relative).resolve()
+            if root not in path.parents or relative in manifest or _sha(path) != expected:
                 raise ValueError(f"invalid plan manifest entry: {relative}")
             manifest[relative] = expected
-        plan = json.loads((self.root / "worker-plan.json").read_text())
+        plan = json.loads((root / "worker-plan.json").read_text())
         worker_ids = list(plan["workers"])
         if worker_ids != [f"{index:02d}" for index in range(1, len(worker_ids) + 1)]:
             raise ValueError("worker IDs must be contiguous")
         expected_files = {"worker-plan.json"}
         task_ids: list[int] = []
-        dataset_path = self.root.parents[1] / "dataset/webarena-verified.json"
         dataset = {
             int(row["task_id"]): sorted(row["sites"])
-            for row in json.loads(dataset_path.read_text())
+            for row in json.loads(catalog_path.read_text())
         }
         for worker in worker_ids:
             expected_files.update(
@@ -378,7 +382,7 @@ class Campaign:
             )
             rows = [
                 line.split("\t", 1)
-                for line in (self.root / "workers" / worker / "tasks.tsv").read_text().splitlines()
+                for line in (root / "workers" / worker / "tasks.tsv").read_text().splitlines()
             ]
             if any(len(row) != 2 for row in rows):
                 raise ValueError(f"malformed task file for worker {worker}")
@@ -397,6 +401,10 @@ class Campaign:
             raise ValueError("plan manifest or task assignment is incomplete")
         if len(task_ids) != plan["task_count"]:
             raise ValueError("plan task count mismatch")
+        if plan["task_count"] != config["task_count"]:
+            raise ValueError("plan differs from configured task count")
+        if "task_ids" in config and sorted(task_ids) != sorted(config["task_ids"]):
+            raise ValueError("plan differs from configured task IDs")
         if plan["selection"] == "full" and set(task_ids) != set(range(812)):
             raise ValueError("full plan must cover exactly 0..811")
         return plan

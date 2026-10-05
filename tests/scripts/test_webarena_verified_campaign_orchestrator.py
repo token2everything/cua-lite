@@ -55,7 +55,7 @@ def campaign(tmp_path):
     for name in ("prepare-worker.sh", "run-case.sh", "run-worker.sh"):
         (root / name).write_text("#!/usr/bin/env bash\n")
     (root / "EXPERIMENT_CONFIG.json").write_text(
-        json.dumps({"run_id": RUN_ID, "model": "glm-5.3-flash"})
+        json.dumps({"run_id": RUN_ID, "model": "glm-5.3-flash", "task_count": 2})
     )
     workers = {
         "01": {"capabilities": ["shopping_admin"], "startup_task": 0, "tasks": 1},

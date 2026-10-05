@@ -1,5 +1,15 @@
 ## Unreleased
 
+### V3 — Scoring integrity and separate evaluator fork
+
+The GLM campaign now distinguishes evaluator errors from model failures and
+HAR/trace disagreement from a numeric-score match. Official 1.2.3 scores stay
+unchanged. An offline, checksum-identified dataset fork fixes singleton-array
+schema interpretation: 699/700 remain failures at 0, while 811 replays as 1
+under the fork only. Draft-form dummy-bin evidence and business-equivalent API
+routes remain unresolved official-contract questions, not silent score changes.
+Related offline regressions: 84 passed; online canary pending.
+
 ### V2 — GLM action protocol
 
 The opt-in `glm53flash` profile parses only provider content, keeps reasoning

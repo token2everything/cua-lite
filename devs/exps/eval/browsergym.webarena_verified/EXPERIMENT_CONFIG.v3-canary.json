@@ -1,0 +1,23 @@
+{
+  "run_id": "wav-glm53flash-infra-v3-canary-20261005",
+  "task_ids": [0, 3, 7, 28, 44, 63, 97, 100, 118, 153, 185, 195, 267, 271, 300, 330, 449, 481, 488, 528, 529, 530, 548, 599, 624, 689, 699, 700, 798, 811],
+  "entrypoint": "scripts/webarena_verified_qwen.py",
+  "model": "glm-5.3-flash",
+  "model_key_environment_variable": "GLM_TEST_API_KEY",
+  "argv": [
+    "--model-profile", "glm53flash",
+    "--startup-page-gate",
+    "--max-steps", "150",
+    "--final-response-reserve-steps", "7",
+    "--layered-step-budget",
+    "--repair-invalid-response"
+  ],
+  "thinking": true,
+  "reasoning_effort": "max",
+  "max_tokens": 32768,
+  "temperature": 0.0,
+  "top_p": 0.9,
+  "evaluator": "official-webarena-verified-1.2.3-all-or-nothing",
+  "integrity_gate": "har-trace-full-contract-v3",
+  "counterfactual_evaluator": "webarena-verified-v3-singleton-array-schema-1-separate"
+}

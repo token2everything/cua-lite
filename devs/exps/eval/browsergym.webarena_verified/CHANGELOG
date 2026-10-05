@@ -1,5 +1,20 @@
 ## Unreleased
 
+### V10 — Balanced GLM call wrappers
+
+The V9 task-28 canary emitted the same complete computer_use call inside
+`<html><body>...</body></html>` twice, including after current-observation
+repair feedback. V10 projects balanced empty `html`, `body`, `head`, and `li`
+wrappers around one complete call. It does not alter text values, accept extra
+calls, or repair missing coordinates or unbalanced wrappers. Raw provider
+content stays in logs/history; Qwen's default path stays unchanged.
+
+Offline regression: 149 targeted tests passed. Both archived task-28 replies
+replay as the original click through the actual pinned parser. The V10 full50
+plan retains V8 model, budget, site assignment, and scoring settings; its
+startup cases include the nine fixed-defect canary IDs. Online startup
+verification is pending and must be audited before the remaining full shards.
+
 ### V9 — Current-observation feedback and observed GLM protocol variants
 
 V8 startup evidence exposed split scalar coordinate tags (28/399), tuple

@@ -310,6 +310,62 @@ def test_glm_projects_observed_list_wrapper_and_inline_keys(tmp_path):
 
 
 @pytest.mark.parametrize(
+    "call",
+    [
+        "<head><function=computer_use><parameter=action>left_click</parameter>"
+        "<parameter=coordinate>[1209, 561]</parameter></function></head>",
+        "<head>" + tool_call("left_click", coordinate=[1183, 109]).split("\n", 1)[1] + "</head>",
+        "<html><body>"
+        + tool_call("left_click", coordinate=[559, 114]).split("\n", 1)[1]
+        + "</body></html>",
+    ],
+)
+def test_glm_projects_balanced_observed_wrappers_around_complete_call(tmp_path, call):
+    content = "Action: Click the target.\n" + call
+    agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "glm53flash")
+    agent.last_provider_content = content
+    _, actions = agent._parse_response(
+        content,
+        original_width=1920,
+        original_height=1080,
+        processed_width=1920,
+        processed_height=1088,
+    )
+    assert agent.last_provider_content == content
+    assert classify(agent.last_projected_content, actions).kind == "action"
+    assert agent.last_projected_content.endswith("</tool_call>")
+
+
+@pytest.mark.parametrize(
+    "prefix,suffix",
+    [
+        ("<html><body>", "</html></body>"),
+        ("<head>", "</body>"),
+        ("<head>", "</head>extra text"),
+        ("<html><body>", "</body>"),
+        ("<body>unexpected text", "</body>"),
+        ("<html>unexpected text<body>", "</body>"),
+        ("</body><html>", "</html>"),
+    ],
+)
+def test_glm_wrapper_projection_keeps_mismatched_or_nonempty_wrappers_rejected(
+    tmp_path, prefix, suffix
+):
+    content = prefix + tool_call("left_click", coordinate=[559, 114]) + suffix
+    agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "glm53flash")
+    agent.last_provider_content = content
+    _, actions = agent._parse_response(
+        content,
+        original_width=1920,
+        original_height=1080,
+        processed_width=1920,
+        processed_height=1088,
+    )
+    assert agent.last_provider_content == content
+    assert classify(agent.last_projected_content, actions).kind == "action_error"
+
+
+@pytest.mark.parametrize(
     "fields",
     [
         "<coordinate>559</coordinate>",

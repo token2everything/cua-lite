@@ -150,9 +150,12 @@ _GLM_NATIVE_FIELD_BLOCK = re.compile(
     r"|<keys=(?P<keys>\[[^<>\n]*\])>",
     re.DOTALL,
 )
-_GLM_LIST_TOOL_BLOCK = re.compile(
-    r"<li>\s*(<function=computer_use>.*?</function>)\s*</li>", re.DOTALL
+_GLM_FUNCTION_WRAPPER_BLOCK = re.compile(
+    r"<(?P<wrapper>li|head|html|body)>\s*"
+    r"(?P<function><function=computer_use>.*?</function>)\s*</(?P=wrapper)>",
+    re.DOTALL,
 )
+_GLM_WRAPPER_TAG = re.compile(r"<(/?)(li|head|html|body)>")
 _GLM_COORDINATE_TEXT_PAIR = re.compile(r"(-?\d+(?:\.\d+)?)(?:\s*,\s*|\s+)(-?\d+(?:\.\d+)?)")
 _GLM_NATIVE_FIELDS = frozenset(
     {"action", "coordinate", "text", "keys", "pixels", "time", "duration", "status"}
@@ -659,10 +662,32 @@ def make_pinned_agent_class(
                 # parser contract; retain raw provider content in logs/history.
                 blocks = list(_GLM_TOOL_BLOCK.finditer(response))
                 if not blocks:
-                    response = _GLM_LIST_TOOL_BLOCK.sub(r"<tool_call>\1</tool_call>", response)
+                    response = _GLM_FUNCTION_WRAPPER_BLOCK.sub(
+                        r"<tool_call>\g<function></tool_call>", response
+                    )
                     blocks = list(_GLM_TOOL_BLOCK.finditer(response))
                 if len(blocks) == 1:
                     block = blocks[0]
+                    # Remove only balanced, empty HTML wrappers around the
+                    # actual call. Tags inside a type/text value are untouched.
+                    prefix, suffix = response[: block.start()], response[block.end() :]
+                    cursor = len(prefix)
+                    opening_names = []
+                    for tag in reversed(list(_GLM_WRAPPER_TAG.finditer(prefix))):
+                        if tag.group(1) or prefix[tag.end() : cursor].strip():
+                            break
+                        opening_names.append(tag.group(2))
+                        cursor = tag.start()
+                    closing_tags = list(_GLM_WRAPPER_TAG.finditer(suffix))
+                    if (
+                        opening_names
+                        and not _GLM_WRAPPER_TAG.search(prefix[:cursor])
+                        and not _GLM_WRAPPER_TAG.sub("", suffix).strip()
+                        and all(tag.group(1) for tag in closing_tags)
+                        and opening_names == [tag.group(2) for tag in closing_tags]
+                    ):
+                        response = prefix[:cursor] + block.group(0)
+                        block = next(_GLM_TOOL_BLOCK.finditer(response))
                     function = _GLM_FUNCTION_BLOCK.fullmatch(block.group(1))
                     if function is not None:
                         body = function.group(1)

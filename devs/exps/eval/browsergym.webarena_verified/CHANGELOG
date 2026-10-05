@@ -1,5 +1,15 @@
 ## Unreleased
 
+### V2 — GLM action protocol
+
+The opt-in `glm53flash` profile parses only provider content, keeps reasoning
+in logged/history context, validates absolute screenshot coordinates, executes
+bounded wait durations, and separates malformed-action repair from final JSON
+repair. Exhausted malformed output is `model_protocol_failed`, a terminal model
+outcome for the campaign coordinator. Qwen remains the default profile, with
+the same model, key source, reasoning effort, coordinate mode, parser, and
+dispatcher. Offline runner/catalog regression: 75 passed; online canary pending.
+
 ### V1 — Startup page gate
 
 The direct runner now offers an opt-in startup page gate. It selects the healthy

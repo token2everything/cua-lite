@@ -1,0 +1,24 @@
+{
+  "infra_version": "webarena-verified-v2-protocol",
+  "rollback_ready": true,
+  "git_commit": "6ce04d5969a35c56736b850e75706cbecd09b751",
+  "runner_sha256": "2681633ffb35154b962d21ea84e3d9f7a3fe9785ac1610a40a02ddaf8b99443c",
+  "entrypoint": "scripts/webarena_verified_qwen.py",
+  "argv": ["--model-profile", "glm53flash", "--startup-page-gate", "--max-steps", "150", "--final-response-reserve-steps", "7", "--layered-step-budget", "--repair-invalid-response"],
+  "protocol_version": "action-contract-glm-v2-content-absolute",
+  "osworld_commit": "b138d348256078fa634fc3b73567a7337c793e6b",
+  "browsergym_version": "0.14.3",
+  "evaluator_version": "1.2.3",
+  "evaluator_sha256": "35c3385b1db4b3378657589f95f50defd4234bd36e5b93d44733fd561b01db4e",
+  "dataset_sha256": "d65275660814663375028e9017e1f929e3c38321041b125795e2713b52243d30",
+  "site_image_digests": {},
+  "experiment_config": "devs/exps/eval/browsergym.webarena_verified/EXPERIMENT_CONFIG.v2-canary.json",
+  "config_sha256": "1142e83a38d17ea02331d6ab06b980c86ec101f2c1af070434a5ff57970e870d",
+  "canary_ids": [0, 3, 7, 28, 44, 63, 97, 100, 118, 153, 185, 195, 267, 271, 300, 330, 449, 481, 488, 528, 529, 530, 548, 599, 624, 689, 699, 700, 798, 811],
+  "verification": {
+    "offline_tests_passed": 75,
+    "online_canary_status": "pending",
+    "qwen_default_unchanged": true
+  },
+  "rollback_to": "webarena-verified-v1-startup"
+}

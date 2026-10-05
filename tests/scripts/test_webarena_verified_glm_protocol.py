@@ -192,6 +192,41 @@ def test_glm_parses_only_content_and_keeps_reasoning_in_history(tmp_path):
     assert classify(agent.parsed, actions).kind == "action"
 
 
+def test_glm_projects_real_native_child_fields_without_changing_raw_history(tmp_path):
+    content = (
+        "Action: Click the REPORTS icon.\n"
+        "<tool_call>\n<function=computer_use>\n"
+        "<action>left_click</action>\n"
+        "<coordinate>[[50, 570]]</coordinate>\n"
+        "</function>\n</tool_call>"
+    )
+
+    class CanonicalParser(FakeBaseAgent):
+        def _parse_response(self, response, **sizes):
+            self.parsed = response
+            assert "<parameter=action>left_click</parameter>" in response
+            assert "<parameter=coordinate>[50, 570]</parameter>" in response
+            return "click", ["pyautogui.click(50, 565)"]
+
+    agent = make_agent(
+        tmp_path, FakeProviderResponse(content, ""), "glm53flash", base_class=CanonicalParser
+    )
+    response = agent.call_llm({"messages": []}, agent.model)
+    _, actions = agent._parse_response(
+        response,
+        original_width=1920,
+        original_height=1080,
+        processed_width=1920,
+        processed_height=1088,
+    )
+    assert response == agent.last_provider_content == content
+    assert agent.last_projected_content == agent.parsed
+    turn = classify(agent.last_projected_content, actions)
+    assert turn.kind == "action"
+    assert turn.coordinate == (50, 570)
+    assert turn.desktop_coordinate == (50, 565)
+
+
 def test_qwen_default_still_parses_composite_response(tmp_path):
     reasoning = tool_call("left_click", coordinate=[10, 10])
     content = '{"status":"SUCCESS"}'
@@ -343,6 +378,7 @@ def run_fake_glm_case(tmp_path, monkeypatch, turns, evaluation=None):
 
         def predict(self, instruction, observation):
             self.last_provider_content, actions = turns.pop(0)
+            self.last_projected_content = self.last_provider_content
             return self.last_provider_content, actions
 
     monkeypatch.setattr(webarena_verified, "task_records", lambda: [dict(task_id=0)])

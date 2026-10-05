@@ -33,14 +33,12 @@ test -f "$CAL_ROOT/desktop-python.tar.gz"
 test -f "$CAL_ROOT/osworld-b138d348.bundle"
 printf '%s\n' "$CAPABILITIES" > "$WORKER_DIR/capabilities.txt"
 
-if ! docker info >/dev/null 2>&1; then
-    nohup dockerd > /tmp/wav-qwen-dockerd.log 2>&1 &
-    for attempt in $(seq 1 120); do
-        docker info >/dev/null 2>&1 && break
-        sleep 1
-    done
-fi
-docker info >/dev/null
+# The coordinator owns dockerd as a persistent execd command. A daemon started
+# as this short-lived command's child disappears when preparation exits.
+docker info >/dev/null || {
+    echo "dockerd is not ready; start the coordinator-owned daemon first" >&2
+    exit 1
+}
 command -v flock >/dev/null
 mkdir -p /var/lib/wav-qwen/locks
 exec 8>"/var/lib/wav-qwen/locks/prepare-$WORKER.lock"

@@ -145,6 +145,10 @@ _GLM_REQUIRED_COORDINATE_ACTIONS = frozenset({"mouse_move", "left_click_drag"})
 _GLM_TOOL_BLOCK = re.compile(r"<tool_call>\s*(.*?)\s*</tool_call>", re.DOTALL)
 _GLM_FUNCTION_BLOCK = re.compile(r"\s*<function=computer_use>\s*(.*?)\s*</function>\s*", re.DOTALL)
 _GLM_PARAMETER_BLOCK = re.compile(r"<parameter=([^>]+)>\s*(.*?)\s*</parameter>", re.DOTALL)
+_GLM_NATIVE_FIELD_BLOCK = re.compile(r"<([a-z_]+)>\s*(.*?)\s*</\1>", re.DOTALL)
+_GLM_NATIVE_FIELDS = frozenset(
+    {"action", "coordinate", "text", "keys", "pixels", "time", "duration", "status"}
+)
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -503,6 +507,7 @@ def make_pinned_agent_class(
             self.sleep_fn = sleep_fn
             self.request_index = 0
             self.last_provider_content = ""
+            self.last_projected_content = ""
             self.last_reasoning_content = ""
             self.last_native_tool_calls = False
             self.last_upstream_parse_error: str | None = None
@@ -627,6 +632,47 @@ def make_pinned_agent_class(
                 self.last_original_size = (original_width, original_height)
                 self.last_processed_size = (processed_width, processed_height)
                 response = self.last_provider_content
+                # The provider emits named child tags and sometimes a singleton
+                # coordinate array. Project only complete calls into OSWorld's
+                # parameter-tag contract; retain the raw content in logs/history.
+                blocks = list(_GLM_TOOL_BLOCK.finditer(response))
+                if len(blocks) == 1:
+                    block = blocks[0]
+                    function = _GLM_FUNCTION_BLOCK.fullmatch(block.group(1))
+                    if function is not None and "<parameter=" not in function.group(1):
+                        body = function.group(1)
+                        fields = list(_GLM_NATIVE_FIELD_BLOCK.finditer(body))
+                        cursor = 0
+                        projected_fields = []
+                        for field in fields:
+                            name, value = field.group(1), field.group(2)
+                            if (
+                                body[cursor : field.start()].strip()
+                                or name not in _GLM_NATIVE_FIELDS
+                            ):
+                                break
+                            if name == "coordinate":
+                                try:
+                                    raw_coordinate = json.loads(value)
+                                except json.JSONDecodeError:
+                                    raw_coordinate = None
+                                if (
+                                    isinstance(raw_coordinate, list)
+                                    and len(raw_coordinate) == 1
+                                    and isinstance(raw_coordinate[0], list)
+                                    and len(raw_coordinate[0]) == 2
+                                ):
+                                    value = json.dumps(raw_coordinate[0])
+                            projected_fields.append(f"<parameter={name}>{value}</parameter>")
+                            cursor = field.end()
+                        else:
+                            if fields and not body[cursor:].strip():
+                                start = block.start(1) + function.start(1)
+                                end = block.start(1) + function.end(1)
+                                response = (
+                                    response[:start] + "\n".join(projected_fields) + response[end:]
+                                )
+                self.last_projected_content = response
                 self.last_upstream_parse_error = None
                 try:
                     return super()._parse_response(
@@ -1510,7 +1556,7 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                     # upstream parser's implicit DONE can reach the executor.
                     if glm_protocol:
                         turn = classify_glm_turn(
-                            agent.last_provider_content,
+                            agent.last_projected_content,
                             actions,
                             FinalAgentResponse,
                             processed_size=agent.last_processed_size,
@@ -1525,7 +1571,9 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                                 f"{turn.error or turn.kind}",
                             )
                         trajectory["turn_kind"] = turn.kind
-                        trajectory["action_source"] = "provider_content"
+                        trajectory["action_source"] = "provider_content_projection"
+                        if agent.last_projected_content != agent.last_provider_content:
+                            trajectory["projected_content"] = agent.last_projected_content
                         if turn.coordinate is not None:
                             trajectory["coordinate"] = list(turn.coordinate)
                             trajectory["desktop_coordinate"] = list(turn.desktop_coordinate)
@@ -1545,7 +1593,7 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                                     response_feedback = (
                                         f"Invalid computer_use response: {turn.error}. "
                                         "No action was executed. Return one valid computer_use "
-                                        "XML call with Action and parameter tags, or final JSON "
+                                        "XML call with Action and valid fields, or final JSON "
                                         "if complete. Use absolute processed screenshot pixels."
                                     )
                             else:

@@ -166,14 +166,21 @@ for site in "${sites[@]}"; do
             docker "${docker_args[@]}"
             wait_controller http://127.0.0.1:8024/status
             # The controller can report success while GitLab's root still
-            # returns 502. Do not hand that page to BrowserGym as a task start.
+            # returns 502, and a single 200 can precede another 502. Hand
+            # BrowserGym the page only after five consecutive healthy probes.
             gitlab_ready=false
+            gitlab_successes=0
             gitlab_deadline=$((SECONDS + 300))
             while ((SECONDS < gitlab_deadline)); do
                 if curl --max-time 5 -fsSL http://127.0.0.1:8023/ \
                     >/dev/null 2>&1; then
-                    gitlab_ready=true
-                    break
+                    gitlab_successes=$((gitlab_successes + 1))
+                    if [ "$gitlab_successes" -ge 5 ]; then
+                        gitlab_ready=true
+                        break
+                    fi
+                else
+                    gitlab_successes=0
                 fi
                 sleep 2
             done

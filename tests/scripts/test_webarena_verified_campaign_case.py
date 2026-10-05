@@ -24,7 +24,27 @@ sleep() {{ :; }}
 printf '%s\\n' "$attempts"
 """
     result = subprocess.run(["bash", "-c", shell], check=True, capture_output=True, text=True)
-    assert result.stdout.strip() == "3"
+    assert result.stdout.strip() == "7"
+
+
+def test_gitlab_page_wait_requires_consecutive_successes():
+    source = SCRIPT.read_text()
+    start = source.index("gitlab_ready=false")
+    end = source.index("            ;;", start)
+    snippet = source[start:end]
+    shell = f"""
+set -euo pipefail
+attempts=0
+curl() {{
+    attempts=$((attempts + 1))
+    [ "$attempts" -eq 1 ] || [ "$attempts" -ge 3 ]
+}}
+sleep() {{ :; }}
+{snippet}
+printf '%s\\n' "$attempts"
+"""
+    result = subprocess.run(["bash", "-c", shell], check=True, capture_output=True, text=True)
+    assert result.stdout.strip() == "7"
 
 
 def test_gitlab_page_wait_fails_when_only_controller_is_healthy():

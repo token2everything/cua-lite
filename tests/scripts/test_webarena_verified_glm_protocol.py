@@ -291,7 +291,7 @@ def test_glm_profile_prefers_its_key_and_qwen_keeps_original_key(monkeypatch):
     )
 
 
-def run_fake_glm_case(tmp_path, monkeypatch, turns):
+def run_fake_glm_case(tmp_path, monkeypatch, turns, evaluation=None):
     """Exercise the runner without a browser, sandbox, or model API."""
     from playwright import sync_api
     from webarena_verified import types as response_types
@@ -372,7 +372,12 @@ def run_fake_glm_case(tmp_path, monkeypatch, turns):
     monkeypatch.setattr(runner, "make_pinned_agent_class", lambda *args, **kwargs: Agent)
     monkeypatch.setattr(runner, "screenshot_bytes", lambda *args: b"fake png")
     monkeypatch.setattr(runner.time, "sleep", lambda seconds: None)
-    monkeypatch.setattr(runner, "score_artifacts", lambda *args: {"score": 0})
+    monkeypatch.setattr(
+        runner,
+        "score_artifacts",
+        lambda *args: evaluation
+        or {"score": 0, "integrity_status": "passed", "publishable": True},
+    )
     monkeypatch.setattr(runner, "secure_result_tree", lambda *args: None)
 
     def finalize(context, browser, trace_path, **kwargs):
@@ -476,3 +481,34 @@ def test_glm_runner_repairs_bad_action_then_records_distinct_failure(tmp_path, m
     assert status["status"] == "model_protocol_failed"
     assert status["action_repair_count"] == 1
     assert status["response_repair_used"] is False
+
+
+def test_glm_runner_evaluator_error_is_not_a_model_zero(tmp_path, monkeypatch):
+    status, _, _ = run_fake_glm_case(
+        tmp_path,
+        monkeypatch,
+        [('{"status":"SUCCESS"}', ["DONE"])],
+        evaluation={"score": 0, "integrity_status": "evaluator_error", "publishable": False},
+    )
+
+    assert status["status"] == "evaluator_error"
+    assert status["evaluation_integrity"] == "evaluator_error"
+    assert status["score"] == 0
+
+
+def test_glm_runner_evidence_disagreement_is_separate_from_model_failure(
+    tmp_path, monkeypatch
+):
+    status, _, _ = run_fake_glm_case(
+        tmp_path,
+        monkeypatch,
+        [('{"status":"SUCCESS"}', ["DONE"])],
+        evaluation={
+            "score": 0,
+            "integrity_status": "evidence_disagreement",
+            "publishable": False,
+        },
+    )
+
+    assert status["status"] == "evidence_invalid"
+    assert status["evaluation_integrity"] == "evidence_disagreement"

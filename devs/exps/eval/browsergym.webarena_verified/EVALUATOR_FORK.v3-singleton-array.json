@@ -1,0 +1,39 @@
+{
+  "fork_id": "webarena-verified-v3-singleton-array-schema-1",
+  "official_dataset_sha256": "d65275660814663375028e9017e1f929e3c38321041b125795e2713b52243d30",
+  "purpose": "Offline counterfactual only; official WebArena-Verified 1.2.3 scoring remains unchanged.",
+  "patches": [
+    {
+      "task_id": 699,
+      "evaluator_index": 1,
+      "post_data_schema": {
+        "type": "object",
+        "properties": {
+          "website_ids": {"type": "array", "items": {"type": "number"}},
+          "customer_group_ids": {"type": "array", "items": {"type": "number"}}
+        }
+      }
+    },
+    {
+      "task_id": 700,
+      "evaluator_index": 1,
+      "post_data_schema": {
+        "type": "object",
+        "properties": {
+          "website_ids": {"type": "array", "items": {"type": "number"}},
+          "customer_group_ids": {"type": "array", "items": {"type": "number"}}
+        }
+      }
+    },
+    {
+      "task_id": 811,
+      "evaluator_index": 1,
+      "post_data_schema": {
+        "type": "object",
+        "properties": {
+          "$.issue.assignee_ids": {"type": "array", "items": {"type": "number"}}
+        }
+      }
+    }
+  ]
+}

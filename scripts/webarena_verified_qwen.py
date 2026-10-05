@@ -1087,24 +1087,79 @@ def score_artifacts(
             )
         )
 
+    def contract_identity(value: dict[str, Any]) -> dict[str, Any]:
+        return {
+            key: value.get(key)
+            for key in (
+                "task_id",
+                "intent_template_id",
+                "sites",
+                "task_revision",
+                "status",
+                "score",
+                "error_msg",
+                "webarena_verified_version",
+                "webarena_verified_evaluator_checksum",
+                "webarena_verified_data_checksum",
+            )
+        } | {
+            "evaluators_results": [
+                {
+                    key: item.get(key)
+                    for key in (
+                        "evaluator_name",
+                        "status",
+                        "score",
+                        "actual_normalized",
+                        "expected",
+                        "assertions",
+                        "error_msg",
+                        "should_not_exist",
+                    )
+                }
+                for item in value.get("evaluators_results", [])
+            ]
+        }
+
+    def has_evaluator_error(value: dict[str, Any]) -> bool:
+        return value.get("status") == "error" or any(
+            item.get("status") == "error" for item in value.get("evaluators_results", [])
+        )
+
     har_result = evaluate(NetworkTrace.from_har(har_path))
+    har_evidence = har_result.model_dump(mode="json")
     result = {
         "primary": "har",
         "score": har_result.score,
         "official_all_or_nothing": har_result.score == 1.0,
-        "har": har_result.model_dump(mode="json"),
+        "score_metric": "TaskEvalResult.all_or_nothing",
+        "har": har_evidence,
     }
     try:
         if trace_path is None or not trace_path.is_file():
             raise FileNotFoundError("Playwright trace was not produced")
         trace_result = evaluate(NetworkTrace.from_playwright_trace(trace_path))
-        result["playwright_trace"] = trace_result.model_dump(mode="json")
-        result["inputs_agree"] = har_result.score == trace_result.score
+        trace_evidence = trace_result.model_dump(mode="json")
+        result["playwright_trace"] = trace_evidence
+        result["score_inputs_agree"] = har_result.score == trace_result.score
+        result["inputs_agree"] = contract_identity(har_evidence) == contract_identity(
+            trace_evidence
+        )
+        result["integrity_status"] = (
+            "evaluator_error"
+            if has_evaluator_error(har_evidence) or has_evaluator_error(trace_evidence)
+            else "evidence_disagreement"
+            if not result["inputs_agree"]
+            else "passed"
+        )
     except Exception as error:
         result["playwright_trace"] = {
             "diagnostic_error": {"type": type(error).__name__, "message": str(error)}
         }
         result["inputs_agree"] = None
+        result["score_inputs_agree"] = None
+        result["integrity_status"] = "trace_unavailable"
+    result["publishable"] = result["integrity_status"] == "passed"
     return result
 
 
@@ -1707,6 +1762,12 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
             "status": (
                 "failed"
                 if error
+                else "evaluator_error"
+                if glm_protocol
+                and evaluation is not None
+                and evaluation["integrity_status"] == "evaluator_error"
+                else "evidence_invalid"
+                if glm_protocol and (evaluation is None or not evaluation["publishable"])
                 else "model_protocol_failed"
                 if glm_protocol_failure
                 else "completed"
@@ -1746,6 +1807,9 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
             status["model_profile"] = model_profile
             status["action_repair_count"] = glm_action_repair_count
             status["model_protocol_error"] = glm_protocol_failure
+            status["evaluation_integrity"] = (
+                evaluation["integrity_status"] if evaluation is not None else None
+            )
             status["fixed_parameters"]["reasoning_effort"] = "max"
         if error:
             status["error"] = {

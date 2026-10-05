@@ -1,5 +1,25 @@
 ## Unreleased
 
+### V17 — GLM balanced nav call wrapper
+
+V16 task 50 supplied one canonical click inside an empty, balanced `nav`
+wrapper. The pinned parser returned click(1183,108), but the classifier rejected
+the closing presentation tag. V17 adds the observed tag to the existing GLM
+projection owner. It preserves provider content/history, literal text, prefix
+meaning, field/coordinate validation, Qwen behavior and official scores. The
+old task ultimately passed after model-visible repair; its score is not revised
+or substituted into the fresh campaign. Rollback targets
+`wav-infra-v16-inline-code`.
+
+Regression: 287 relevant tests passed, including 158 protocol tests; three
+failures reproduced the old gap. Actual pinned-parser replay preserved all
+660 Qwen turns and 3,740 GLM turns; only the observed nav-wrapped call changes
+classification, with identical click coordinates. Runtime SDK 3.19.2 passed
+36 networking-disabled transport scenarios. These checks made no model API
+calls. Independent review passed 158 protocol tests and 82 actual-parser/AST
+checks covering GLM rejection boundaries, literal text, Qwen equivalence and
+all 14 task-50 turns. Fresh V17 online startup verification is pending.
+
 ### V16 — GLM paired inline-code call projection
 
 V15 task 47 returned a unique, complete click XML call inside paired single

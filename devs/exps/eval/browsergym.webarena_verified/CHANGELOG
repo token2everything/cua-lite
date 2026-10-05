@@ -1,5 +1,19 @@
 ## Unreleased
 
+### V5 — GLM provider projection and persistent Docker daemon
+
+The live V4 task-0 canary proved that GLM emits named XML child fields and
+singleton coordinate arrays. The Qwen parser expects parameter tags and a
+flat coordinate pair, so V4 incorrectly classified that valid click as a
+terminal protocol failure. The GLM-only boundary now projects this observed
+format into the pinned parser contract while keeping raw content in provider
+logs/history and recording projected content in the trajectory. The worker
+preparation script now requires a coordinator-owned persistent `dockerd`;
+starting it as a child of the short-lived prepare command caused the first
+startup attempt to lose its Docker connection. The V4 task-0 archive and both
+failed/retired attempts remain preserved outside the sandbox. Offline
+regression: 96 targeted tests passed; V5 online canary pending.
+
 ### V4 — Campaign terminal evidence
 
 The GLM-only campaign scripts now bind each task to its run, worker, sandbox,

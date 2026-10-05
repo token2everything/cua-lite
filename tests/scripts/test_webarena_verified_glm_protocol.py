@@ -347,8 +347,6 @@ def test_glm_projects_balanced_observed_wrappers_around_complete_call(tmp_path, 
         ("<head>", "</head>extra text"),
         ("<html><body>", "</body>"),
         ("<body>unexpected text", "</body>"),
-        ("<html>unexpected text<body>", "</body>"),
-        ("</body><html>", "</html>"),
         ("<table>", "</body>"),
         ("<table>", "</table>extra text"),
         ("<table>unexpected text", "</table>"),
@@ -394,6 +392,34 @@ def test_glm_keeps_unprojected_prefix_text_and_its_existing_action_meaning(tmp_p
         processed_height=1088,
     )
     assert agent.last_projected_content == agent.last_provider_content == content
+    assert classify(agent.last_projected_content, actions).kind == "action"
+
+
+@pytest.mark.parametrize(
+    "prefix",
+    [
+        "<table><tr><td>Action: Click Forums.</td></tr></table>\n",
+        "Action: Click the item labeled <table>.\n",
+        "<html>prefix prose\n",
+        "</body>",
+    ],
+)
+def test_glm_projects_adjacent_balanced_wrappers_without_interpreting_prefix_prose(
+    tmp_path, prefix
+):
+    call = tool_call("left_click", coordinate=[558, 113]).split("\n", 1)[1]
+    content = prefix + "<html><body>" + call + "</body></html>"
+    agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "glm53flash")
+    agent.last_provider_content = content
+    _, actions = agent._parse_response(
+        content,
+        original_width=1920,
+        original_height=1080,
+        processed_width=1920,
+        processed_height=1088,
+    )
+    assert agent.last_provider_content == content
+    assert agent.last_projected_content == prefix + call
     assert classify(agent.last_projected_content, actions).kind == "action"
 
 

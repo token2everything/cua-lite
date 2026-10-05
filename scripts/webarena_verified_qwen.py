@@ -669,8 +669,8 @@ def make_pinned_agent_class(
                     blocks = list(_GLM_TOOL_BLOCK.finditer(response))
                 if len(blocks) == 1:
                     block = blocks[0]
-                    # Remove only balanced, empty HTML wrappers around the
-                    # actual call. Tags inside a type/text value are untouched.
+                    # Project balanced, empty wrappers immediately around the
+                    # call. Prefix prose and literal type/text remain untouched.
                     prefix, suffix = response[: block.start()], response[block.end() :]
                     cursor = len(prefix)
                     opening_names = []
@@ -682,7 +682,6 @@ def make_pinned_agent_class(
                     closing_tags = list(_GLM_WRAPPER_TAG.finditer(suffix))
                     if (
                         opening_names
-                        and not _GLM_WRAPPER_TAG.search(prefix[:cursor])
                         and not _GLM_WRAPPER_TAG.sub("", suffix).strip()
                         and all(tag.group(1) for tag in closing_tags)
                         and opening_names == [tag.group(2) for tag in closing_tags]

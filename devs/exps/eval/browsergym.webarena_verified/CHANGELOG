@@ -5,9 +5,11 @@
 Both V10 task-66 startup replies contain one complete click inside an empty,
 balanced `table` wrapper. V11 adds that observed spelling to the same provider
 projection owner; it does not change task instructions, model parameters,
-Qwen's default path, or the existing treatment of free-form prefix text.
+Qwen's default path, or the existing classification of free-form prefix text.
+Projection now examines only the empty wrappers immediately adjacent to the
+call; unrelated HTML in preceding prose cannot block that projection.
 
-Offline regression: 184 relevant tests passed. Actual pinned-parser replay of
+Offline regression: 186 relevant tests passed. Actual pinned-parser replay of
 both replies accepts the original click at desktop pixel (558, 112). Across
 58 V8/V9 archives and 1,522 turns, all 1,456 previously accepted actions and
 50 finals retain their exact behavior. V10 remains frozen and will archive

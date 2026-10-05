@@ -242,6 +242,66 @@ def test_glm_projects_real_native_child_fields_without_changing_raw_history(tmp_
     assert turn.desktop_coordinate == (50, 565)
 
 
+@pytest.mark.parametrize(
+    "coordinate_field, expected",
+    [
+        ("<coordinate>558, 113</coordinate>", (558, 113)),
+        ("<coordinate>1222 908</coordinate>", (1222, 908)),
+        ("<parameter=coordinate>558, 113</parameter>", (558, 113)),
+        ("<parameter=coordinate>1222 908</parameter>", (1222, 908)),
+    ],
+)
+def test_glm_projects_two_numeric_pixel_tokens_before_gui_parser(
+    tmp_path, coordinate_field, expected
+):
+    action_field = (
+        "<parameter=action>left_click</parameter>"
+        if coordinate_field.startswith("<parameter=")
+        else "<action>left_click</action>"
+    )
+    content = (
+        "<tool_call><function=computer_use>"
+        f"{action_field}{coordinate_field}"
+        "</function></tool_call>"
+    )
+    agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "glm53flash")
+    response = agent.call_llm({"messages": []}, agent.model)
+    _, actions = agent._parse_response(
+        response,
+        original_width=1920,
+        original_height=1080,
+        processed_width=1920,
+        processed_height=1088,
+    )
+
+    assert agent.last_provider_content == content
+    assert f"<parameter=coordinate>[{expected[0]}, {expected[1]}]</parameter>" in (
+        agent.last_projected_content
+    )
+    assert classify(agent.last_projected_content, actions).coordinate == expected
+
+
+def test_glm_does_not_project_incomplete_coordinate_text(tmp_path):
+    content = (
+        "<tool_call><function=computer_use>"
+        "<parameter=action>left_click</parameter>"
+        "<parameter=coordinate>559</parameter>"
+        "</function></tool_call>"
+    )
+    agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "glm53flash")
+    response = agent.call_llm({"messages": []}, agent.model)
+    _, actions = agent._parse_response(
+        response,
+        original_width=1920,
+        original_height=1080,
+        processed_width=1920,
+        processed_height=1088,
+    )
+
+    assert agent.last_projected_content == content
+    assert classify(agent.last_projected_content, actions).kind == "action_error"
+
+
 def test_qwen_default_still_parses_composite_response(tmp_path):
     reasoning = tool_call("left_click", coordinate=[10, 10])
     content = '{"status":"SUCCESS"}'

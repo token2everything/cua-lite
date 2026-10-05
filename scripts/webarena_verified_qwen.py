@@ -146,6 +146,12 @@ _GLM_TOOL_BLOCK = re.compile(r"<tool_call>\s*(.*?)\s*</tool_call>", re.DOTALL)
 _GLM_FUNCTION_BLOCK = re.compile(r"\s*<function=computer_use>\s*(.*?)\s*</function>\s*", re.DOTALL)
 _GLM_PARAMETER_BLOCK = re.compile(r"<parameter=([^>]+)>\s*(.*?)\s*</parameter>", re.DOTALL)
 _GLM_NATIVE_FIELD_BLOCK = re.compile(r"<([a-z_]+)>\s*(.*?)\s*</\1>", re.DOTALL)
+_GLM_COORDINATE_PARAMETER_BLOCK = re.compile(
+    r"<parameter=coordinate>\s*(.*?)\s*</parameter>", re.DOTALL
+)
+_GLM_COORDINATE_TEXT_PAIR = re.compile(
+    r"(-?\d+(?:\.\d+)?)(?:\s*,\s*|\s+)(-?\d+(?:\.\d+)?)"
+)
 _GLM_NATIVE_FIELDS = frozenset(
     {"action", "coordinate", "text", "keys", "pixels", "time", "duration", "status"}
 )
@@ -639,39 +645,54 @@ def make_pinned_agent_class(
                 if len(blocks) == 1:
                     block = blocks[0]
                     function = _GLM_FUNCTION_BLOCK.fullmatch(block.group(1))
-                    if function is not None and "<parameter=" not in function.group(1):
+                    if function is not None:
                         body = function.group(1)
-                        fields = list(_GLM_NATIVE_FIELD_BLOCK.finditer(body))
-                        cursor = 0
-                        projected_fields = []
-                        for field in fields:
-                            name, value = field.group(1), field.group(2)
-                            if (
-                                body[cursor : field.start()].strip()
-                                or name not in _GLM_NATIVE_FIELDS
-                            ):
-                                break
-                            if name == "coordinate":
-                                try:
-                                    raw_coordinate = json.loads(value)
-                                except json.JSONDecodeError:
-                                    raw_coordinate = None
+                        if "<parameter=" not in body:
+                            fields = list(_GLM_NATIVE_FIELD_BLOCK.finditer(body))
+                            cursor = 0
+                            projected_fields = []
+                            for field in fields:
+                                name, value = field.group(1), field.group(2)
                                 if (
-                                    isinstance(raw_coordinate, list)
-                                    and len(raw_coordinate) == 1
-                                    and isinstance(raw_coordinate[0], list)
-                                    and len(raw_coordinate[0]) == 2
+                                    body[cursor : field.start()].strip()
+                                    or name not in _GLM_NATIVE_FIELDS
                                 ):
-                                    value = json.dumps(raw_coordinate[0])
-                            projected_fields.append(f"<parameter={name}>{value}</parameter>")
-                            cursor = field.end()
-                        else:
-                            if fields and not body[cursor:].strip():
-                                start = block.start(1) + function.start(1)
-                                end = block.start(1) + function.end(1)
-                                response = (
-                                    response[:start] + "\n".join(projected_fields) + response[end:]
+                                    break
+                                if name == "coordinate":
+                                    try:
+                                        raw_coordinate = json.loads(value)
+                                    except json.JSONDecodeError:
+                                        raw_coordinate = None
+                                    if (
+                                        isinstance(raw_coordinate, list)
+                                        and len(raw_coordinate) == 1
+                                        and isinstance(raw_coordinate[0], list)
+                                        and len(raw_coordinate[0]) == 2
+                                    ):
+                                        value = json.dumps(raw_coordinate[0])
+                                projected_fields.append(f"<parameter={name}>{value}</parameter>")
+                                cursor = field.end()
+                            else:
+                                if fields and not body[cursor:].strip():
+                                    body = "\n".join(projected_fields)
+                        # GLM also emits pixel pairs as "x, y" or "x y".
+                        # Project only two numeric values into the canonical
+                        # array before upstream parses the GUI action.
+                        for field in reversed(
+                            list(_GLM_COORDINATE_PARAMETER_BLOCK.finditer(body))
+                        ):
+                            pair = _GLM_COORDINATE_TEXT_PAIR.fullmatch(field.group(1).strip())
+                            if pair is not None:
+                                value = f"[{pair.group(1)}, {pair.group(2)}]"
+                                body = (
+                                    body[: field.start()]
+                                    + f"<parameter=coordinate>{value}</parameter>"
+                                    + body[field.end() :]
                                 )
+                        if body != function.group(1):
+                            start = block.start(1) + function.start(1)
+                            end = block.start(1) + function.end(1)
+                            response = response[:start] + body + response[end:]
                 self.last_projected_content = response
                 self.last_upstream_parse_error = None
                 try:

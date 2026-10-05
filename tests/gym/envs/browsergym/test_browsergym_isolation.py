@@ -32,11 +32,13 @@ class TestWaVwaTaskFacts:
         from lite.gym.envs.browsergym import isolation
 
         isolation._RAW_CONFIG_CACHE.clear()
+        isolation._DEPENDS_ON_CACHE.clear()
 
     def teardown_method(self):
         from lite.gym.envs.browsergym import isolation
 
         isolation._RAW_CONFIG_CACHE.clear()
+        isolation._DEPENDS_ON_CACHE.clear()
 
     def _seed_cache(self, benchmark: str, tasks: dict[str, dict]) -> None:
         """Bypass the disk JSON load by pre-populating the shared cache
@@ -159,6 +161,64 @@ class TestWaVwaTaskFacts:
         )
         assert _wa_vwa_task_facts("webarena", "webarena.99") == (["map"], True, False)
 
+    def test_verified_uses_official_mutation_type_without_llm_judge(self, monkeypatch):
+        from lite.gym.envs.browsergym import webarena_verified
+
+        task_id = "webarena_verified.303.44.2"
+        self._seed_cache(
+            "webarena_verified",
+            {
+                task_id: {
+                    "sites": ["gitlab"],
+                    "intent": "Create a repository",
+                    "eval": [
+                        {
+                            "evaluator": "AgentResponseEvaluator",
+                            "expected": {"task_type": "mutate"},
+                        }
+                    ],
+                }
+            },
+        )
+        monkeypatch.setattr(
+            webarena_verified,
+            "is_mutating",
+            lambda candidate: candidate == task_id,
+        )
+
+        assert _wa_vwa_task_facts("webarena_verified", task_id) == (
+            ["gitlab"],
+            False,
+            True,
+        )
+
+    def test_verified_metadata_surfaces_hard_and_dependency_facts(self, monkeypatch):
+        from lite.gym.envs.browsergym import isolation, webarena_verified
+        from lite.gym.envs.browsergym.main import BrowserGymEnv
+
+        task_id = "webarena_verified.303.44.2"
+        parent = "webarena_verified.285.43.2"
+        self._seed_cache(
+            "webarena_verified",
+            {task_id: {"sites": ["gitlab"], "intent": "Create", "eval": []}},
+        )
+        isolation._DEPENDS_ON_CACHE["webarena_verified"] = {task_id: [parent]}
+        monkeypatch.setattr(webarena_verified, "is_mutating", lambda candidate: True)
+        monkeypatch.setattr(webarena_verified, "is_hard", lambda candidate: True)
+
+        metadata = BrowserGymEnv._task_metadata(
+            "webarena_verified",
+            task_id,
+            action_subsets=("coord", "chat"),
+            viewport=(1280, 720),
+        )
+
+        assert metadata.others["sites"] == ["gitlab"]
+        assert metadata.others["mutating"] is True
+        assert metadata.others["hard"] is True
+        assert metadata.others["depends_on"] == [parent]
+        assert "llm_as_a_judge" not in metadata.others
+
 
 # ---------------------------------------------------------------------------
 # depends_on ingestion (topological run-order for the strict-isolation flow)
@@ -195,11 +255,15 @@ class TestTaskDependsOn:
 
     def test_real_csv_loads(self):
         # Integration: the bundled BrowserGym experiments metadata CSV resolves
-        # via importlib.resources and parses (webarena.1 → its curated parent).
+        # without importing its pandas-dependent package and parses both task
+        # families (task 1 → its curated task-0 parent).
         from lite.gym.envs.browsergym import isolation
 
         isolation._DEPENDS_ON_CACHE.clear()
         assert isolation.task_depends_on("webarena", "webarena.1") == ["webarena.0"]
+        assert isolation.task_depends_on(
+            "webarena_verified", "webarena_verified.279.1.2"
+        ) == ["webarena_verified.279.0.2"]
 
 
 # ---------------------------------------------------------------------------

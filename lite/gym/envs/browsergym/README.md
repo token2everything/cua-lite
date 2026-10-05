@@ -1,13 +1,14 @@
 # BrowserGym
 
-`--env-id` `browsergym.miniwob` · `browsergym.visualwebarena` · `browsergym.webarena`
+`--env-id` `browsergym.miniwob` · `browsergym.webarena` · `browsergym.webarena_verified` · `browsergym.visualwebarena`
 
-CUA-Lite wrapper for [BrowserGym](https://github.com/ServiceNow/BrowserGym). 1847 tasks across 3 benchmarks (MiniWoB / WebArena / VisualWebArena), via `gym.make("browsergym.<bench>@<task_id>")` with `LiteBrowserActionSpace` + browser `extra_tools` (`back`, `goto`). See [docs/envs.md](/docs/envs.md) for the env contract.
+CUA-Lite wrapper for [BrowserGym](https://github.com/ServiceNow/BrowserGym). 2659 tasks across 4 benchmarks (MiniWoB / WebArena / WebArena-Verified / VisualWebArena), via `gym.make("browsergym.<bench>@<task_id>")` with `LiteBrowserActionSpace` + browser `extra_tools` (`back`, `goto`). See [docs/envs.md](/docs/envs.md) for the env contract.
 
 | Benchmark | Task ID prefix | Tasks | Infra | Difficulty |
 |---|---|---|---|---|
 | MiniWoB | `browsergym.miniwob@` | 125 | Local HTTP server | Low |
 | WebArena | `browsergym.webarena@` | 812 | 5 Docker containers, ~32 GB RAM, ~60 GB images + ~200 GB OSM assets by default | Medium |
+| WebArena-Verified | `browsergym.webarena_verified@` | 812 full / 258 Hard | Official Verified site images + external Wikipedia/Map data | Medium |
 | VisualWebArena | `browsergym.visualwebarena@` | 910 | WebArena + Classifieds container | Medium |
 
 ## Setup
@@ -15,11 +16,28 @@ CUA-Lite wrapper for [BrowserGym](https://github.com/ServiceNow/BrowserGym). 184
 ```bash
 # One-time: download tars/zip/clone + `docker load` images (required for both modes).
 uv run --no-sync bash lite/gym/envs/browsergym/scripts/install.sh <benchmark>
-# benchmark = webarena (~60 GB images + ~200 GB OSM assets by default) | visualwebarena (webarena + classifieds) | miniwob (no Docker)
+# benchmark = webarena | webarena_verified | visualwebarena | miniwob
 ```
 
-WA/VWA also need a judge key — `export OPENAI_API_KEY="..."` (required
-benchmark-wide; without it `reset()` hard-fails). MiniWoB needs none.
+WebArena and VisualWebArena need a judge key — `export OPENAI_API_KEY="..."`
+(required benchmark-wide; without it `reset()` hard-fails). WebArena-Verified
+uses deterministic response/network-trace evaluators and needs no judge key.
+
+### WebArena-Verified sites
+
+`install.sh webarena_verified` pins `browsergym-core==0.14.3`,
+`browsergym-experiments==0.14.3`, `browsergym-webarena-verified==0.14.3`, and
+`webarena-verified==1.2.3` (full dataset SHA-256
+`d65275660814663375028e9017e1f929e3c38321041b125795e2713b52243d30`).
+The site stack is deliberately operator-managed: Verified uses fixed website
+images with benchmark-specific fixes and env-ctrl, so CUA-Lite will not replace
+it with the older WebArena images. Start the six official images following the
+[upstream environment guide](https://servicenow.github.io/webarena-verified/environments/),
+then set `WA_SHOPPING`, `WA_SHOPPING_ADMIN`, `WA_REDDIT`, `WA_GITLAB`,
+`WA_WIKIPEDIA`, `WA_MAP`, and `WA_HOMEPAGE` in the env-server process.
+`PW_EXTRA_HEADERS` may point to the upstream JSON header file when the site
+deployment requires header authentication. Wikipedia and Map require their
+published external data; do not report full-suite coverage when either is absent.
 
 **Env-server mode (recommended)** — launch [`scripts/serve_env.py`](/scripts/serve_env.py);
 clients set both `CUA_LITE_ENV_SERVER_URL` and `CUA_LITE_ENV_SERVER_TOKEN`.
@@ -35,11 +53,16 @@ Use `localhost` only when the env-server and rollout client share the same netwo
 
 WA/VWA boot slowly (gitlab ~5-15 min); a casual run just lets first-wave tasks retry through the cold boot (a retriable 503 + a `warming: gitlab …` message). For operator warm/reset notes, see [WA/VWA runtime](#wavwa-runtime).
 
-**Direct mode** — `gym.make`'s `ensure_services` auto-starts the stack; or bring it up yourself first:
+**Direct mode (MiniWoB / legacy WA / VWA)** — `gym.make`'s
+`ensure_services` auto-starts the local stack; or bring it up yourself first:
 
 ```bash
 uv run --no-sync bash lite/gym/envs/browsergym/scripts/start.sh <benchmark>   # bring the stack up
 ```
+
+WebArena-Verified is different: direct mode only probes the operator-managed
+`WA_*` endpoints configured above. It never invokes `start.sh` or starts/stops
+the legacy WebArena containers.
 
 <details>
 <summary>Setup notes</summary>
@@ -86,7 +109,9 @@ uv run python -c "
 import asyncio, lite.gym as gym
 async def main():
     env = gym.make('browsergym.miniwob@click-dialog', max_steps=5)
-    # or: 'browsergym.webarena@0' / 'browsergym.visualwebarena@0'
+    # or: 'browsergym.webarena@0' /
+    #     'browsergym.webarena_verified@279.0.2' /
+    #     'browsergym.visualwebarena@0'
     r = await env.reset(); print(f'Instruction: {r.text}'); await env.close()
 asyncio.run(main())"
 ```
@@ -164,14 +189,19 @@ Tunable defaults live in [`configs/default.yaml`](/lite/gym/envs/browsergym/conf
 import lite.gym as gym
 print(gym.registry.task_ids("browsergym.miniwob"))        # 125 tasks
 print(gym.registry.task_ids("browsergym.webarena"))       # 812 tasks
+print(gym.registry.task_ids("browsergym.webarena_verified"))  # 812 tasks
 print(gym.registry.task_ids("browsergym.visualwebarena")) # 910 tasks
 ```
 
-Metadata in `env.metadata.others`: `sites`, `mutating`, `depends_on`, `llm_as_a_judge` — see [Filtering tasks](#filtering-tasks-static-task-facts) below.
+WebArena-Verified task IDs preserve BrowserGym's official
+`<intent_template_id>.<task_id>.<revision>` identity. Its metadata adds
+`hard: bool` for the official 258-task Hard subset. Other static fields include
+`sites`, `mutating`, `depends_on`, and (legacy WA/VWA only)
+`llm_as_a_judge`; see [Filtering tasks](#filtering-tasks-static-task-facts).
 
 ## Evaluation
 
-Runs **only at episode end** (`terminate` / `response` / `max_steps`) via BrowserGym's per-benchmark evaluator. A VWA subset scores via an LLM judge (`llm_fuzzy_match`, default `gpt-4.1`) / image-caption model through the configured API route, so **WA/VWA require `OPENAI_API_KEY`** benchmark-wide — the upstream evaluator builds its client at import time, so a missing key makes *every* VWA `reset()` hard-fail (not just judged tasks), never a silent `0.0`. See [Setup](#setup).
+Runs **only at episode end** (`terminate` / `response` / `max_steps`) via BrowserGym's per-benchmark evaluator. WebArena-Verified records a Playwright trace and evaluates the model's schema-constrained final JSON with the official deterministic response/network evaluators. Its task reward is binary: every configured evaluator must pass for `1.0`; otherwise it is `0.0`. Legacy WA/VWA still use their existing LLM/image judge paths and require `OPENAI_API_KEY`. See [Setup](#setup).
 
 ### Eval rigor (opt-in)
 
@@ -229,6 +259,19 @@ scripts/configs/{qwen3_5,qwen3_vl}/default/browsergym.{miniwob,webarena,visualwe
 
 VWA uses `mixed.yaml` (not `text_only.yaml`) because Qwen3.5-9B / Qwen3-VL are multimodal — the env surfaces the task's goal image(s) (single or multi) and they are shown on every turn so the model can ground "find this product" prompts even in text+AXTree mode (see [Goal images](#goal-images) below).
 
+WebArena-Verified provides `default.yaml`, `text_only.yaml`, and `som.yaml`
+for Qwen3.5/Qwen3-VL plus screenshot defaults for GPT and Claude. Its campaign
+runner performs the read/write split and selects either Full or Hard:
+
+```bash
+# Full (812 tasks)
+./devs/exps/eval/browsergym.webarena_verified/run.sh gpt-5.5
+
+# Official Hard subset (258 tasks)
+EVAL_TASK_SET=hard \
+  ./devs/exps/eval/browsergym.webarena_verified/run.sh gpt-5.5
+```
+
 ## Filtering tasks (static task facts)
 
 The env exposes **static, deploy-independent task facts** in `metadata.others`
@@ -241,10 +284,11 @@ is merely cold-booting is retried via **503 + Retry-After**, not pre-excluded
 
 | `others` key | Benches | Meaning |
 |---|---|---|
-| `sites` (`list[str]`) | WA / VWA | WA sites the task touches (`"shopping"`, `"map"`, `"gitlab"`, `"reddit"`, …). Static, from the task json. |
+| `sites` (`list[str]`) | WA / Verified / VWA | Sites the task touches (`"shopping"`, `"map"`, `"gitlab"`, `"reddit"`, …). Static, from the task json. |
 | `llm_as_a_judge` (`bool`) | WA / VWA | `True` iff the evaluator uses `string_match.fuzzy_match` (needs an external LLM judge — cua-lite default `gpt-4.1` via `llm_judge_model`; upstream hard-codes `gpt-4-1106-preview`). Runs by default — reset hard-fails if `OPENAI_API_KEY` is unset (no silent reward-0). Static. |
-| `mutating` (`bool`) | WA / VWA | `True` iff the task writes persisted backend state (`isolation.is_mutating`). Use this for the WA/VWA operator split described in [WA/VWA runtime](#wavwa-runtime). Static. |
-| `depends_on` (`list[str]`) | WA / VWA | Curated run-order parents (BrowserGym metadata) — orders the write pass so an earlier writer's residue can't false-satisfy a later task. Static. |
+| `mutating` (`bool`) | WA / Verified / VWA | For Verified, exact `AgentResponseEvaluator.expected.task_type == "mutate"`; for WA/VWA, the existing isolation classification. Use for the read/write operator split. |
+| `hard` (`bool`) | Verified | Membership in the official 258-task Hard subset. |
+| `depends_on` (`list[str]`) | WA / Verified / VWA | Curated BrowserGym run-order parents when metadata is installed. |
 
 VWA goal-image tasks (single or multi) are NOT excluded — see [Goal images](#goal-images). Filter at rollout time on the static facts:
 
@@ -347,6 +391,14 @@ Please cite BrowserGym and the benchmark(s) you run alongside [CUA-Lite](/README
   publisher = {OpenReview.net},
   year      = {2024},
   url       = {https://openreview.net/forum?id=oKn9c6ytLx}
+}
+
+@inproceedings{hattami2025webarena,
+  title     = {WebArena Verified: Reliable Evaluation for Web Agents},
+  author    = {Amine El hattami and Megh Thakkar and Nicolas Chapados and Christopher Pal},
+  booktitle = {Workshop on Scaling Environments for Agents},
+  year      = {2025},
+  url       = {https://openreview.net/forum?id=94tlGxmqkN}
 }
 
 @inproceedings{koh2024visualwebarena,

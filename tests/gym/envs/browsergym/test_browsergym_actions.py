@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
+import asyncio
 import os
-from unittest.mock import patch
+import threading
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
 pytest.importorskip("browsergym.core", reason="browsergym not installed")
 
+from lite.core.tools.calls import make_tool_call
 from lite.core.tools.extra_tools import LiteBrowserNavToolSet
 from lite.core.tools.schemas import tool_schema_name, tool_schema_parameters
 from lite.gym.envs.browsergym.main import (
@@ -20,7 +24,7 @@ from lite.gym.envs.browsergym.main import (
     _tool_schema_from_signature,
     _tools_for_subsets,
 )
-from tests.gym.envs.browsergym._support import _make_fake
+from tests.gym.envs.browsergym._support import _fake_bgym_step_obs, _make_fake, _png_bytes
 
 # ---------------------------------------------------------------------------
 # Action surface introspection
@@ -373,7 +377,7 @@ class TestActionTranslation:
             self._translate("goto", {"url": "https://example.com"}) == "goto('https://example.com')"
         )
 
-    def test_wait_noop(self):
+    def test_wait_has_no_browsergym_code(self):
         assert self._translate("wait", {"duration": 1.0}) is None
 
     def test_screenshot_noop(self):
@@ -403,6 +407,179 @@ class TestActionTranslation:
         code = self._translate("select_option", {"bid": "a47", "options": "FOO"})
         assert "select_option" in code
         assert "'a47'" in code
+
+
+class TestTypeExecution:
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "arguments", [{"press_enter": True}, {"press_enter": False}, {"press_enter": None}, {}],
+    )
+    async def test_type_executes_optional_enter_as_single_native_calls(
+        self, arguments, monkeypatch,
+    ):
+        from browsergym.core.action.base import execute_python_code
+        from browsergym.core.action.highlevel import HighLevelActionSet
+
+        env = _make_fake(cursor=False, multiaction=False)
+        try:
+            await env.reset()
+            action_set = HighLevelActionSet(subsets=["coord"], multiaction=False, strict=True)
+            native_calls = []
+            keyboard_events = []
+            backend_threads = []
+            frames = [_png_bytes(4, 4), _png_bytes(5, 5)]
+            page = SimpleNamespace(keyboard=SimpleNamespace(
+                type=lambda text, delay: keyboard_events.append(("type", text)),
+                press=lambda key: keyboard_events.append(("press", key)),
+            ))
+
+            def backend_step(code):
+                backend_threads.append(threading.get_ident())
+                native_calls.append(code)
+                execute_python_code(action_set.to_python_code(code), page, None, None)
+                obs = _fake_bgym_step_obs(screenshot=frames[len(native_calls) - 1])
+                return obs, 0.0, False, False, {}
+
+            env._env = SimpleNamespace(step=backend_step)
+            monkeypatch.setattr("lite.gym.envs.browsergym.main._with_playwright", lambda fn: fn())
+            result = await env.step([
+                make_tool_call("computer", {"actions": [{"action": "type", "text": "technology",
+                                                         **arguments}]}, call_id="call_type"),
+            ])
+
+            expected_calls = ['keyboard_type("technology")']
+            expected_events = [("type", "technology")]
+            if arguments.get("press_enter") is True:
+                expected_calls.append('keyboard_press("Enter")')
+                expected_events.append(("press", "Enter"))
+            assert native_calls == expected_calls
+            assert keyboard_events == expected_events
+            assert all(t != threading.get_ident() for t in backend_threads)
+            assert result.info["executed_actions"] == [{"call": c} for c in expected_calls]
+            assert len(result.results) == 1
+            assert result.results[0].tool_call_id == "call_type"
+            assert result.results[0].images == [frames[len(expected_calls) - 1]]
+            assert result.results[0].error is None
+            assert env._step_count == 1
+        finally:
+            env._env = None
+            await env.close()
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("typing_result", [None, {"last_action_error": "typing failed"}])
+    async def test_typing_failure_does_not_send_enter(self, typing_result):
+        env = _make_fake(use_screenshot=False)
+        try:
+            await env.reset()
+
+            async def execute(code):
+                if typing_result is None:
+                    env._last_action_execution_error = "typing failed"
+                return typing_result
+
+            env._execute_bgym_action = AsyncMock(side_effect=execute)
+            result = await env.step([
+                make_tool_call("computer", {"actions": [{"action": "type", "text": "technology",
+                                                         "press_enter": True}]},
+                               call_id="call_type"),
+            ])
+
+            env._execute_bgym_action.assert_awaited_once_with('keyboard_type("technology")')
+            assert result.info["executed_actions"] == [{"call": 'keyboard_type("technology")'}]
+            assert result.results[0].tool_call_id == "call_type"
+            assert result.results[0].metadata == {"is_error": True}
+            assert result.results[0].error == "type failed: execution failed"
+        finally:
+            await env.close()
+
+    @pytest.mark.asyncio
+    async def test_enter_failure_is_visible_under_the_type_call_id(self):
+        env = _make_fake(use_screenshot=False)
+        try:
+            await env.reset()
+            env._execute_bgym_action = AsyncMock(side_effect=[
+                _fake_bgym_step_obs(), {"last_action_error": "Enter failed"},
+            ])
+            result = await env.step([
+                make_tool_call("computer", {"actions": [{"action": "type", "text": "technology",
+                                                         "press_enter": True}]},
+                               call_id="call_type"),
+            ])
+
+            assert env._execute_bgym_action.await_count == 2
+            assert result.results[0].tool_call_id == "call_type"
+            assert result.results[0].metadata == {"is_error": True}
+            assert result.results[0].error == "type failed: execution failed"
+            assert env._step_count == 1
+        finally:
+            await env.close()
+
+
+class TestWaitExecution:
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        ("arguments", "seconds"),
+        [({"duration": 2.5}, 2.5), ({}, 1.0), ({"duration": 0}, 0.0)],
+    )
+    async def test_wait_finishes_before_its_frame(self, arguments, seconds, monkeypatch):
+        env = _make_fake(cursor=False)
+        try:
+            await env.reset()
+            env._env = SimpleNamespace()
+            env._execute_bgym_action = AsyncMock()
+            events = []
+            real_sleep = asyncio.sleep
+            frame = _png_bytes()
+
+            async def sleep(duration):
+                events.append(("wait_started", duration))
+                await real_sleep(0)
+                events.append(("wait_finished", duration))
+
+            async def screenshot():
+                events.append(("frame", None))
+                return frame
+
+            sleeper = AsyncMock(side_effect=sleep)
+            monkeypatch.setattr("lite.gym.envs.browsergym.main.asyncio.sleep", sleeper)
+            env._take_screenshot = AsyncMock(side_effect=screenshot)
+            result = await env.step([
+                make_tool_call("computer", {"actions": [{"action": "wait", **arguments}]},
+                               call_id="call_wait"),
+            ])
+
+            sleeper.assert_awaited_once_with(seconds)
+            assert events == [
+                ("wait_started", seconds), ("wait_finished", seconds), ("frame", None),
+            ]
+            assert result.results[0].images == [frame]
+            assert result.results[0].error is None
+            env._execute_bgym_action.assert_not_awaited()
+        finally:
+            env._env = None
+            await env.close()
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("duration", [-1, 31, True, float("nan")])
+    async def test_invalid_wait_is_visible_to_model_without_sleep(self, duration, monkeypatch):
+        env = _make_fake(cursor=False)
+        try:
+            await env.reset()
+            env._execute_bgym_action = AsyncMock()
+            sleeper = AsyncMock()
+            monkeypatch.setattr("lite.gym.envs.browsergym.main.asyncio.sleep", sleeper)
+            result = await env.step([
+                make_tool_call("computer", {"actions": [{"action": "wait", "duration": duration}]},
+                               call_id="call_wait"),
+            ])
+
+            sleeper.assert_not_awaited()
+            env._execute_bgym_action.assert_not_awaited()
+            assert result.results[0].tool_call_id == "call_wait"
+            assert "wait.duration" in result.results[0].error
+            assert result.results[0].metadata == {"is_error": True}
+        finally:
+            await env.close()
 
 
 # ---------------------------------------------------------------------------

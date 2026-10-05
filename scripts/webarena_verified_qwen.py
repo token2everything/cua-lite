@@ -1,0 +1,1200 @@
+#!/usr/bin/env python3
+"""Run one WebArena-Verified case with the pinned OSWorld Qwen agent.
+
+The coordinator owns creation of a fresh site stack and records that fact in a
+baseline receipt.  This runner never pretends that the image controller's
+``/init`` endpoint resets site data: it holds a sandbox-scoped file lock for the
+entire case and consumes exactly one externally prepared baseline.
+"""
+
+from __future__ import annotations
+
+import argparse
+import ast
+import fcntl
+import hashlib
+import importlib
+import importlib.metadata
+import inspect
+import json
+import logging
+import os
+import re
+import secrets
+import subprocess
+import sys
+import tempfile
+import time
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from io import BytesIO
+from pathlib import Path
+from typing import Any
+from urllib.parse import urlsplit, urlunsplit
+
+from requests.exceptions import SSLError
+
+from lite.agents.core.agent.utils.request_logs import redact, write_log
+
+OSWORLD_SHA = "b138d348256078fa634fc3b73567a7337c793e6b"
+MODEL = "qwen3.8-max"
+SCREEN_WIDTH = 1920
+SCREEN_HEIGHT = 1080
+# The full campaign gives every task a 100-turn ceiling.  The reserve window
+# below still prevents the agent from spending its final turns on GUI actions.
+MAX_STEPS = 150
+FINAL_RESPONSE_RESERVE_STEPS = 7
+POST_ACTION_DELAY_SECONDS = 0.35
+HISTORY_N = 100
+IMAGE_MAX = 20
+FOLD_SIZE = 10
+MAX_TOKENS = 32768
+TEMPERATURE = 0.0
+TOP_P = 0.9
+MODEL_TIMEOUT_SECONDS = 130.0
+MODEL_ATTEMPTS = 5
+RESET_SETTLE_SECONDS = 60.0
+EVALUATION_SETTLE_SECONDS = 20.0
+
+# Site and intent budgets remain available for matched controls and for callers
+# that pass a lower base budget.  The production campaign uses the 100-turn
+# base ceiling above, so no task is cut off at the old global 50-turn cap.
+SITE_STEP_BUDGETS = {
+    "gitlab": 60,
+    "map": 55,
+    "reddit": 55,
+    "shopping": 55,
+    "shopping_admin": 60,
+    "wikipedia": 50,
+}
+INTENT_STEP_BUDGETS = {
+    41: 60,
+    84: 65,
+    88: 65,
+    169: 60,
+    204: 60,
+    251: 65,
+    270: 65,
+    276: 65,
+    287: 65,
+    308: 65,
+    327: 65,
+    2100: 65,
+}
+
+_DIGEST_RE = re.compile(r"^(?:sha256:)?[0-9a-f]{64}$")
+_SAFE_PYAUTOGUI_METHODS = frozenset(
+    {
+        "click",
+        "rightClick",
+        "middleClick",
+        "doubleClick",
+        "tripleClick",
+        "typewrite",
+        "press",
+        "hotkey",
+        "keyDown",
+        "keyUp",
+        "scroll",
+        "hscroll",
+        "moveTo",
+        "dragTo",
+        "mouseDown",
+        "mouseUp",
+    }
+)
+
+
+def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--task-id", required=True, type=int)
+    parser.add_argument("--osworld-root", required=True, type=Path)
+    parser.add_argument("--baseline-receipt", required=True, type=Path)
+    parser.add_argument("--output-dir", required=True, type=Path)
+    parser.add_argument(
+        "--lock-dir",
+        required=True,
+        type=Path,
+        help="Sandbox-global lock directory mounted identically for every case.",
+    )
+    parser.add_argument("--base-url", default=os.environ.get("OPENAI_BASE_URL"))
+    parser.add_argument("--api-key", default=os.environ.get("OPENAI_API_KEY"))
+    parser.add_argument("--display", default=":99")
+    parser.add_argument("--max-steps", type=int, default=MAX_STEPS)
+    parser.add_argument(
+        "--layered-step-budget",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Raise the per-case step budget for historically long sites and intents.",
+    )
+    parser.add_argument(
+        "--final-response-reserve-steps", type=int, default=FINAL_RESPONSE_RESERVE_STEPS
+    )
+    parser.add_argument(
+        "--repair-invalid-response",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Return one invalid terminal response to the model for correction within the step budget.",
+    )
+    parser.add_argument(
+        "--no-thinking",
+        action="store_true",
+        help="Disable thinking for an explicitly labeled comparison run.",
+    )
+    args = parser.parse_args(argv)
+    if args.max_steps < 1:
+        parser.error("--max-steps must be positive")
+    if not 0 <= args.final_response_reserve_steps < args.max_steps:
+        parser.error("--final-response-reserve-steps must be in [0, max_steps)")
+    return args
+
+
+def validate_osworld_checkout(root: Path) -> Path:
+    """Verify that imports will come from the exact audited OSWorld commit."""
+    root = root.resolve()
+    if not (root / "mm_agents" / "qwen" / "main.py").is_file():
+        raise FileNotFoundError(f"OSWorld Qwen agent not found under {root}")
+    result = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "HEAD"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    actual = result.stdout.strip()
+    if actual != OSWORLD_SHA:
+        raise RuntimeError(f"OSWorld SHA mismatch: expected {OSWORLD_SHA}, found {actual}")
+    dirty = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(root),
+            "status",
+            "--porcelain",
+            "--",
+            "mm_agents/qwen",
+            "mm_agents/utils/qwen_vl_utils.py",
+            "desktop_env/controllers/python.py",
+            "desktop_env/server/pyxcursor.py",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    if dirty:
+        raise RuntimeError(f"Pinned OSWorld agent/controller sources are dirty:\n{dirty}")
+    return root
+
+
+def load_qwen_agent(root: Path) -> type:
+    """Import QwenAgent directly from the verified OSWorld checkout."""
+    root = validate_osworld_checkout(root)
+    sys.path.insert(0, str(root))
+    module = importlib.import_module("mm_agents.qwen")
+    qwen_agent = module.QwenAgent
+    source = Path(inspect.getfile(qwen_agent)).resolve()
+    if root not in source.parents:
+        raise RuntimeError(f"QwenAgent resolved outside the pinned checkout: {source}")
+    return qwen_agent
+
+
+def load_cursor_class(root: Path) -> type:
+    """Load the pinned OSWorld Linux cursor capture implementation."""
+    path = root / "desktop_env" / "server" / "pyxcursor.py"
+    spec = importlib.util.spec_from_file_location("osworld_pinned_pyxcursor", path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Cannot load OSWorld cursor implementation from {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.Xcursor
+
+
+def normalize_api_base(value: str | None) -> str:
+    """Turn an OpenAI-compatible origin into an explicit API base."""
+    if not value:
+        raise ValueError("--base-url or OPENAI_BASE_URL is required")
+    parts = urlsplit(value)
+    if parts.scheme not in {"http", "https"} or not parts.netloc:
+        raise ValueError("The model API base must be an absolute http(s) URL")
+    path = parts.path.rstrip("/")
+    if not path:
+        path = "/v1"
+    return urlunsplit((parts.scheme, parts.netloc, path, parts.query, parts.fragment))
+
+
+def validate_baseline_receipt(path: Path, task_id: int) -> dict[str, Any]:
+    """Validate the coordinator's immutable fresh-stack record."""
+    receipt = json.loads(path.read_text())
+    if not isinstance(receipt, dict):
+        raise ValueError("baseline receipt must be a JSON object")
+    required = {"session_id", "sandbox_id", "task_id", "created_at", "container_digests"}
+    missing = required - receipt.keys()
+    if missing:
+        raise ValueError(f"baseline receipt missing fields: {sorted(missing)}")
+    if receipt["task_id"] != task_id:
+        raise ValueError(
+            f"baseline receipt is for task {receipt['task_id']}, not requested task {task_id}"
+        )
+    for name in ("session_id", "sandbox_id", "created_at"):
+        if not isinstance(receipt[name], str) or not receipt[name].strip():
+            raise ValueError(f"baseline receipt field {name!r} must be a non-empty string")
+    digests = receipt["container_digests"]
+    if not isinstance(digests, dict) or not digests:
+        raise ValueError("baseline receipt container_digests must be a non-empty object")
+    for container, digest in digests.items():
+        if not isinstance(container, str) or not container or not isinstance(digest, str):
+            raise ValueError("baseline receipt container digest entries must be strings")
+        if not _DIGEST_RE.fullmatch(digest.lower()):
+            raise ValueError(f"container {container!r} does not have an immutable SHA-256 digest")
+    return receipt
+
+
+def _atomic_json(path: Path, value: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    temporary: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", dir=path.parent, delete=False
+        ) as stream:
+            temporary = Path(stream.name)
+            json.dump(value, stream, ensure_ascii=False, indent=2, allow_nan=False)
+            stream.write("\n")
+        os.chmod(temporary, 0o600)
+        os.replace(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
+def _atomic_bytes(path: Path, value: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    temporary: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=path.parent, delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(value)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.chmod(temporary, 0o600)
+        os.replace(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
+def _atomic_text(path: Path, value: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    temporary: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", dir=path.parent, delete=False
+        ) as stream:
+            temporary = Path(stream.name)
+            stream.write(value)
+        os.chmod(temporary, 0o600)
+        os.replace(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
+def append_trajectory(path: Path, value: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    descriptor = os.open(path, os.O_CREAT | os.O_APPEND | os.O_WRONLY, 0o600)
+    try:
+        payload = (json.dumps(value, ensure_ascii=False, allow_nan=False) + "\n").encode()
+        os.write(descriptor, payload)
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def prepare_output_directory(path: Path) -> Path:
+    """Create a private result directory and refuse to overwrite any case."""
+    path = path.resolve()
+    path.mkdir(parents=True, exist_ok=False, mode=0o700)
+    path.chmod(0o700)
+    return path
+
+
+def secure_result_tree(root: Path) -> None:
+    """Enforce private permissions on provider- and browser-written artifacts."""
+    for path in root.rglob("*"):
+        path.chmod(0o700 if path.is_dir() else 0o600)
+    root.chmod(0o700)
+
+
+def runtime_metadata(dataset_sha256: str) -> dict[str, Any]:
+    """Identify this uncommitted runner and every score-relevant runtime package."""
+    script = Path(__file__).resolve()
+    packages = {}
+    for distribution in (
+        "openai",
+        "pillow",
+        "playwright",
+        "browsergym-webarena-verified",
+        "webarena-verified",
+    ):
+        try:
+            packages[distribution] = importlib.metadata.version(distribution)
+        except importlib.metadata.PackageNotFoundError:
+            packages[distribution] = None
+    return {
+        "script": str(script),
+        "script_sha256": hashlib.sha256(script.read_bytes()).hexdigest(),
+        "osworld_sha": OSWORLD_SHA,
+        "dataset_sha256": dataset_sha256,
+        "packages": packages,
+    }
+
+
+@contextmanager
+def working_directory(path: Path) -> Iterator[None]:
+    """Contain upstream Qwen debug dumps inside the private case directory."""
+    previous = Path.cwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(previous)
+
+
+@contextmanager
+def sandbox_lock(lock_dir: Path, sandbox_id: str) -> Iterator[None]:
+    """Serialize baseline consumption and the full task within one sandbox."""
+    safe_id = re.sub(r"[^A-Za-z0-9_.-]", "_", sandbox_id)
+    lock_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+    lock_path = lock_dir / f"webarena-verified-{safe_id}.lock"
+    descriptor = os.open(lock_path, os.O_CREAT | os.O_RDWR, 0o600)
+    try:
+        fcntl.flock(descriptor, fcntl.LOCK_EX)
+        yield
+    finally:
+        fcntl.flock(descriptor, fcntl.LOCK_UN)
+        os.close(descriptor)
+
+
+def response_content(response: Any) -> tuple[str, str, Any, Any]:
+    """Return model-visible content, reasoning, usage, and finish reason."""
+    choice = response.choices[0]
+    message = choice.message
+    content = getattr(message, "content", None)
+    reasoning = getattr(message, "reasoning_content", None)
+    if content is None and hasattr(message, "model_dump"):
+        dumped = message.model_dump()
+        content = dumped.get("content")
+        reasoning = dumped.get("reasoning_content")
+
+    def text(value: Any) -> str:
+        if value is None:
+            return ""
+        if isinstance(value, str):
+            return value
+        if isinstance(value, list):
+            parts = []
+            for item in value:
+                if isinstance(item, dict) and isinstance(item.get("text"), str):
+                    parts.append(item["text"])
+                elif isinstance(getattr(item, "text", None), str):
+                    parts.append(item.text)
+            return "".join(parts)
+        return str(value)
+
+    usage = getattr(response, "usage", None)
+    if hasattr(usage, "model_dump"):
+        usage = usage.model_dump(mode="json")
+    return text(content), text(reasoning), usage, getattr(choice, "finish_reason", None)
+
+
+def _dump_model(value: Any) -> Any:
+    if hasattr(value, "model_dump"):
+        return value.model_dump(mode="json")
+    if isinstance(value, dict):
+        return value
+    return {"repr": repr(value)}
+
+
+def make_pinned_agent_class(base_class: type, openai_module: Any) -> type:
+    """Subclass only the audited agent's transport boundary."""
+
+    class PinnedQwenAgent(base_class):
+        def __init__(
+            self,
+            *args: Any,
+            request_log_dir: Path,
+            request_image_dir: Path,
+            preserve_thinking: bool,
+            reasoning_effort: str,
+            client_factory: Callable[..., Any] | None = None,
+            sleep_fn: Callable[[float], None] = time.sleep,
+            **kwargs: Any,
+        ) -> None:
+            super().__init__(*args, **kwargs)
+            self.request_log_dir = request_log_dir
+            self.request_image_dir = request_image_dir
+            self.preserve_thinking = preserve_thinking
+            self.reasoning_effort = reasoning_effort
+            self.client_factory = client_factory or openai_module.OpenAI
+            self.sleep_fn = sleep_fn
+            self.request_index = 0
+            self.last_provider_content = ""
+            self.last_reasoning_content = ""
+            self.structured_response_schema: dict[str, Any] | None = None
+
+        def call_llm(self, payload: dict[str, Any], model: str) -> str:
+            index = self.request_index
+            self.request_index += 1
+            extras = {
+                "enable_thinking": bool(self.enable_thinking),
+                "preserve_thinking": bool(self.preserve_thinking),
+                "reasoning_effort": self.reasoning_effort,
+            }
+            actual_body = {
+                "model": model,
+                "messages": payload["messages"],
+                "max_tokens": payload.get("max_tokens", MAX_TOKENS),
+                "temperature": payload.get("temperature", TEMPERATURE),
+                "top_p": payload.get("top_p", TOP_P),
+                **extras,
+            }
+            if self.structured_response_schema is not None:
+                actual_body["response_format"] = {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "final_agent_response",
+                        "strict": True,
+                        "schema": self.structured_response_schema,
+                    },
+                }
+            secrets = (self.api_key or "",)
+            write_log(
+                self.request_log_dir,
+                f"step_{index:03d}_request.json",
+                actual_body,
+                secrets,
+                image_directory=self.request_image_dir,
+            )
+            client = self.client_factory(
+                base_url=self.base_url,
+                api_key=self.api_key,
+                timeout=MODEL_TIMEOUT_SECONDS,
+            )
+            retryable = tuple(
+                candidate
+                for candidate in (
+                    SSLError,
+                    getattr(openai_module, "APIConnectionError", None),
+                    getattr(openai_module, "APITimeoutError", None),
+                    getattr(openai_module, "RateLimitError", None),
+                    getattr(openai_module, "BadRequestError", None),
+                    getattr(openai_module, "InternalServerError", None),
+                )
+                if isinstance(candidate, type)
+            )
+            last_error: Exception | None = None
+            for attempt in range(1, MODEL_ATTEMPTS + 1):
+                try:
+                    request_kwargs = {
+                        "model": model,
+                        "messages": payload["messages"],
+                        "max_tokens": actual_body["max_tokens"],
+                        "temperature": actual_body["temperature"],
+                        "top_p": actual_body["top_p"],
+                        "extra_body": extras,
+                    }
+                    if self.structured_response_schema is not None:
+                        request_kwargs["response_format"] = actual_body["response_format"]
+                    response = client.chat.completions.create(**request_kwargs)
+                    content, reasoning, usage, finish_reason = response_content(response)
+                    self.last_provider_content = content
+                    self.last_reasoning_content = reasoning
+                    write_log(
+                        self.request_log_dir,
+                        f"step_{index:03d}_response.json",
+                        _dump_model(response),
+                        secrets,
+                    )
+                    write_log(
+                        self.request_log_dir,
+                        f"step_{index:03d}_metadata.json",
+                        {
+                            "content": content,
+                            "reasoning_content": reasoning,
+                            "usage": usage,
+                            "finish_reason": finish_reason,
+                            "attempt": attempt,
+                        },
+                        secrets,
+                    )
+                    if reasoning:
+                        return f"<think>\n{reasoning}\n</think>\n\n{content.lstrip()}"
+                    return content
+                except retryable as error:
+                    last_error = error
+                    write_log(
+                        self.request_log_dir,
+                        f"step_{index:03d}_attempt_{attempt:02d}_error.json",
+                        {"type": type(error).__name__, "message": str(error)},
+                        secrets,
+                    )
+                    self.sleep_fn(min(5.0 * attempt, 30.0))
+            assert last_error is not None
+            raise last_error
+
+    PinnedQwenAgent.__name__ = "PinnedQwenAgent"
+    return PinnedQwenAgent
+
+
+def execute_safe_pyautogui(code: str, pyautogui_module: Any) -> None:
+    """Execute one upstream-parser action through a literal-only AST allowlist."""
+    tree = ast.parse(code, mode="exec")
+    if len(tree.body) != 1 or not isinstance(tree.body[0], ast.Expr):
+        raise ValueError("Qwen action must contain exactly one expression")
+    call = tree.body[0].value
+    if not isinstance(call, ast.Call):
+        raise ValueError("Qwen action must be a function call")
+    function = call.func
+    if not (
+        isinstance(function, ast.Attribute)
+        and isinstance(function.value, ast.Name)
+        and function.value.id == "pyautogui"
+        and function.attr in _SAFE_PYAUTOGUI_METHODS
+    ):
+        raise ValueError("Qwen action is outside the pyautogui allowlist")
+    if any(isinstance(argument, ast.Starred) for argument in call.args):
+        raise ValueError("starred action arguments are forbidden")
+    if any(keyword.arg is None for keyword in call.keywords):
+        raise ValueError("expanded action keyword arguments are forbidden")
+    try:
+        arguments = [ast.literal_eval(argument) for argument in call.args]
+        keywords = {keyword.arg: ast.literal_eval(keyword.value) for keyword in call.keywords}
+    except (ValueError, TypeError) as error:
+        raise ValueError("Qwen action arguments must be literals") from error
+    getattr(pyautogui_module, function.attr)(*arguments, **keywords)
+
+
+def patch_pyautogui(pyautogui_module: Any) -> None:
+    """Apply the pinned OSWorld controller's Linux keyboard behavior."""
+    import platform
+
+    shift_chars = '~!@#$%^&*()_+{}|:"<>?'
+    linux_shift_chars = '~!@#$%^&*()_+{}|:">?'
+    pyautogui_module.FAILSAFE = False
+    pyautogui_module.PAUSE = 0.1
+    pyautogui_module.isShiftCharacter = lambda character: (
+        character.isupper()
+        or character in (linux_shift_chars if platform.system() == "Linux" else shift_chars)
+    )
+
+
+def screenshot_bytes(pyautogui_module: Any, cursor_class: type) -> bytes:
+    image = pyautogui_module.screenshot()
+    with cursor_class() as cursor:
+        from PIL import Image
+
+        cursor_image = Image.fromarray(cursor.getCursorImageArrayFast())
+        image.paste(cursor_image, pyautogui_module.position(), cursor_image)
+    stream = BytesIO()
+    image.save(stream, format="PNG")
+    return stream.getvalue()
+
+
+def parse_final_json(content: str) -> Any:
+    """Parse provider-visible content with the official evaluator's fence rule."""
+    text = content.strip()
+    match = re.search(r"```(?:json)?\s*\n?(.*?)\n?```", text, re.DOTALL)
+    if match:
+        text = match.group(1).strip()
+    return json.loads(text)
+
+
+def build_public_instruction(config: dict[str, Any], response_schema: dict[str, Any]) -> str:
+    """Build the model prompt only from public task fields and the response contract."""
+    public = {
+        "intent": config["intent"],
+        "start_urls": list(config.get("start_urls") or []),
+        "final_response_schema": response_schema,
+    }
+    return (
+        f"Task: {public['intent']}\n\n"
+        f"The benchmark opened these start URL(s): {json.dumps(public['start_urls'])}.\n"
+        "Complete the task only through the visible desktop GUI. Do not use website APIs, "
+        "developer tools, page source, or hidden benchmark data.\n\n"
+        "Use the authenticated sessions that are already open. Do not sign out, change account "
+        "credentials, or access sites outside the provided benchmark. Treat the task as closed "
+        "world: if the requested fact or operation cannot be established from the provided sites, "
+        "report that outcome through the final response schema rather than inventing it.\n\n"
+        "When the task is complete, return one JSON object matching this schema inside a "
+        "```json fenced code block, with no tool call. The official evaluator extracts this "
+        "block even if the response also contains a short completion note. A plain final "
+        "response ends the episode.\n"
+        f"{json.dumps(response_schema, ensure_ascii=False, indent=2)}"
+    )
+
+
+def resolve_step_budget(
+    config: dict[str, Any], base_steps: int, *, layered: bool
+) -> int:
+    """Select the case budget from the base, site, and intent policies."""
+    if not layered:
+        return base_steps
+    candidates = [base_steps]
+    candidates.extend(SITE_STEP_BUDGETS.get(site, base_steps) for site in config["sites"])
+    candidates.append(INTENT_STEP_BUDGETS.get(config["intent_template_id"], base_steps))
+    if len(config["sites"]) > 1:
+        candidates.append(65)
+    return max(candidates)
+
+
+def normalize_agent_response(content: str, response_model: Any) -> tuple[Any, str]:
+    """Validate provider-visible content and return canonical JSON for scoring."""
+    parsed = parse_final_json(content)
+    validated = response_model.model_validate(parsed)
+    normalized = validated.model_dump(mode="json")
+    return normalized, json.dumps(normalized, ensure_ascii=False, separators=(",", ":"))
+
+
+def score_artifacts(
+    task: Any,
+    agent_response_raw: str,
+    trace_path: Path | None,
+    har_path: Path,
+) -> dict[str, Any]:
+    """Run the official all-or-nothing evaluator on HAR and trace inputs."""
+    from webarena_verified.types import WebArenaVerifiedTask
+    from webarena_verified.types.eval import TaskEvalContext
+    from webarena_verified.types.tracing import NetworkTrace
+
+    from lite.gym.envs.browsergym import webarena_verified
+
+    webarena_verified.install_playwright_trace_loader()
+    evaluator = task.evaluator.evaluator
+    official_task = WebArenaVerifiedTask.model_validate(task.config)
+
+    def evaluate(network_trace: Any) -> Any:
+        return evaluator.evaluate_task(
+            context=TaskEvalContext(
+                task=official_task,
+                agent_response_raw=agent_response_raw,
+                network_trace=network_trace,
+                config=evaluator.config,
+            )
+        )
+
+    har_result = evaluate(NetworkTrace.from_har(har_path))
+    result = {
+        "primary": "har",
+        "score": har_result.score,
+        "official_all_or_nothing": har_result.score == 1.0,
+        "har": har_result.model_dump(mode="json"),
+    }
+    try:
+        if trace_path is None or not trace_path.is_file():
+            raise FileNotFoundError("Playwright trace was not produced")
+        trace_result = evaluate(NetworkTrace.from_playwright_trace(trace_path))
+        result["playwright_trace"] = trace_result.model_dump(mode="json")
+        result["inputs_agree"] = har_result.score == trace_result.score
+    except Exception as error:
+        result["playwright_trace"] = {
+            "diagnostic_error": {"type": type(error).__name__, "message": str(error)}
+        }
+        result["inputs_agree"] = None
+    return result
+
+
+def artifact_identity(path: Path) -> dict[str, Any]:
+    payload = path.read_bytes()
+    return {
+        "path": path.name,
+        "size": len(payload),
+        "sha256": hashlib.sha256(payload).hexdigest(),
+    }
+
+
+def content_identity(value: str) -> dict[str, Any]:
+    payload = value.encode()
+    return {"size": len(payload), "sha256": hashlib.sha256(payload).hexdigest()}
+
+
+def finalize_browser_artifacts(
+    context: Any,
+    browser: Any,
+    trace_path: Path,
+    *,
+    tracing_started: bool,
+    sleep_fn: Callable[[float], None] = time.sleep,
+) -> BaseException | None:
+    """Flush trace and HAR even when task execution raised."""
+    error: BaseException | None = None
+    if context is not None:
+        sleep_fn(EVALUATION_SETTLE_SECONDS)
+        if tracing_started:
+            try:
+                context.tracing.stop(path=trace_path)
+            except BaseException as caught:
+                error = caught
+        try:
+            context.close()
+        except BaseException as caught:
+            error = error or caught
+    if browser is not None:
+        try:
+            browser.close()
+        except BaseException as caught:
+            error = error or caught
+    return error
+
+
+@contextmanager
+def xvfb(display: str) -> Iterator[None]:
+    """Own and clean up one fixed-resolution Xvfb process."""
+    previous = os.environ.get("DISPLAY")
+    previous_xauthority = os.environ.get("XAUTHORITY")
+    previous_session_type = os.environ.get("XDG_SESSION_TYPE")
+    authentication = tempfile.TemporaryDirectory(prefix="webarena-xauth-")
+    authority = Path(authentication.name) / "Xauthority"
+    subprocess.run(
+        ["xauth", "-f", str(authority), "add", display, ".", secrets.token_hex(16)],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    authority.chmod(0o600)
+    process = subprocess.Popen(
+        [
+            "Xvfb",
+            display,
+            "-auth",
+            str(authority),
+            "-screen",
+            "0",
+            f"{SCREEN_WIDTH}x{SCREEN_HEIGHT}x24",
+            "-nolisten",
+            "tcp",
+        ],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    os.environ["DISPLAY"] = display
+    os.environ["XAUTHORITY"] = str(authority)
+    os.environ["XDG_SESSION_TYPE"] = "x11"
+    window_manager = None
+    try:
+        time.sleep(1.0)
+        if process.poll() is not None:
+            raise RuntimeError(f"Xvfb failed to start on {display}")
+        window_manager = subprocess.Popen(
+            ["openbox", "--sm-disable"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        time.sleep(0.5)
+        if window_manager.poll() is not None:
+            raise RuntimeError("openbox failed to start")
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop("DISPLAY", None)
+        else:
+            os.environ["DISPLAY"] = previous
+        if previous_xauthority is None:
+            os.environ.pop("XAUTHORITY", None)
+        else:
+            os.environ["XAUTHORITY"] = previous_xauthority
+        if previous_session_type is None:
+            os.environ.pop("XDG_SESSION_TYPE", None)
+        else:
+            os.environ["XDG_SESSION_TYPE"] = previous_session_type
+        if window_manager is not None:
+            window_manager.terminate()
+            try:
+                window_manager.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                window_manager.kill()
+                window_manager.wait(timeout=5)
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=5)
+        authentication.cleanup()
+
+
+def run_case(args: argparse.Namespace) -> dict[str, Any]:
+    from lite.gym.envs.browsergym import webarena_verified
+
+    records = webarena_verified.task_records()
+    if args.task_id < 0 or args.task_id >= len(records):
+        raise ValueError(f"task ID must be in the pinned range 0..{len(records) - 1}")
+    receipt = validate_baseline_receipt(args.baseline_receipt, args.task_id)
+    root = validate_osworld_checkout(args.osworld_root)
+    api_base = normalize_api_base(args.base_url)
+    if not args.api_key:
+        raise ValueError("--api-key or OPENAI_API_KEY is required")
+
+    with sandbox_lock(args.lock_dir.resolve(), receipt["sandbox_id"]):
+        output = prepare_output_directory(args.output_dir)
+        _atomic_json(output / "baseline_receipt.json", receipt)
+        _atomic_json(
+            output / "run_metadata.json",
+            runtime_metadata(webarena_verified.DATASET_SHA256),
+        )
+        status: dict[str, Any] = {"task_id": args.task_id, "status": "running"}
+        _atomic_json(output / "status.json", status)
+
+        browser = None
+        context = None
+        playwright_runtime = None
+        xvfb_context = None
+        cwd_context = None
+        tracing_started = False
+        trace_path = output / "trace.zip"
+        har_path = output / "network.har"
+        final_content = ""
+        response_parse_error = None
+        truncated = False
+        terminal_action = None
+        repair_used = False
+        structured_repair_pending = False
+        finalization_attempts = 0
+        response_feedback = ""
+        task = None
+        error: BaseException | None = None
+        try:
+            xvfb_context = xvfb(args.display)
+            xvfb_context.__enter__()
+            import openai
+            import pyautogui
+            from browsergym.webarena_verified.task import WebArenaVerifiedTask
+            from playwright.sync_api import sync_playwright
+            from webarena_verified.types import FinalAgentResponse
+
+            patch_pyautogui(pyautogui)
+            cursor_class = load_cursor_class(root)
+            qwen_base = load_qwen_agent(root)
+            agent_class = make_pinned_agent_class(qwen_base, openai)
+            cwd_context = working_directory(output)
+            cwd_context.__enter__()
+            agent = agent_class(
+                platform="ubuntu",
+                model=MODEL,
+                max_tokens=MAX_TOKENS,
+                top_p=TOP_P,
+                temperature=TEMPERATURE,
+                action_space="pyautogui",
+                observation_type="screenshot",
+                history_n=HISTORY_N,
+                coordinate_type="relative",
+                image_max=IMAGE_MAX,
+                fold_size=FOLD_SIZE,
+                add_thought_prefix=False,
+                enable_thinking=not args.no_thinking,
+                base_url=api_base,
+                api_key=args.api_key,
+                request_log_dir=output / "requests",
+                request_image_dir=output / "images",
+                preserve_thinking=True,
+                reasoning_effort="xhigh",
+            )
+            agent.reset(logging.getLogger("webarena_verified.qwen"))
+
+            playwright_runtime = sync_playwright().start()
+            browser = playwright_runtime.chromium.launch(
+                headless=False,
+                args=[
+                    f"--window-size={SCREEN_WIDTH},{SCREEN_HEIGHT}",
+                    "--start-maximized",
+                ],
+            )
+            context = browser.new_context(
+                no_viewport=True,
+                record_har_path=str(har_path),
+                record_har_content="embed",
+            )
+            page = context.new_page()
+            task = WebArenaVerifiedTask(seed=0, task_id=args.task_id)
+            tracing_started = True
+            task.setup(page)
+            page = context.pages[-1]
+            response_schema = FinalAgentResponse.model_json_schema()
+            goal = build_public_instruction(task.config, response_schema)
+            case_max_steps = resolve_step_budget(
+                task.config,
+                args.max_steps,
+                layered=args.layered_step_budget,
+            )
+            _atomic_text(output / "instruction.txt", goal + "\n")
+            _atomic_json(
+                output / "instruction.json",
+                {
+                    "intent": task.config["intent"],
+                    "start_urls": task.config.get("start_urls") or [],
+                    "final_response_schema": response_schema,
+                },
+            )
+            page.bring_to_front()
+            time.sleep(RESET_SETTLE_SECONDS)
+
+            for step in range(case_max_steps):
+                step_started = time.monotonic()
+                desktop_png = screenshot_bytes(pyautogui, cursor_class)
+                desktop_path = output / "desktop" / f"step_{step:03d}.png"
+                _atomic_bytes(desktop_path, desktop_png)
+                trajectory = {
+                    "step": step,
+                    "screenshot": desktop_path.relative_to(output).as_posix(),
+                    "response": None,
+                    "provider_content": None,
+                    "actions": None,
+                    "executed_actions": [],
+                    "error": None,
+                }
+                try:
+                    # Budget and validation feedback are visible with the unchanged GUI history.
+                    turn_goal = goal
+                    remaining = case_max_steps - step
+                    if remaining <= args.final_response_reserve_steps:
+                        turn_goal += (
+                            f"\n\nBudget: {remaining} model turn(s) remain, including this turn. "
+                            "If the objective is already verified, return the final JSON now. "
+                            "Prioritize required remaining actions over extra exploration. "
+                            "Reserve the last turn for an honest final response; do not claim "
+                            "unverified success."
+                        )
+                    if response_feedback:
+                        turn_goal += "\n\n" + response_feedback
+                        response_feedback = ""
+                    agent.structured_response_schema = (
+                        response_schema if structured_repair_pending else None
+                    )
+                    structured_repair_pending = False
+                    response, actions = agent.predict(
+                        turn_goal,
+                        {"screenshot": desktop_png},
+                    )
+                    trajectory["response"] = response
+                    trajectory["provider_content"] = agent.last_provider_content
+                    trajectory["actions"] = actions
+                except BaseException as caught:
+                    trajectory["error"] = {
+                        "type": type(caught).__name__,
+                        "message": redact(str(caught), (args.api_key,)),
+                    }
+                    trajectory["elapsed_seconds"] = time.monotonic() - step_started
+                    append_trajectory(
+                        output / "trajectory.jsonl",
+                        redact(trajectory, (args.api_key,)),
+                    )
+                    raise
+                terminal = False
+                try:
+                    # Upstream maps malformed or empty tool output to DONE. Validate at
+                    # this benchmark boundary before accepting it as a final response.
+                    if args.repair_invalid_response and (
+                        not actions or any(action in {"DONE", "FAIL"} for action in actions)
+                    ):
+                        try:
+                            normalize_agent_response(agent.last_provider_content, FinalAgentResponse)
+                        except (json.JSONDecodeError, TypeError, ValueError) as caught:
+                            trajectory["response_validation_error"] = str(caught)
+                            if not repair_used and remaining > 1:
+                                repair_used = True
+                                structured_repair_pending = True
+                                trajectory["repair_requested"] = True
+                                response_feedback = (
+                                    "Your previous response was invalid and no action from that "
+                                    "turn was executed. It was not accepted as completion. "
+                                    "This is the one repair attempt: return only a fenced JSON "
+                                    "object matching final_response_schema. Do not call tools or "
+                                    "emit a tool-call object. If the objective is not fully "
+                                    "verified, report an honest schema-valid failure/not-found "
+                                    "outcome using only facts established in the history. Do "
+                                    "not invent missing facts or convert a proposed action into "
+                                    "a claim of success."
+                                )
+                                continue
+                    if (
+                        remaining <= args.final_response_reserve_steps
+                        and actions
+                        and not any(action in {"DONE", "FAIL"} for action in actions)
+                    ):
+                        finalization_attempts += 1
+                        trajectory["action_blocked_for_final_response"] = True
+                        trajectory["finalization_attempt"] = finalization_attempts
+                        if finalization_attempts >= 2:
+                            trajectory["finalization_failed"] = True
+                            truncated = True
+                            final_content = ""
+                            response_parse_error = (
+                                "final response was not submitted after one reserve-window retry"
+                            )
+                            break
+                        response_feedback = (
+                            "The GUI action budget is exhausted, so no action from your previous "
+                            "turn was executed. Submit the final fenced JSON object now. Report "
+                            "only facts already established from the visible UI; if the task is "
+                            "not complete, use the schema's honest failure/not-found outcome. "
+                            "Do not call computer_use again."
+                        )
+                        continue
+                    for action in actions:
+                        if action == "WAIT":
+                            trajectory["executed_actions"].append("WAIT")
+                        elif action in {"DONE", "FAIL"}:
+                            final_content = agent.last_provider_content
+                            terminal_action = action
+                            trajectory["executed_actions"].append(action)
+                            terminal = True
+                            break
+                        else:
+                            execute_safe_pyautogui(action, pyautogui)
+                            trajectory["executed_actions"].append(action)
+                            if POST_ACTION_DELAY_SECONDS:
+                                page.wait_for_timeout(int(POST_ACTION_DELAY_SECONDS * 1000))
+                except BaseException as caught:
+                    trajectory["error"] = {
+                        "type": type(caught).__name__,
+                        "message": redact(str(caught), (args.api_key,)),
+                    }
+                    raise
+                finally:
+                    trajectory["elapsed_seconds"] = time.monotonic() - step_started
+                    append_trajectory(
+                        output / "trajectory.jsonl",
+                        redact(trajectory, (args.api_key,)),
+                    )
+                if terminal:
+                    break
+            else:
+                truncated = True
+                final_content = ""
+
+            _atomic_text(output / "agent_response_raw.txt", final_content)
+            if truncated:
+                response_parse_error = "maximum step limit reached before a final response"
+                _atomic_json(
+                    output / "agent_response.json",
+                    {
+                        "raw_content": "",
+                        "valid": False,
+                        "error": response_parse_error,
+                        "truncated": True,
+                    },
+                )
+            else:
+                try:
+                    normalized, _normalized_text = normalize_agent_response(
+                        final_content, FinalAgentResponse
+                    )
+                    _atomic_json(
+                        output / "agent_response.json",
+                        {
+                            "raw_content": final_content,
+                            "valid": True,
+                            "validated_projection": normalized,
+                        },
+                    )
+                except (json.JSONDecodeError, TypeError, ValueError) as caught:
+                    response_parse_error = str(caught)
+                    _atomic_json(
+                        output / "agent_response.json",
+                        {
+                            "raw_content": final_content,
+                            "valid": False,
+                            "error": response_parse_error,
+                        },
+                    )
+        except BaseException as caught:
+            error = caught
+        finally:
+            artifact_error = finalize_browser_artifacts(
+                context,
+                browser,
+                trace_path,
+                tracing_started=tracing_started,
+            )
+            error = error or artifact_error
+            if playwright_runtime is not None:
+                try:
+                    playwright_runtime.stop()
+                except BaseException as caught:
+                    error = error or caught
+            if xvfb_context is not None:
+                try:
+                    xvfb_context.__exit__(None, None, None)
+                except BaseException as caught:
+                    error = error or caught
+            if cwd_context is not None:
+                try:
+                    cwd_context.__exit__(None, None, None)
+                except BaseException as caught:
+                    error = error or caught
+
+        evaluation = None
+        if task is not None and har_path.is_file():
+            try:
+                evaluation = score_artifacts(
+                    task,
+                    final_content,
+                    trace_path if trace_path.is_file() else None,
+                    har_path,
+                )
+                evaluation["input_receipt"] = {
+                    "agent_response_raw": content_identity(final_content),
+                    "network_har": artifact_identity(har_path),
+                }
+                if trace_path.is_file():
+                    evaluation["input_receipt"]["playwright_trace"] = artifact_identity(trace_path)
+                _atomic_json(output / "evaluation.json", evaluation)
+            except BaseException as caught:
+                error = error or caught
+        status = {
+            "task_id": args.task_id,
+            "status": "failed" if error else "completed",
+            "score": evaluation["score"] if evaluation else None,
+            "model": MODEL,
+            "thinking": not args.no_thinking,
+            "truncated": truncated,
+            "terminal_action": terminal_action,
+            "response_parse_error": response_parse_error,
+                "response_repair_used": repair_used,
+                "structured_repair_used": repair_used,
+            "fixed_parameters": {
+                "max_steps": case_max_steps,
+                "base_max_steps": args.max_steps,
+                "layered_step_budget": args.layered_step_budget,
+                "final_response_reserve_steps": args.final_response_reserve_steps,
+                "repair_invalid_response": args.repair_invalid_response,
+                "history_n": HISTORY_N,
+                "image_max": IMAGE_MAX,
+                "fold_size": FOLD_SIZE,
+                "coordinate_type": "relative",
+                "screen": [SCREEN_WIDTH, SCREEN_HEIGHT],
+                "temperature": TEMPERATURE,
+                "top_p": TOP_P,
+                "max_tokens": MAX_TOKENS,
+                "timeout_seconds": MODEL_TIMEOUT_SECONDS,
+                "model_attempts": MODEL_ATTEMPTS,
+                "post_action_delay_seconds": POST_ACTION_DELAY_SECONDS,
+            },
+        }
+        if error:
+            status["error"] = {
+                "type": type(error).__name__,
+                "message": redact(str(error), (args.api_key,)),
+            }
+        _atomic_json(output / "status.json", status)
+        secure_result_tree(output)
+        if error:
+            raise error
+        return status
+
+
+def main(argv: list[str] | None = None) -> int:
+    logging.basicConfig(level=logging.INFO)
+    run_case(_parse_args(argv))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

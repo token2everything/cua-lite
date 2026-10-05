@@ -10,6 +10,8 @@
 #   webarena         — Shopping, Shopping Admin, Forum, GitLab, Wikipedia images
 #                      + OpenStreetMap assets + webarena-homepage Flask source
 #                      (for tasks that reference __HOMEPAGE__)
+#   webarena_verified — pinned deterministic evaluator + BrowserGym integration;
+#                       official site images are operator-managed
 #   visualwebarena   — all webarena images + OpenStreetMap assets +
 #                      Classifieds zip + homepage Flask source (image-goal
 #                      tasks resolve __HOMEPAGE__/static/...)
@@ -265,6 +267,7 @@ install_miniwob() {
 
 # ─── Python deps ─────────────────────────────────────────────────────────────
 install_python_deps() {
+    local benchmark="$1"
     echo "Installing Python dependencies..."
     # Pin browsergym to an EXACT version (not a `>=` floor) for reproducibility —
     # matches the convention of the other container envs (osworld pins an exact
@@ -300,8 +303,30 @@ install_python_deps() {
     # webarena evaluator uses it for fuzzy string matching). Lift this cap once
     # upstream scopes the check to the cwd sys.path entry.
     require_uv
-    uv pip install -q --override "$ENV_DIR/overrides.txt" \
-        "browsergym==0.14.3" "flask>=2.0" "nltk<3.10.1"
+    if [ "$benchmark" = "webarena_verified" ]; then
+        # Keep Verified independent from the browsergym meta-package: install
+        # its WebArena base explicitly, without also pulling VisualWebArena and
+        # its Torch/CUDA stack. browsergym-webarena-verified imports
+        # browsergym.webarena.task but does not declare that runtime dependency.
+        uv pip install -q --override "$ENV_DIR/overrides.txt" \
+            "browsergym-core==0.14.3" \
+            "browsergym-experiments==0.14.3" \
+            "browsergym-webarena==0.14.3" \
+            "browsergym-webarena-verified==0.14.3" \
+            "webarena-verified==1.2.3" \
+            "nltk<3.10.1"
+    else
+        uv pip install -q --override "$ENV_DIR/overrides.txt" \
+            "browsergym==0.14.3" "flask>=2.0" "nltk<3.10.1"
+    fi
+    # browsergym.webarena_verified checks this tokenizer at import and otherwise
+    # attempts a runtime download. Install it here so task reset stays offline.
+    python -m nltk.downloader -q punkt_tab
+    if [ "$benchmark" = "webarena_verified" ]; then
+        # Execute the real integration import: locating the Verified package is
+        # insufficient because its module body imports browsergym.webarena.
+        python -c "import browsergym.webarena_verified"
+    fi
 }
 
 # BrowserGym drives WA/VWA/MiniWoB pages via Playwright on THIS host (the browser
@@ -339,6 +364,7 @@ Usage: $0 <benchmark>
 
 Benchmarks:
   webarena         install webarena Docker images + OpenStreetMap assets
+  webarena_verified install pinned evaluator/runtime dependencies; site images are external
   visualwebarena   install webarena images + OpenStreetMap assets + classifieds zip
   miniwob          clone miniwob-plusplus for local self-serving
 USAGE
@@ -346,14 +372,20 @@ USAGE
 
 case "${1:-}" in
     webarena)
-        install_python_deps
+        install_python_deps webarena
         install_playwright_browser
         install_webarena_images
         install_map_assets
         install_homepage
         ;;
+    webarena_verified)
+        install_python_deps webarena_verified
+        install_playwright_browser
+        echo "WebArena-Verified dependencies installed."
+        echo "Start the official pinned site images and configure WA_* URLs; see $ENV_DIR/README.md."
+        ;;
     visualwebarena)
-        install_python_deps
+        install_python_deps visualwebarena
         install_playwright_browser
         install_webarena_images
         install_map_assets
@@ -361,7 +393,7 @@ case "${1:-}" in
         install_homepage
         ;;
     miniwob)
-        install_python_deps
+        install_python_deps miniwob
         install_playwright_browser
         install_miniwob
         ;;

@@ -1,7 +1,7 @@
-"""Shared-backend isolation metadata for WA/VWA.
+"""Shared-backend isolation metadata for WebArena-family benchmarks.
 
-WebArena / VisualWebArena back EVERY task with one shared, mutable docker
-stack. The env-server's GENERIC conflict gate
+WebArena, WebArena-Verified, and VisualWebArena each back tasks with a shared,
+mutable site stack. The env-server's generic conflict gate
 (:mod:`lite.gym.remote.conflict`) serializes writers per stack by reading
 ``metadata.others["conflict_keys"]`` + ``metadata.others["mutating"]`` (an
 opt-in, server-mode-only contract carried in ``others`` rather than typed
@@ -69,17 +69,30 @@ def task_raw_config(benchmark: str, bgym_task_id: str) -> dict | None:
     authoritative superset, carrying the ``intent`` + ``program_html`` url
     the csv drops). The package is a hard dep of any WA/VWA task, so the
     resource is guaranteed present whenever this is reached."""
-    if benchmark not in ("webarena", "visualwebarena"):
+    if benchmark not in ("webarena", "webarena_verified", "visualwebarena"):
         return None
     if benchmark not in _RAW_CONFIG_CACHE:
-        import importlib.resources as ir
-        import json
-        pkg, fn = (("webarena", "test.raw.json") if benchmark == "webarena"
-                   else ("visualwebarena", "test_raw.json"))
-        tasks = json.loads(ir.files(pkg).joinpath(fn).read_text())
-        _RAW_CONFIG_CACHE[benchmark] = {
-            f"{benchmark}.{t['task_id']}": t for t in tasks
-        }
+        if benchmark == "webarena_verified":
+            from lite.gym.envs.browsergym import webarena_verified
+
+            _RAW_CONFIG_CACHE[benchmark] = {
+                task_id: record
+                for task_id, record in zip(
+                    webarena_verified.task_ids(),
+                    webarena_verified.task_records(),
+                    strict=True,
+                )
+            }
+        else:
+            import importlib.resources as ir
+            import json
+
+            pkg, fn = (("webarena", "test.raw.json") if benchmark == "webarena"
+                       else ("visualwebarena", "test_raw.json"))
+            tasks = json.loads(ir.files(pkg).joinpath(fn).read_text())
+            _RAW_CONFIG_CACHE[benchmark] = {
+                f"{benchmark}.{t['task_id']}": t for t in tasks
+            }
     return _RAW_CONFIG_CACHE[benchmark].get(bgym_task_id)
 
 
@@ -101,16 +114,29 @@ def task_depends_on(benchmark: str, bgym_task_id: str) -> list[str]:
     place ``depends_on`` lives). Empty for miniwob / unknown id / if that optional
     metadata package isn't installed (→ no curated ordering; writers fall back to
     plain registration/task-id order)."""
-    if benchmark not in ("webarena", "visualwebarena"):
+    if benchmark not in ("webarena", "webarena_verified", "visualwebarena"):
         return []
     if benchmark not in _DEPENDS_ON_CACHE:
         table: dict[str, list[str]] = {}
         try:
             import csv
-            import importlib.resources as ir
+            import importlib.util
             import io
-            txt = (ir.files("browsergym.experiments.benchmark.metadata")
-                   .joinpath(f"{benchmark}.csv").read_text())
+
+            # Locate the namespace package without importing
+            # ``browsergym.experiments``: its ``__init__`` imports pandas even
+            # though this path needs only the packaged static CSV.
+            spec = importlib.util.find_spec("browsergym")
+            if spec is None or not spec.submodule_search_locations:
+                raise FileNotFoundError("browsergym package not installed")
+            csv_path = (
+                Path(next(iter(spec.submodule_search_locations)))
+                / "experiments"
+                / "benchmark"
+                / "metadata"
+                / f"{benchmark}.csv"
+            )
+            txt = csv_path.read_text()
             for row in csv.DictReader(io.StringIO(txt)):
                 table[row["task_name"]] = (row.get("depends_on") or "").split()
         except Exception as e:  # noqa: BLE001 — optional metadata; degrade to no ordering
@@ -222,7 +248,13 @@ def conflict_keys_and_mutating(
     sites = config.get("sites") or []
     if not any(s not in _STATIC_SITES for s in sites):
         return (), False  # static-only → read-safe, no key
-    return ("webarena",), is_mutating(config)
+    if benchmark == "webarena_verified":
+        from lite.gym.envs.browsergym import webarena_verified
+
+        mutating = webarena_verified.is_mutating(bgym_task_id)
+    else:
+        mutating = is_mutating(config)
+    return ("webarena",), mutating
 
 
 async def restore_backend(env_id: str, key: str) -> None:

@@ -1,0 +1,17 @@
+## Unreleased
+
+### 2026-10-05 — Infra repair plan
+
+Added the versioned WebArena-Verified repair plan and manifest schema. The GLM
+full-run audit is frozen as V0; startup, protocol, evaluator, and concurrency
+changes are separated into V1–V4 canary-gated releases. No production behavior
+changes are included in this entry.
+
+Initial WebArena-Verified campaign entry. The runner targets
+`browsergym.webarena_verified`, runs a parallel READ pass then a catalog-ordered
+serial WRITE pass, and supports `EVAL_TASK_SET=full` (812 tasks, default) or
+`EVAL_TASK_SET=hard` (258 tasks selected by `metadata.others["hard"]`).
+
+Verified scoring uses deterministic evaluators and does not require an OpenAI
+judge key. Official website endpoints and their baseline state are supplied by
+the external deployment; the campaign runner does not provision them.

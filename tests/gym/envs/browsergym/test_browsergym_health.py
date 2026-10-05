@@ -6,6 +6,8 @@ Run: uv run pytest tests/gym/envs/browsergym/test_browsergym_health.py -q
 """
 from __future__ import annotations
 
+import os
+
 import pytest
 
 pytest.importorskip("browsergym.core", reason="browsergym not installed")
@@ -114,3 +116,81 @@ def test_vwa_down_sites_includes_classifieds(monkeypatch):
     assert bg._wa_down_sites("visualwebarena") == ["classifieds"]
     # webarena (no classifieds dependency) is fully up in the same state
     assert bg._wa_down_sites("webarena") == []
+
+
+def test_verified_requires_operator_urls_without_legacy_defaults():
+    required = set(bg._REQUIRED_ENV_VARS["webarena_verified"])
+    assert bg._DEFAULT_ENV_VARS["webarena_verified"] == {}
+    assert required == {
+        "WA_SHOPPING",
+        "WA_SHOPPING_ADMIN",
+        "WA_REDDIT",
+        "WA_GITLAB",
+        "WA_WIKIPEDIA",
+        "WA_MAP",
+        "WA_HOMEPAGE",
+    }
+    assert "OPENAI_API_KEY" not in required
+
+
+def test_verified_missing_urls_fail_without_populating_legacy_defaults(monkeypatch):
+    for name in bg._REQUIRED_ENV_VARS["webarena_verified"]:
+        monkeypatch.delenv(name, raising=False)
+
+    with pytest.raises(OSError, match="WA_SHOPPING"):
+        bg._check_env_vars("webarena_verified")
+
+    assert "WA_SHOPPING" not in os.environ
+
+
+def test_verified_probe_uses_all_operator_urls(monkeypatch):
+    expected_urls = set()
+    for site, env_var, _needle in bg._WEBARENA_VERIFIED_SITE_VARS:
+        url = f"https://verified.example/{site}"
+        monkeypatch.setenv(env_var, url)
+        expected_urls.add(url)
+    seen = []
+    monkeypatch.setattr(
+        bg,
+        "_wa_site_up",
+        lambda url, needle, ok_codes, headers: seen.append((url, headers)) or True,
+    )
+
+    assert bg._webarena_verified_down_sites() == []
+    assert {url for url, _headers in seen} == expected_urls
+
+
+def test_verified_probe_forwards_playwright_headers(tmp_path, monkeypatch):
+    headers_path = tmp_path / "headers.json"
+    headers_path.write_text('{"x-site-token": "secret"}')
+    monkeypatch.setenv("PW_EXTRA_HEADERS", str(headers_path))
+    for site, env_var, _needle in bg._WEBARENA_VERIFIED_SITE_VARS:
+        monkeypatch.setenv(env_var, f"https://verified.example/{site}")
+    seen = []
+    monkeypatch.setattr(
+        bg,
+        "_wa_site_up",
+        lambda url, needle, ok_codes, headers: seen.append(headers) or True,
+    )
+
+    assert bg._webarena_verified_down_sites() == []
+    assert seen and all(headers == {"x-site-token": "secret"} for headers in seen)
+
+
+def test_verified_ensure_never_invokes_legacy_start_script(monkeypatch):
+    for site, env_var, _needle in bg._WEBARENA_VERIFIED_SITE_VARS:
+        monkeypatch.setenv(env_var, f"https://verified.example/{site}")
+    monkeypatch.setattr(bg, "_webarena_verified_down_sites", lambda: [])
+    monkeypatch.setattr(
+        bg.subprocess,
+        "run",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("Verified must not invoke start.sh")
+        ),
+    )
+    bg._services_started.discard("webarena_verified")
+
+    bg._ensure_services("browsergym.webarena_verified")
+
+    assert "webarena_verified" in bg._services_started
+    bg._services_started.discard("webarena_verified")

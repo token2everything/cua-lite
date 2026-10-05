@@ -1,0 +1,90 @@
+# Qwen3-VL text+bid rollout on cua-lite browsergym.webarena_verified.
+# WebArena-Verified uses deterministic evaluators, so benchmark scoring needs no
+# OpenAI judge key. Official site endpoints and state are prepared externally.
+#
+# Sampling: greedy decode (temperature 0.0), no native thinking channel
+# (eval-matrix default; the qwen3_vl adapter defaults enable_thinking=False).
+# max_new_tokens unset → the 2048 default (lite/infer/serving.py), sufficient
+# for non-thinking bid/answer turns.
+#
+# Text+bid path (NOT paper byte-parity): keeps Qwen3-VL's native
+# tool_call protocol but feeds AXTree obs + bid action space, so the model
+# isn't forced to ground references on pixel coords.
+#
+# Why `browsergym.generic` (rebuild-per-turn) and NOT `lite.history` (chat-style
+# increment): cua-lite chat history accumulates the FULL AXTree obs in every
+# user_N message. WA shopping_admin pages can have ~75K-token AXTrees, so by
+# turn 2 the prompt is ~155K and overflows even Qwen3.5's 128K context. The
+# theoretical KV-cache reuse advantage of `lite.history` is moot when each
+# turn's obs is the same size as the cached prefix — the saved attention
+# isn't worth the OOM crashes. Rebuild-per-turn keeps past actions in a
+# short `# History` section (just `click('a47')` strings) and renders a
+# single current AXTree, so each turn's prompt stays bounded ~80K. Sglang
+# radix cache still hits on the static system + tools preamble.
+#
+# Prereqs: externally prepared official sites with their WA_* endpoints exported.
+# Pair with sglang `--context-length 131072` (Qwen3.5/Qwen3-VL native max).
+
+agent_id: "qwen3_vl.base"
+agent_kwargs:
+  protocol_key: "browsergym.generic"
+  protocol_kwargs:
+    use_concrete_example: false
+    use_hints: true
+  # Only honored by rollout.py; RL sets sampling via trainer flags.
+  sampling_kwargs:
+    temperature: 0.0
+  # Suppress LiteBrowser coord-style actions (click(coordinate), scroll, etc.)
+  # so the model sees only the bid-mode tools we inject via env_kwargs.
+  # AgentLab paper-aligned minimal system prompt. The chat template's
+  # auto-injected `<tools>` section + `_build_tools_section` JSON example
+  # teach the wire format. The protocol-rendered # Hints block (gated by
+  # `use_hints=true` above) provides task-specific guidance (bid usage,
+  # dropdowns, auto-completion). Avoiding any "Action: <imperative>" rule
+  # keeps the per-step assistant output minimal — matches reference
+  # (`agentlab.agents.dynamic_prompting.SystemPrompt`).
+  # Verbatim from:
+  # `${CUA_LITE_REFERENCES_ROOT}/AgentLab/src/agentlab/agents/dynamic_prompting.py`.
+  system_prompt: |-
+    You are an agent trying to solve a web task based on the content of the page and
+    user instructions. You can interact with the page and explore, and send messages to the user. Each time you
+    submit an action it will be sent to the browser and you will receive a new page.
+
+    When finishing, use response and pass only valid JSON matching the schema
+    in the task instruction.
+
+env_id: "browsergym.webarena_verified"
+env_kwargs:
+  # Append the operator-managed homepage, site list, and credentials to the goal.
+  with_homepage_hint: true
+  max_steps: 30
+  # Group A — ObsFlags mirror AgentLab `ObsFlags` (text+bid path) byte-for-byte:
+  # see `${CUA_LITE_REFERENCES_ROOT}/AgentLab/src/agentlab/agents/dynamic_prompting.py`
+  # `class ObsFlags`. We use `browsergym.generic` (rebuild-per-turn, AgentLab-aligned;
+  # see `lite/agents/extensions/browsergym/protocol.py` module docstring for rationale).
+  # ─── Obs mode: text-only AXTree (no screenshot) ──────────────────────
+  # ``use_screenshot=false`` + ``use_ax_tree=true`` = text-only obs (the
+  # agent-as-annotators / paper observation shape). Per-step obs is the
+  # AXTree dump — no images. See ``lite/gym/envs/browsergym/main.py``
+  # ``BrowserGymConfig`` for the full ObsFlags surface.
+  use_screenshot: false
+  use_ax_tree: true
+  use_focused_element: true
+  use_error_logs: true
+  extract_visible_tag: true
+  extract_clickable_tag: true
+  extract_coords: "False"            # literal string, not bool — ObsFlags Literal
+  filter_visible_elements_only: false
+  # Group B — paper-aligned WA action preset (15 actions: click/fill/hover/
+  # scroll/select_option/goto/back/forward/switch_tab/new_tab/close_tab/
+  # keyboard_press/response/terminate/noop). The active list below omits
+  # terminate because Verified final answers require schema-valid response JSON.
+  # Matches `DEFAULT_HIGHLEVEL_ACTION_SET_ARGS["webarena"]` which is what AgentLab
+  # GenericAgent.set_benchmark() applies at runtime — see
+  # ${CUA_LITE_REFERENCES_ROOT}/AgentLab/src/agentlab/agents/generic_agent/generic_agent.py.
+  action_subsets: ["webarena"]
+  extra_tools: ["scroll", "keyboard_press", "click", "fill", "hover", "switch_tab", "new_tab", "back", "forward", "goto", "close_tab", "select_option", "response"]
+  # Disable only the LiteBrowser coord action-batch tool. BrowserGym bid/nav/finish
+  # tools stay active through ``extra_tools`` above; rejected GUI calls still get
+  # paired model-visible feedback with the current obs text/image preserved.
+  valid_actions: []

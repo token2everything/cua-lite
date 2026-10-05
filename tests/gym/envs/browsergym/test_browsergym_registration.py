@@ -13,6 +13,7 @@ pytest.importorskip("browsergym.core", reason="browsergym not installed")
 from lite.core.tools import make_tool_call
 from lite.gym.envs.browsergym.main import (
     _BENCHMARK_VIEWPORTS,
+    BrowserGymConfig,
     BrowserGymEnv,
 )
 
@@ -181,5 +182,61 @@ class TestRegistration:
 
     def test_benchmark_viewports_complete(self):
         # Sanity: viewport map covers all benchmarks we register.
-        for bench in ("miniwob", "webarena", "visualwebarena"):
+        for bench in (
+            "miniwob", "webarena", "webarena_verified", "visualwebarena"
+        ):
             assert bench in _BENCHMARK_VIEWPORTS
+
+    def test_webarena_verified_catalog_and_metadata_registered(self):
+        from importlib.metadata import PackageNotFoundError
+
+        from lite.gym.envs.browsergym import webarena_verified
+
+        try:
+            webarena_verified.browsergym_package_root()
+            webarena_verified.task_records()
+        except PackageNotFoundError:
+            pytest.skip("WebArena-Verified packages not installed")
+        import lite.gym as gym
+
+        task_ids = gym.registry.task_ids(
+            "browsergym.webarena_verified", split="eval"
+        )
+        assert len(task_ids) == 812
+        assert task_ids[0] == "279.0.2"
+        assert task_ids[-1] == "999.811.2"
+
+        metadata = [
+            gym.registry.task_metadata("browsergym.webarena_verified", task_id)
+            for task_id in task_ids
+        ]
+        assert all(item is not None for item in metadata)
+        assert sum(item.others["hard"] for item in metadata if item is not None) == 258
+        assert (
+            sum(item.others["mutating"] for item in metadata if item is not None)
+            == 374
+        )
+        assert all(
+            "llm_as_a_judge" not in item.others
+            for item in metadata
+            if item is not None
+        )
+
+    @pytest.mark.asyncio
+    async def test_webarena_verified_uses_binary_official_task_score(self, monkeypatch):
+        config = BrowserGymConfig(
+            bgym_task_id="webarena_verified.279.0.2",
+            benchmark="webarena_verified",
+            use_screenshot=False,
+            action_subsets=("chat",),
+        )
+        env = BrowserGymEnv(config=config, max_steps=1, extra_tools=["response"])
+
+        async def execute(_code):
+            return {"reward": 0.5, "bg_terminated": True}
+
+        monkeypatch.setattr(env, "_execute_bgym_action", execute)
+        result = await env.step([make_tool_call("response", {"text": "{}"})])
+
+        assert result.terminated is True
+        assert result.reward == 0.0

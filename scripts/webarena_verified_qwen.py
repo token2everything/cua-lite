@@ -1020,8 +1020,14 @@ def classify_glm_turn(
         return GlmTurn("final")
 
     blocks = list(_GLM_TOOL_BLOCK.finditer(content))
-    if len(blocks) != 1 or content.count("<tool_call>") != 1 or content.count("</tool_call>") != 1:
+    if len(blocks) != 1 or content.count("<tool_call>") != 1:
         return GlmTurn("action_error", "expected exactly one complete computer_use tool call")
+    # GLM sometimes emits an orphan closing tag in prose before its sole
+    # complete call. It cannot encode an additional action, unlike markup
+    # after the call or a second opening tag.
+    prefix = content[: blocks[0].start()]
+    if "<function=" in prefix or "<parameter=" in prefix:
+        return GlmTurn("action_error", "malformed computer_use prefix")
     if content[blocks[0].end() :].strip():
         return GlmTurn("action_error", "computer_use tool call must be the final content")
     function = _GLM_FUNCTION_BLOCK.fullmatch(blocks[0].group(1))
@@ -1374,6 +1380,7 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
         finalization_attempts = 0
         response_feedback = ""
         task = None
+        case_max_steps: int | None = None
         error: BaseException | None = None
         startup_failure = False
         try:
@@ -1429,6 +1436,12 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
             )
             page = context.new_page()
             task = WebArenaVerifiedTask(seed=0, task_id=args.task_id)
+            if args.startup_page_gate:
+                case_max_steps = resolve_step_budget(
+                    task.config,
+                    args.max_steps,
+                    layered=args.layered_step_budget,
+                )
             tracing_started = True
             navigation_responses: list[tuple[Any, str, int]] = []
             if args.startup_page_gate:
@@ -1481,11 +1494,12 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                     context.remove_listener("response", record_document_response)
             response_schema = FinalAgentResponse.model_json_schema()
             goal = build_public_instruction(task.config, response_schema)
-            case_max_steps = resolve_step_budget(
-                task.config,
-                args.max_steps,
-                layered=args.layered_step_budget,
-            )
+            if case_max_steps is None:
+                case_max_steps = resolve_step_budget(
+                    task.config,
+                    args.max_steps,
+                    layered=args.layered_step_budget,
+                )
             _atomic_text(output / "instruction.txt", goal + "\n")
             _atomic_json(
                 output / "instruction.json",

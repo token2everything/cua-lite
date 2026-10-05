@@ -208,13 +208,33 @@ def main() -> None:
         "--existing-cluster", type=Path,
         help="reassign the full dataset to the existing cluster's worker IDs",
     )
+    parser.add_argument(
+        "--disk-aware-50",
+        action="store_true",
+        help="full 812-task plan with 50 workers and four map database copies",
+    )
     args = parser.parse_args()
 
     catalog = load_catalog()
     if args.full:
         if set(catalog) != set(range(812)):
             parser.error("full dataset must contain exactly task IDs 0-811")
-        if args.existing_cluster is not None:
+        if args.disk_aware_50:
+            if args.workers is not None or args.existing_cluster is not None:
+                parser.error("--disk-aware-50 cannot be combined with worker overrides")
+            # Keep the rare map+admin and map+Wikipedia profiles, then spread
+            # 128 map tasks over four database copies instead of 11-25.
+            profile_ids = {
+                f"{worker:02d}" for worker in range(1, 51) if worker not in range(18, 25)
+            }
+            profile_ids.update(f"{worker:02d}" for worker in range(75, 82))
+            by_profile = assign_full(catalog, profile_ids)
+            assignments = {
+                f"{index:02d}": by_profile[profile]
+                for index, profile in enumerate(sorted(profile_ids, key=int), start=1)
+            }
+            strategy = "disk-aware capability balance; four map workers"
+        elif args.existing_cluster is not None:
             if args.workers is not None:
                 parser.error("--existing-cluster and --workers are mutually exclusive")
             cluster = json.loads(args.existing_cluster.read_text())
@@ -223,15 +243,17 @@ def main() -> None:
                 parser.error("existing cluster must contain unique worker IDs")
             if not worker_ids <= FULL_WORKER_CAPABILITIES.keys():
                 parser.error("existing cluster contains an unknown worker profile")
+            assignments = assign_full(catalog, worker_ids)
+            strategy = "capability-constrained greedy weighted balance"
         else:
             if args.workers is not None and args.workers not in {50, 100, 128}:
                 parser.error("--workers for --full must be 50, 100, or 128")
             worker_ids = {f"{worker:02d}" for worker in range(1, (args.workers or 128) + 1)}
-        assignments = assign_full(catalog, worker_ids)
-        strategy = "capability-constrained greedy weighted balance"
+            assignments = assign_full(catalog, worker_ids)
+            strategy = "capability-constrained greedy weighted balance"
     else:
-        if args.existing_cluster is not None:
-            parser.error("--existing-cluster requires --full")
+        if args.existing_cluster is not None or args.disk_aware_50:
+            parser.error("--existing-cluster and --disk-aware-50 require --full")
         try:
             task_ids = parse_task_spec(args.tasks)
         except ValueError as error:

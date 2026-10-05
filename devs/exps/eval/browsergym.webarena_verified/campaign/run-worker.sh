@@ -108,7 +108,9 @@ printf '{"worker":"%s","sandbox_id":"%s","mode":"%s","launch_id":"%s","started_a
     "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$WORKER_DIR/$MODE-running.json"
 
 overall_rc=0
-while IFS=$'\t' read -r task_id sites; do
+# Keep the plan on a dedicated descriptor: run-case and its Docker children may
+# read stdin, but must not consume the remaining task rows.
+while IFS=$'\t' read -r task_id sites <&3; do
     [ -n "$task_id" ] || continue
     case_key=$(printf 'task-%04d' "$task_id")
     export TASK_ID_FOR_RECEIPT="$task_id"
@@ -128,7 +130,7 @@ while IFS=$'\t' read -r task_id sites; do
     if [ "$MODE" = startup ]; then
         break
     fi
-done < "$TASKS"
+done 3< "$TASKS"
 
 printf '{"run_id":"%s","plan_sha256":"%s","worker":"%s","sandbox_id":"%s","mode":"%s","launch_id":"%s","exit_code":%s,"finished_at":"%s"}\n' \
     "$RUN_ID" "$PLAN_SHA256" "$WORKER" "$SANDBOX_ID" "$MODE" \

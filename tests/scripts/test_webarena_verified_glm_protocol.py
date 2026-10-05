@@ -55,6 +55,12 @@ def classify(content, actions, *, native=False, parser_error=None):
     [
         ('Done.\n```json\n{"status":"SUCCESS"}\n```', ["DONE"], "final"),
         (tool_call("left_click", coordinate=[1897, 345]), ["pyautogui.click(1897, 342)"], "action"),
+        (
+            "Click Reports.\n</tool_call>\n"
+            + tool_call("left_click", coordinate=[50, 570]),
+            ["pyautogui.click(50, 565)"],
+            "action",
+        ),
         ("I will click the tab now.", ["DONE"], "action_error"),
         (
             "<tool_call><function=computer_use><action>left_click</action></function></tool_call>",
@@ -77,6 +83,15 @@ def classify(content, actions, *, native=False, parser_error=None):
 )
 def test_glm_turn_classification_never_accepts_parser_fabricated_done(content, actions, expected):
     assert classify(content, actions).kind == expected
+
+
+def test_glm_orphan_closing_tag_does_not_hide_multiple_or_trailing_calls():
+    call = tool_call("left_click", coordinate=[50, 570])
+    assert classify("</tool_call>" + call + call, ["DONE"]).kind == "action_error"
+    assert classify("</tool_call>" + call + "</tool_call>", ["DONE"]).kind == "action_error"
+    assert classify("<function=computer_use></tool_call>" + call, ["DONE"]).kind == (
+        "action_error"
+    )
 
 
 @pytest.mark.parametrize(
@@ -326,7 +341,7 @@ def test_glm_profile_prefers_its_key_and_qwen_keeps_original_key(monkeypatch):
     )
 
 
-def run_fake_glm_case(tmp_path, monkeypatch, turns, evaluation=None):
+def run_fake_glm_case(tmp_path, monkeypatch, turns, evaluation=None, *, setup_error=None):
     """Exercise the runner without a browser, sandbox, or model API."""
     from playwright import sync_api
     from webarena_verified import types as response_types
@@ -345,11 +360,13 @@ def run_fake_glm_case(tmp_path, monkeypatch, turns, evaluation=None):
             pass
 
         def setup(self, page):
-            pass
+            if setup_error is not None:
+                raise setup_error
 
     class Page:
         def __init__(self):
             self.waits = []
+            self.url = "http://example.test"
 
         def bring_to_front(self):
             pass
@@ -358,7 +375,12 @@ def run_fake_glm_case(tmp_path, monkeypatch, turns, evaluation=None):
             self.waits.append(milliseconds)
 
     page = Page()
-    context = SimpleNamespace(pages=[page], new_page=lambda: page)
+    context = SimpleNamespace(
+        pages=[page],
+        new_page=lambda: page,
+        on=lambda *args: None,
+        remove_listener=lambda *args: None,
+    )
     browser = SimpleNamespace(new_context=lambda **kwargs: context, close=lambda: None)
     playwright = SimpleNamespace(
         chromium=SimpleNamespace(launch=lambda **kwargs: browser), stop=lambda: None
@@ -435,7 +457,7 @@ def run_fake_glm_case(tmp_path, monkeypatch, turns, evaluation=None):
         final_response_reserve_steps=0,
         repair_invalid_response=True,
         no_thinking=False,
-        startup_page_gate=False,
+        startup_page_gate=setup_error is not None,
         model_profile="glm53flash",
     )
     status = runner.run_case(args)
@@ -444,6 +466,21 @@ def run_fake_glm_case(tmp_path, monkeypatch, turns, evaluation=None):
         for line in (tmp_path / "case" / "trajectory.jsonl").read_text().splitlines()
     ]
     return status, trajectories, page
+
+
+def test_glm_startup_failure_records_status_before_step_loop(tmp_path, monkeypatch):
+    with pytest.raises(RuntimeError, match="GitLab unavailable"):
+        run_fake_glm_case(
+            tmp_path,
+            monkeypatch,
+            [],
+            setup_error=RuntimeError("GitLab unavailable"),
+        )
+    status = json.loads((tmp_path / "case" / "status.json").read_text())
+    assert status["status"] == "failed"
+    assert status["failure_phase"] == "startup"
+    assert status["fixed_parameters"]["max_steps"] == 4
+    assert status["error"]["message"] == "GitLab unavailable"
 
 
 def test_glm_runner_executes_wait_time_and_then_accepts_final_json(tmp_path, monkeypatch):

@@ -349,19 +349,18 @@ def run_fake_glm_case(tmp_path, monkeypatch, turns, evaluation=None, *, setup_er
     from lite.gym.envs.browsergym import webarena_verified
 
     class Task:
-        config = {
-            "intent": "Open the page",
-            "start_urls": ["http://example.test"],
-            "sites": ["wikipedia"],
-            "intent_template_id": 1,
-        }
-
         def __init__(self, **kwargs):
             pass
 
         def setup(self, page):
             if setup_error is not None:
                 raise setup_error
+            self.config = {
+                "intent": "Open the page",
+                "start_urls": ["http://example.test"],
+                "sites": ["wikipedia"],
+                "intent_template_id": 1,
+            }
 
     class Page:
         def __init__(self):
@@ -479,8 +478,11 @@ def test_glm_startup_failure_records_status_before_step_loop(tmp_path, monkeypat
     status = json.loads((tmp_path / "case" / "status.json").read_text())
     assert status["status"] == "failed"
     assert status["failure_phase"] == "startup"
-    assert status["fixed_parameters"]["max_steps"] == 4
+    assert status["fixed_parameters"]["max_steps"] is None
     assert status["error"]["message"] == "GitLab unavailable"
+    startup = json.loads((tmp_path / "case" / "startup_receipt.json").read_text())
+    assert startup["result"] == "failed"
+    assert startup["error"] == "RuntimeError: GitLab unavailable"
 
 
 def test_glm_runner_executes_wait_time_and_then_accepts_final_json(tmp_path, monkeypatch):

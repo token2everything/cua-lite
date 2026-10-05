@@ -1436,12 +1436,6 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
             )
             page = context.new_page()
             task = WebArenaVerifiedTask(seed=0, task_id=args.task_id)
-            if args.startup_page_gate:
-                case_max_steps = resolve_step_budget(
-                    task.config,
-                    args.max_steps,
-                    layered=args.layered_step_budget,
-                )
             tracing_started = True
             navigation_responses: list[tuple[Any, str, int]] = []
             if args.startup_page_gate:
@@ -1480,7 +1474,9 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                                 "version": 1,
                                 "result": "failed",
                                 "phase": "task.setup",
-                                "start_urls": list(task.config.get("start_urls") or []),
+                                "start_urls": list(
+                                    getattr(task, "config", {}).get("start_urls") or []
+                                ),
                                 "pages": [
                                     {"index": index, "url": open_page.url}
                                     for index, open_page in enumerate(context.pages)

@@ -1,0 +1,25 @@
+{
+  "infra_version": "webarena-verified-v7-gitlab-stable",
+  "rollback_ready": true,
+  "git_commit": "4dcbbd2f38c94c5ed46307069a71da9c2a07c228",
+  "runner_sha256": "4e5f40a8a7cc560551ad4f19e6ccde9a4de6743e3849cbc2ea1a222ff7af251f",
+  "entrypoint": "scripts/webarena_verified_qwen.py",
+  "argv": ["--model-profile", "glm53flash", "--startup-page-gate", "--max-steps", "150", "--final-response-reserve-steps", "7", "--layered-step-budget", "--repair-invalid-response"],
+  "protocol_version": "glm-v6-single-call-orphan-close-tolerant",
+  "osworld_commit": "b138d348256078fa634fc3b73567a7337c793e6b",
+  "browsergym_version": "0.14.3",
+  "evaluator_version": "1.2.3",
+  "evaluator_sha256": "35c3385b1db4b3378657589f95f50defd4234bd36e5b93d44733fd561b01db4e",
+  "dataset_sha256": "d65275660814663375028e9017e1f929e3c38321041b125795e2713b52243d30",
+  "site_image_digests": {},
+  "config_sha256": "0c7570df347bf9ae18f13714d5a7d8a886c12d0901bca4fbf451c688746c2655",
+  "experiment_config": "devs/exps/eval/browsergym.webarena_verified/EXPERIMENT_CONFIG.v7-full50-stable.json",
+  "scoring_policy": "official raw 1.2.3 score; evaluator errors unscored; fork counterfactual separate",
+  "canary_ids": [102, 103, 106],
+  "verification": {
+    "offline_tests_passed": 112,
+    "online_canary_status": "pending",
+    "qwen_default_unchanged": true
+  },
+  "rollback_to": "webarena-verified-v7-upload-retry"
+}

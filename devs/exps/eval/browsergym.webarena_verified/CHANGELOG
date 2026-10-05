@@ -1,5 +1,16 @@
 ## Unreleased
 
+### V4 — Campaign terminal evidence
+
+The GLM-only campaign scripts now bind each task to its run, worker, sandbox,
+runner hash, startup receipt, site baseline, model requests, and complete HAR/
+trace evidence before publishing a terminal receipt. Protocol failure is a
+scored model outcome, evaluator error is unscored, and invalid evidence remains
+retryable. Qwen's default runner path remains unchanged. Offline regression:
+95 targeted tests passed. The first 30-case map canary sandbox was evicted by
+the platform during map database preparation (`DiskEvicted`); its result is
+not a model or scoring outcome. A five-case non-map canary is pending.
+
 ### V3 — Scoring integrity and separate evaluator fork
 
 The GLM campaign now distinguishes evaluator errors from model failures and

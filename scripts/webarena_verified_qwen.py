@@ -42,7 +42,7 @@ MODEL = "qwen3.8-max"
 GLM_MODEL = "glm-5.3-flash"
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
-# The full campaign gives every task a 100-turn ceiling.  The reserve window
+# The full campaign gives every task a 150-turn ceiling.  The reserve window
 # below still prevents the agent from spending its final turns on GUI actions.
 MAX_STEPS = 150
 FINAL_RESPONSE_RESERVE_STEPS = 7
@@ -59,7 +59,7 @@ RESET_SETTLE_SECONDS = 60.0
 EVALUATION_SETTLE_SECONDS = 20.0
 
 # Site and intent budgets remain available for matched controls and for callers
-# that pass a lower base budget.  The production campaign uses the 100-turn
+# that pass a lower base budget.  The production campaign uses the 150-turn
 # base ceiling above, so no task is cut off at the old global 50-turn cap.
 SITE_STEP_BUDGETS = {
     "gitlab": 60,
@@ -575,11 +575,16 @@ def make_pinned_agent_class(
                 secrets,
                 image_directory=self.request_image_dir,
             )
-            client = self.client_factory(
-                base_url=self.base_url,
-                api_key=self.api_key,
-                timeout=MODEL_TIMEOUT_SECONDS,
-            )
+            client_kwargs = {
+                "base_url": self.base_url,
+                "api_key": self.api_key,
+                "timeout": MODEL_TIMEOUT_SECONDS,
+            }
+            if model_profile == "glm53flash":
+                # The logged outer loop owns GLM retries; SDK retries would
+                # multiply its five attempts into up to fifteen wire requests.
+                client_kwargs["max_retries"] = 0
+            client = self.client_factory(**client_kwargs)
             retryable = tuple(
                 candidate
                 for candidate in (
@@ -589,6 +594,7 @@ def make_pinned_agent_class(
                     getattr(openai_module, "RateLimitError", None),
                     getattr(openai_module, "BadRequestError", None),
                     getattr(openai_module, "InternalServerError", None),
+                    openai_module.APIStatusError if model_profile == "glm53flash" else None,
                 )
                 if isinstance(candidate, type)
             )
@@ -635,6 +641,13 @@ def make_pinned_agent_class(
                         return f"<think>\n{reasoning}\n</think>\n\n{content.lstrip()}"
                     return content
                 except retryable as error:
+                    if (
+                        model_profile == "glm53flash"
+                        and isinstance(error, openai_module.APIStatusError)
+                        and error.status_code not in {400, 408, 409, 429}
+                        and error.status_code < 500
+                    ):
+                        raise
                     last_error = error
                     write_log(
                         self.request_log_dir,
@@ -1970,6 +1983,7 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                 evaluation["integrity_status"] if evaluation is not None else None
             )
             status["fixed_parameters"]["reasoning_effort"] = "max"
+            status["fixed_parameters"]["sdk_max_retries"] = 0
         if error:
             status["error"] = {
                 "type": type(error).__name__,

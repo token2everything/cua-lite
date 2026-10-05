@@ -172,6 +172,7 @@ def make_agent(tmp_path, response, profile, *, base_class=FakeBaseAgent):
 
     class OpenAI:
         OpenAI = Client
+        APIStatusError = type("APIStatusError", (Exception,), {})
 
     agent_class = runner.make_pinned_agent_class(base_class, OpenAI, model_profile=profile)
     return agent_class(

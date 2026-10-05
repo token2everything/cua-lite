@@ -1,5 +1,25 @@
 ## Unreleased
 
+### V12 — One GLM transport retry owner
+
+V10 startup request logs for tasks 6 and 21 contain provider timeouts while
+the runtime SDK retries each outer attempt twice internally. V12 explicitly
+sets SDK `max_retries=0` for GLM only, leaving the existing logged five-attempt
+loop and its backoff unchanged. The GLM outer loop also takes over SDK-retryable
+HTTP 408/409; authentication and other nonretryable statuses still fail directly.
+Qwen retains its original client constructor
+and SDK defaults. Model request bodies, prompts, action projection, scoring,
+and the 150-step budget do not change. GLM status records the SDK retry limit.
+Timeouts remain transport failures, not fabricated zero scores.
+
+The underlying provider stall cause is not established. This release bounds
+wire requests; it does not claim to solve model latency or impose a total
+wall-clock deadline. Offline regression: 212 relevant tests passed. Runtime
+SDK 3.19.2 mock transport verifies five GLM sends on persistent timeout and
+retryable HTTP failures, recovery on the third send, and immediate failure on
+401/403/404/422. Qwen retains its original SDK defaults. No model API was called
+by these checks; full online startup verification is pending.
+
 ### V11 — Observed GLM table wrapper
 
 Both V10 task-66 startup replies contain one complete click inside an empty,

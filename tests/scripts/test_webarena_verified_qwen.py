@@ -77,12 +77,19 @@ class RetryError(Exception):
     pass
 
 
+class FakeAPIStatusError(Exception):
+    def __init__(self, status_code):
+        super().__init__(f"HTTP {status_code}")
+        self.status_code = status_code
+
+
 class FakeOpenAI:
     APIConnectionError = RetryError
     APITimeoutError = RetryError
     RateLimitError = RetryError
     BadRequestError = RetryError
     InternalServerError = RetryError
+    APIStatusError = FakeAPIStatusError
 
 
 def fake_client_factory(outcomes, captured):
@@ -100,9 +107,11 @@ def fake_client_factory(outcomes, captured):
     )
 
 
-def build_agent(tmp_path, *, outcomes, enable_thinking=True, sleep_fn=lambda _: None):
+def build_agent(
+    tmp_path, *, outcomes, enable_thinking=True, sleep_fn=lambda _: None, profile="qwen"
+):
     captured = []
-    agent_class = runner.make_pinned_agent_class(FakeQwenBase, FakeOpenAI)
+    agent_class = runner.make_pinned_agent_class(FakeQwenBase, FakeOpenAI, model_profile=profile)
     agent = agent_class(
         model=runner.MODEL,
         max_tokens=runner.MAX_TOKENS,
@@ -316,6 +325,115 @@ def test_model_request_retries_five_times_with_upstream_backoff(tmp_path):
         agent.call_llm({"messages": []}, runner.MODEL)
     assert len(captured) == runner.MODEL_ATTEMPTS
     assert sleeps == [5.0, 10.0, 15.0, 20.0, 25.0]
+
+
+@pytest.mark.parametrize("profile, expected_requests", [("qwen", 15), ("glm53flash", 5)])
+@pytest.mark.parametrize("recover", [False, True])
+def test_glm_retry_owner_is_bounded_without_changing_qwen_sdk_defaults(
+    tmp_path, profile, expected_requests, recover
+):
+    constructors, wire_requests, sleeps = [], [], []
+
+    class Client:
+        def __init__(self, **kwargs):
+            constructors.append(kwargs)
+            self.max_retries = kwargs.get("max_retries", 2)
+            self.chat = SimpleNamespace(completions=SimpleNamespace(create=self.create))
+
+        def create(self, **kwargs):
+            # Model the two internal SDK retries verified in the runtime image.
+            for _ in range(self.max_retries + 1):
+                wire_requests.append(kwargs)
+                if recover and len(wire_requests) == 3:
+                    return FakeResponse(reasoning_content="")
+            raise RetryError("secret-key timeout")
+
+    agent, _ = build_agent(tmp_path, outcomes=[], profile=profile, sleep_fn=sleeps.append)
+    agent.client_factory = Client
+    if recover:
+        assert agent.call_llm({"messages": []}, runner.MODEL) == "done"
+        assert len(wire_requests) == 3
+        outer_attempts = 3 if profile == "glm53flash" else 1
+        metadata = json.loads((tmp_path / "requests/step_000_metadata.json").read_text())
+        assert metadata["attempt"] == outer_attempts
+        assert sleeps == ([5.0, 10.0] if profile == "glm53flash" else [])
+    else:
+        with pytest.raises(RetryError, match="timeout"):
+            agent.call_llm({"messages": []}, runner.MODEL)
+        assert len(wire_requests) == expected_requests
+        outer_attempts = runner.MODEL_ATTEMPTS
+        assert sleeps == [5.0, 10.0, 15.0, 20.0, 25.0]
+        assert not (tmp_path / "requests/step_000_metadata.json").exists()
+    expected_constructor = {
+        "base_url": "https://model.example/v1",
+        "api_key": "secret-key",
+        "timeout": runner.MODEL_TIMEOUT_SECONDS,
+    }
+    if profile == "glm53flash":
+        expected_constructor["max_retries"] = 0
+    assert constructors == [expected_constructor]
+    errors = sorted((tmp_path / "requests").glob("step_000_attempt_*_error.json"))
+    assert len(errors) == (outer_attempts - 1 if recover else outer_attempts)
+    for index, path in enumerate(errors, 1):
+        assert path.name == f"step_000_attempt_{index:02d}_error.json"
+        error = json.loads(path.read_text())
+        assert error["type"] == "RetryError"
+        assert "secret-key" not in error["message"]
+    assert all(request == wire_requests[0] for request in wire_requests)
+
+
+@pytest.mark.parametrize("profile", ["qwen", "glm53flash"])
+def test_retry_policy_does_not_swallow_nonretryable_errors(tmp_path, profile):
+    sleeps = []
+    agent, captured = build_agent(
+        tmp_path,
+        outcomes=[ValueError("invalid local request")],
+        profile=profile,
+        sleep_fn=sleeps.append,
+    )
+    with pytest.raises(ValueError, match="invalid local request"):
+        agent.call_llm({"messages": []}, runner.MODEL)
+    assert len(captured) == 1
+    assert sleeps == []
+    assert not list((tmp_path / "requests").glob("*error.json"))
+
+
+@pytest.mark.parametrize("status", [400, 408, 409, 429, 500, 503])
+@pytest.mark.parametrize("recover", [False, True])
+def test_glm_outer_loop_takes_over_retryable_http_statuses(tmp_path, status, recover):
+    outcomes = [FakeAPIStatusError(status)] * (2 if recover else runner.MODEL_ATTEMPTS)
+    if recover:
+        outcomes.append(FakeResponse(reasoning_content=""))
+    sleeps = []
+    agent, captured = build_agent(
+        tmp_path, outcomes=outcomes, profile="glm53flash", sleep_fn=sleeps.append
+    )
+    if recover:
+        assert agent.call_llm({"messages": []}, runner.MODEL) == "done"
+        metadata = json.loads((tmp_path / "requests/step_000_metadata.json").read_text())
+        assert metadata["attempt"] == 3
+        assert len(captured) == 3
+        assert sleeps == [5.0, 10.0]
+    else:
+        with pytest.raises(FakeAPIStatusError):
+            agent.call_llm({"messages": []}, runner.MODEL)
+        assert len(captured) == 5
+        assert sleeps == [5.0, 10.0, 15.0, 20.0, 25.0]
+    assert len(list((tmp_path / "requests").glob("*error.json"))) == (2 if recover else 5)
+
+
+@pytest.mark.parametrize("profile", ["qwen", "glm53flash"])
+@pytest.mark.parametrize("status", [401, 403, 404, 422])
+def test_nonretryable_http_statuses_remain_immediate_failures(tmp_path, profile, status):
+    sleeps = []
+    agent, captured = build_agent(
+        tmp_path, outcomes=[FakeAPIStatusError(status)], profile=profile, sleep_fn=sleeps.append
+    )
+    with pytest.raises(FakeAPIStatusError):
+        agent.call_llm({"messages": []}, runner.MODEL)
+    assert len(captured) == 1
+    assert sleeps == []
+    assert not list((tmp_path / "requests").glob("*error.json"))
 
 
 def test_final_json_uses_content_not_reasoning():

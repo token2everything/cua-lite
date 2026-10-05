@@ -56,8 +56,7 @@ def classify(content, actions, *, native=False, parser_error=None):
         ('Done.\n```json\n{"status":"SUCCESS"}\n```', ["DONE"], "final"),
         (tool_call("left_click", coordinate=[1897, 345]), ["pyautogui.click(1897, 342)"], "action"),
         (
-            "Click Reports.\n</tool_call>\n"
-            + tool_call("left_click", coordinate=[50, 570]),
+            "Click Reports.\n</tool_call>\n" + tool_call("left_click", coordinate=[50, 570]),
             ["pyautogui.click(50, 565)"],
             "action",
         ),
@@ -89,9 +88,7 @@ def test_glm_orphan_closing_tag_does_not_hide_multiple_or_trailing_calls():
     call = tool_call("left_click", coordinate=[50, 570])
     assert classify("</tool_call>" + call + call, ["DONE"]).kind == "action_error"
     assert classify("</tool_call>" + call + "</tool_call>", ["DONE"]).kind == "action_error"
-    assert classify("<function=computer_use></tool_call>" + call, ["DONE"]).kind == (
-        "action_error"
-    )
+    assert classify("<function=computer_use></tool_call>" + call, ["DONE"]).kind == ("action_error")
 
 
 @pytest.mark.parametrize(
@@ -249,6 +246,10 @@ def test_glm_projects_real_native_child_fields_without_changing_raw_history(tmp_
         ("<coordinate>1222 908</coordinate>", (1222, 908)),
         ("<parameter=coordinate>558, 113</parameter>", (558, 113)),
         ("<parameter=coordinate>1222 908</parameter>", (1222, 908)),
+        ("<coordinate>559</coordinate><parameter>113</parameter>", (559, 113)),
+        ("<coordinate>1473</coordinate><coordinate>115</coordinate>", (1473, 115)),
+        ("<parameter=coordinate>(1204, 561)</parameter>", (1204, 561)),
+        ("<parameter=coordinate>[[573, 479]]</parameter>", (573, 479)),
     ],
 )
 def test_glm_projects_two_numeric_pixel_tokens_before_gui_parser(
@@ -260,9 +261,7 @@ def test_glm_projects_two_numeric_pixel_tokens_before_gui_parser(
         else "<action>left_click</action>"
     )
     content = (
-        "<tool_call><function=computer_use>"
-        f"{action_field}{coordinate_field}"
-        "</function></tool_call>"
+        f"<tool_call><function=computer_use>{action_field}{coordinate_field}</function></tool_call>"
     )
     agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "glm53flash")
     response = agent.call_llm({"messages": []}, agent.model)
@@ -279,6 +278,130 @@ def test_glm_projects_two_numeric_pixel_tokens_before_gui_parser(
         agent.last_projected_content
     )
     assert classify(agent.last_projected_content, actions).coordinate == expected
+
+
+def test_glm_projects_observed_list_wrapper_and_inline_keys(tmp_path):
+    coordinate_content = (
+        "Action: Click the project.\n<li><function=computer_use>"
+        "<parameter=action>left_click</parameter>"
+        "<parameter=coordinate>[[573, 479]]</parameter>"
+        "</function></li>"
+    )
+    keys_content = (
+        "<tool_call><function=computer_use><action>key</action>"
+        '<keys=["ctrl", "shift", "home"]></function></tool_call>'
+    )
+    for content, expected in (
+        (coordinate_content, "<parameter=coordinate>[573, 479]</parameter>"),
+        (keys_content, '<parameter=keys>["ctrl", "shift", "home"]</parameter>'),
+    ):
+        agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "glm53flash")
+        response = agent.call_llm({"messages": []}, agent.model)
+        _, actions = agent._parse_response(
+            response,
+            original_width=1920,
+            original_height=1080,
+            processed_width=1920,
+            processed_height=1088,
+        )
+        assert response == agent.last_provider_content == content
+        assert expected in agent.last_projected_content
+        assert classify(agent.last_projected_content, actions).kind == "action"
+
+
+@pytest.mark.parametrize(
+    "fields",
+    [
+        "<coordinate>559</coordinate>",
+        "<coordinate>559</coordinate><parameter>unknown</parameter>",
+        "<coordinate>559</coordinate><coordinate>113</coordinate><coordinate>90</coordinate>",
+        "<coordinate>[559, 113]</coordinate><coordinate>[80, 90]</coordinate>",
+        "<coordinate>NaN</coordinate><coordinate>113</coordinate>",
+        "<coordinate>559</coordinate><coordinate>1088</coordinate>",
+        "<coordinate>(559, 113</coordinate>",
+        "<coordinate>559, 113)</coordinate>",
+        '<keys=["ctrl", 3]>',
+        '<keys=["ctrl"]><unexpected>113</unexpected>',
+    ],
+)
+def test_glm_projection_keeps_incomplete_ambiguous_and_invalid_fields_rejected(tmp_path, fields):
+    content = (
+        "<tool_call><function=computer_use><action>left_click</action>"
+        f"{fields}</function></tool_call>"
+    )
+    agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "glm53flash")
+    response = agent.call_llm({"messages": []}, agent.model)
+    _, actions = agent._parse_response(
+        response,
+        original_width=1920,
+        original_height=1080,
+        processed_width=1920,
+        processed_height=1088,
+    )
+    assert agent.last_provider_content == content
+    assert classify(agent.last_projected_content, actions).kind == "action_error"
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        '<keys=["ctrl"]>',
+        "<coordinate>559</coordinate><coordinate>113</coordinate>",
+        "<li><function=computer_use><action>left_click</action>"
+        "<coordinate>50, 70</coordinate></function></li>",
+    ],
+)
+def test_glm_projection_preserves_tag_like_type_text(tmp_path, text):
+    content = (
+        "<tool_call><function=computer_use><action>type</action>"
+        f"<text>{text}</text></function></tool_call>"
+    )
+    agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "glm53flash")
+    agent.last_provider_content = content
+    _, actions = agent._parse_response(
+        content,
+        original_width=1920,
+        original_height=1080,
+        processed_width=1920,
+        processed_height=1088,
+    )
+    assert f"<parameter=text>{text}</parameter>" in agent.last_projected_content
+    assert classify(agent.last_projected_content, actions).kind == "action"
+
+
+@pytest.mark.parametrize("profile", ["glm53flash", "qwen"])
+def test_turn_feedback_is_bound_to_current_glm_observation_and_logged(tmp_path, profile):
+    captured = []
+    agent = make_agent(tmp_path, FakeProviderResponse("", ""), profile)
+    agent.client_factory = lambda **kwargs: SimpleNamespace(
+        chat=SimpleNamespace(
+            completions=SimpleNamespace(
+                create=lambda **request: captured.append(request) or FakeProviderResponse("", "")
+            )
+        )
+    )
+    payload = {
+        "messages": [
+            {"role": "user", "content": [{"type": "text", "text": "Original task"}]},
+            {"role": "assistant", "content": [{"type": "text", "text": "Malformed call"}]},
+            {"role": "user", "content": [{"type": "text", "text": "Current screenshot"}]},
+        ]
+    }
+    original = json.loads(json.dumps(payload))
+    agent.turn_feedback = "No action was executed. Budget: 2 model turns remain."
+    agent.call_llm(payload, agent.model)
+    request = captured[0]
+    logged = json.loads((tmp_path / "requests" / "step_000_request.json").read_text())
+    assert request["messages"] == logged["messages"]
+    assert payload == original
+    if profile == "glm53flash":
+        assert request["messages"][:-1] == original["messages"][:-1]
+        assert request["messages"][-1]["content"][-1]["text"] == agent.turn_feedback
+    else:
+        assert request["messages"] == original["messages"]
+    agent.turn_feedback = ""
+    agent.call_llm(payload, agent.model)
+    assert captured[1]["messages"] == original["messages"]
 
 
 def test_glm_does_not_project_incomplete_coordinate_text(tmp_path):
@@ -401,7 +524,9 @@ def test_glm_profile_prefers_its_key_and_qwen_keeps_original_key(monkeypatch):
     )
 
 
-def run_fake_glm_case(tmp_path, monkeypatch, turns, evaluation=None, *, setup_error=None):
+def run_fake_glm_case(
+    tmp_path, monkeypatch, turns, evaluation=None, *, setup_error=None, reserve_steps=0
+):
     """Exercise the runner without a browser, sandbox, or model API."""
     from playwright import sync_api
     from webarena_verified import types as response_types
@@ -434,6 +559,8 @@ def run_fake_glm_case(tmp_path, monkeypatch, turns, evaluation=None, *, setup_er
             self.waits.append(milliseconds)
 
     page = Page()
+    page.turn_feedback = []
+    page.turn_instructions = []
     context = SimpleNamespace(
         pages=[page],
         new_page=lambda: page,
@@ -458,6 +585,8 @@ def run_fake_glm_case(tmp_path, monkeypatch, turns, evaluation=None, *, setup_er
             pass
 
         def predict(self, instruction, observation):
+            page.turn_feedback.append(self.turn_feedback)
+            page.turn_instructions.append(instruction)
             self.last_provider_content, actions = turns.pop(0)
             self.last_projected_content = self.last_provider_content
             return self.last_provider_content, actions
@@ -492,8 +621,7 @@ def run_fake_glm_case(tmp_path, monkeypatch, turns, evaluation=None, *, setup_er
     monkeypatch.setattr(
         runner,
         "score_artifacts",
-        lambda *args: evaluation
-        or {"score": 0, "integrity_status": "passed", "publishable": True},
+        lambda *args: evaluation or {"score": 0, "integrity_status": "passed", "publishable": True},
     )
     monkeypatch.setattr(runner, "secure_result_tree", lambda *args: None)
 
@@ -513,7 +641,7 @@ def run_fake_glm_case(tmp_path, monkeypatch, turns, evaluation=None, *, setup_er
         display=":99",
         max_steps=4,
         layered_step_budget=False,
-        final_response_reserve_steps=0,
+        final_response_reserve_steps=reserve_steps,
         repair_invalid_response=True,
         no_thinking=False,
         startup_page_gate=setup_error is not None,
@@ -573,6 +701,19 @@ def test_glm_runner_screenshot_refreshes_without_waiting(tmp_path, monkeypatch):
     assert status["status"] == "completed"
 
 
+def test_glm_remaining_budget_is_bound_to_current_observation(tmp_path, monkeypatch):
+    _, _, page = run_fake_glm_case(
+        tmp_path,
+        monkeypatch,
+        [(tool_call("screenshot"), ["WAIT"])] * 3 + [('{"status":"SUCCESS"}', ["DONE"])],
+        reserve_steps=2,
+    )
+    assert page.turn_feedback[:2] == ["", ""]
+    assert "Budget: 2 model turn(s) remain" in page.turn_feedback[2]
+    assert "Budget: 1 model turn(s) remain" in page.turn_feedback[3]
+    assert all("Budget:" not in instruction for instruction in page.turn_instructions)
+
+
 def test_glm_runner_final_json_repair_has_independent_budget(tmp_path, monkeypatch):
     status, trajectories, page = run_fake_glm_case(
         tmp_path,
@@ -616,6 +757,9 @@ def test_glm_runner_repairs_bad_action_then_records_distinct_failure(tmp_path, m
     assert status["status"] == "model_protocol_failed"
     assert status["action_repair_count"] == 1
     assert status["response_repair_used"] is False
+    assert page.turn_feedback[0] == ""
+    assert "No action was executed." in page.turn_feedback[1]
+    assert "Invalid computer_use response" not in page.turn_instructions[1]
 
 
 def test_glm_runner_evaluator_error_is_not_a_model_zero(tmp_path, monkeypatch):
@@ -631,9 +775,7 @@ def test_glm_runner_evaluator_error_is_not_a_model_zero(tmp_path, monkeypatch):
     assert status["score"] == 0
 
 
-def test_glm_runner_evidence_disagreement_is_separate_from_model_failure(
-    tmp_path, monkeypatch
-):
+def test_glm_runner_evidence_disagreement_is_separate_from_model_failure(tmp_path, monkeypatch):
     status, _, _ = run_fake_glm_case(
         tmp_path,
         monkeypatch,

@@ -1,5 +1,22 @@
 ## Unreleased
 
+### V9 — Current-observation feedback and observed GLM protocol variants
+
+V8 startup evidence exposed split scalar coordinate tags (28/399), tuple
+coordinates (24), a list-item tool wrapper (132), and a JSON keys array in the
+tag name (400). The GLM provider boundary projects these complete, unambiguous
+forms into the pinned computer_use contract. Singleton coordinate arrays now
+project from either native or canonical parameter tags. Incomplete values,
+duplicate full coordinates, extra calls, and invalid pixels remain errors.
+Raw provider content stays in logs and history.
+
+V8 requests included repair feedback in the first historical user message,
+before the response that failed. GLM feedback now accompanies the current
+screenshot after that response, so repair and remaining-budget instructions
+refer to the current execution state. Qwen retains its original instruction
+and transport behavior. Offline regression: 139 targeted tests passed; the
+nine-case, five-sandbox online canary is pending.
+
 ### V5 — GLM provider projection and persistent Docker daemon
 
 The live V4 task-0 canary proved that GLM emits named XML child fields and

@@ -145,13 +145,15 @@ _GLM_REQUIRED_COORDINATE_ACTIONS = frozenset({"mouse_move", "left_click_drag"})
 _GLM_TOOL_BLOCK = re.compile(r"<tool_call>\s*(.*?)\s*</tool_call>", re.DOTALL)
 _GLM_FUNCTION_BLOCK = re.compile(r"\s*<function=computer_use>\s*(.*?)\s*</function>\s*", re.DOTALL)
 _GLM_PARAMETER_BLOCK = re.compile(r"<parameter=([^>]+)>\s*(.*?)\s*</parameter>", re.DOTALL)
-_GLM_NATIVE_FIELD_BLOCK = re.compile(r"<([a-z_]+)>\s*(.*?)\s*</\1>", re.DOTALL)
-_GLM_COORDINATE_PARAMETER_BLOCK = re.compile(
-    r"<parameter=coordinate>\s*(.*?)\s*</parameter>", re.DOTALL
+_GLM_NATIVE_FIELD_BLOCK = re.compile(
+    r"<(?P<name>[a-z_]+)>\s*(?P<value>.*?)\s*</(?P=name)>"
+    r"|<keys=(?P<keys>\[[^<>\n]*\])>",
+    re.DOTALL,
 )
-_GLM_COORDINATE_TEXT_PAIR = re.compile(
-    r"(-?\d+(?:\.\d+)?)(?:\s*,\s*|\s+)(-?\d+(?:\.\d+)?)"
+_GLM_LIST_TOOL_BLOCK = re.compile(
+    r"<li>\s*(<function=computer_use>.*?</function>)\s*</li>", re.DOTALL
 )
+_GLM_COORDINATE_TEXT_PAIR = re.compile(r"(-?\d+(?:\.\d+)?)(?:\s*,\s*|\s+)(-?\d+(?:\.\d+)?)")
 _GLM_NATIVE_FIELDS = frozenset(
     {"action", "coordinate", "text", "keys", "pixels", "time", "duration", "status"}
 )
@@ -488,7 +490,7 @@ def _dump_model(value: Any) -> Any:
 def make_pinned_agent_class(
     base_class: type, openai_module: Any, *, model_profile: str = "qwen"
 ) -> type:
-    """Subclass only the audited agent's transport boundary."""
+    """Project the audited agent's transport and selected model protocol."""
     if model_profile not in {"qwen", "glm53flash"}:
         raise ValueError(f"unsupported model profile: {model_profile}")
 
@@ -520,10 +522,25 @@ def make_pinned_agent_class(
             self.last_processed_size: tuple[int, int] | None = None
             self.last_original_size: tuple[int, int] | None = None
             self.structured_response_schema: dict[str, Any] | None = None
+            self.turn_feedback = ""
 
         def call_llm(self, payload: dict[str, Any], model: str) -> str:
             index = self.request_index
             self.request_index += 1
+            messages = payload["messages"]
+            if model_profile == "glm53flash" and self.turn_feedback:
+                # Bind execution feedback to the latest screenshot, after the
+                # failed response, without rewriting earlier provider history.
+                messages = [
+                    *messages[:-1],
+                    {
+                        **messages[-1],
+                        "content": [
+                            *messages[-1]["content"],
+                            {"type": "text", "text": self.turn_feedback},
+                        ],
+                    },
+                ]
             extras = {
                 "enable_thinking": bool(self.enable_thinking),
                 "preserve_thinking": bool(self.preserve_thinking),
@@ -531,7 +548,7 @@ def make_pinned_agent_class(
             }
             actual_body = {
                 "model": model,
-                "messages": payload["messages"],
+                "messages": messages,
                 "max_tokens": payload.get("max_tokens", MAX_TOKENS),
                 "temperature": payload.get("temperature", TEMPERATURE),
                 "top_p": payload.get("top_p", TOP_P),
@@ -576,7 +593,7 @@ def make_pinned_agent_class(
                 try:
                     request_kwargs = {
                         "model": model,
-                        "messages": payload["messages"],
+                        "messages": messages,
                         "max_tokens": actual_body["max_tokens"],
                         "temperature": actual_body["temperature"],
                         "top_p": actual_body["top_p"],
@@ -638,57 +655,88 @@ def make_pinned_agent_class(
                 self.last_original_size = (original_width, original_height)
                 self.last_processed_size = (processed_width, processed_height)
                 response = self.last_provider_content
-                # The provider emits named child tags and sometimes a singleton
-                # coordinate array. Project only complete calls into OSWorld's
-                # parameter-tag contract; retain the raw content in logs/history.
+                # Project observed GLM field/wrapper spellings into the pinned
+                # parser contract; retain raw provider content in logs/history.
                 blocks = list(_GLM_TOOL_BLOCK.finditer(response))
+                if not blocks:
+                    response = _GLM_LIST_TOOL_BLOCK.sub(r"<tool_call>\1</tool_call>", response)
+                    blocks = list(_GLM_TOOL_BLOCK.finditer(response))
                 if len(blocks) == 1:
                     block = blocks[0]
                     function = _GLM_FUNCTION_BLOCK.fullmatch(block.group(1))
                     if function is not None:
                         body = function.group(1)
                         if "<parameter=" not in body:
+                            # Match complete top-level fields so tag-like text
+                            # inside a type action remains literal input.
                             fields = list(_GLM_NATIVE_FIELD_BLOCK.finditer(body))
                             cursor = 0
+                            field_index = 0
                             projected_fields = []
-                            for field in fields:
-                                name, value = field.group(1), field.group(2)
-                                if (
-                                    body[cursor : field.start()].strip()
-                                    or name not in _GLM_NATIVE_FIELDS
-                                ):
+                            while field_index < len(fields):
+                                field = fields[field_index]
+                                name, value = field.group("name"), field.group("value")
+                                if body[cursor : field.start()].strip():
                                     break
-                                if name == "coordinate":
+                                if field.group("keys") is not None:
+                                    name, value = "keys", field.group("keys")
                                     try:
-                                        raw_coordinate = json.loads(value)
+                                        keys = json.loads(value)
                                     except json.JSONDecodeError:
-                                        raw_coordinate = None
+                                        break
+                                    if not all(isinstance(key, str) for key in keys):
+                                        break
+                                if name == "coordinate" and field_index + 1 < len(fields):
+                                    following = fields[field_index + 1]
                                     if (
-                                        isinstance(raw_coordinate, list)
-                                        and len(raw_coordinate) == 1
-                                        and isinstance(raw_coordinate[0], list)
-                                        and len(raw_coordinate[0]) == 2
+                                        following.group("name") in {"coordinate", "parameter"}
+                                        and not body[field.end() : following.start()].strip()
+                                        and _GLM_COORDINATE_TEXT_PAIR.fullmatch(
+                                            f"{value}, {following.group('value')}"
+                                        )
                                     ):
-                                        value = json.dumps(raw_coordinate[0])
+                                        value = f"[{value}, {following.group('value')}]"
+                                        field = following
+                                        field_index += 1
+                                if name not in _GLM_NATIVE_FIELDS:
+                                    break
                                 projected_fields.append(f"<parameter={name}>{value}</parameter>")
                                 cursor = field.end()
+                                field_index += 1
                             else:
                                 if fields and not body[cursor:].strip():
                                     body = "\n".join(projected_fields)
-                        # GLM also emits pixel pairs as "x, y" or "x y".
+                        # GLM emits pixel pairs as text, tuples, or singleton
+                        # arrays in both native and parameter-tag responses.
                         # Project only two numeric values into the canonical
                         # array before upstream parses the GUI action.
-                        for field in reversed(
-                            list(_GLM_COORDINATE_PARAMETER_BLOCK.finditer(body))
-                        ):
-                            pair = _GLM_COORDINATE_TEXT_PAIR.fullmatch(field.group(1).strip())
+                        for field in reversed(list(_GLM_PARAMETER_BLOCK.finditer(body))):
+                            if field.group(1) != "coordinate":
+                                continue
+                            value = field.group(2).strip()
+                            if value.startswith("(") and value.endswith(")"):
+                                value = value[1:-1].strip()
+                            pair = _GLM_COORDINATE_TEXT_PAIR.fullmatch(value)
                             if pair is not None:
                                 value = f"[{pair.group(1)}, {pair.group(2)}]"
-                                body = (
-                                    body[: field.start()]
-                                    + f"<parameter=coordinate>{value}</parameter>"
-                                    + body[field.end() :]
-                                )
+                            else:
+                                try:
+                                    coordinate = json.loads(value)
+                                except json.JSONDecodeError:
+                                    continue
+                                if not (
+                                    isinstance(coordinate, list)
+                                    and len(coordinate) == 1
+                                    and isinstance(coordinate[0], list)
+                                    and len(coordinate[0]) == 2
+                                ):
+                                    continue
+                                value = json.dumps(coordinate[0])
+                            body = (
+                                body[: field.start()]
+                                + f"<parameter=coordinate>{value}</parameter>"
+                                + body[field.end() :]
+                            )
                         if body != function.group(1):
                             start = block.start(1) + function.start(1)
                             end = block.start(1) + function.end(1)
@@ -1544,20 +1592,27 @@ def run_case(args: argparse.Namespace) -> dict[str, Any]:
                     "error": None,
                 }
                 try:
-                    # Budget and validation feedback are visible with the unchanged GUI history.
+                    # Bind GLM feedback to the current observation. Qwen keeps
+                    # the pinned instruction-prompt behavior.
                     turn_goal = goal
+                    feedback_parts = []
                     remaining = case_max_steps - step
                     if remaining <= args.final_response_reserve_steps:
-                        turn_goal += (
-                            f"\n\nBudget: {remaining} model turn(s) remain, including this turn. "
+                        feedback_parts.append(
+                            f"Budget: {remaining} model turn(s) remain, including this turn. "
                             "If the objective is already verified, return the final JSON now. "
                             "Prioritize required remaining actions over extra exploration. "
                             "Reserve the last turn for an honest final response; do not claim "
                             "unverified success."
                         )
                     if response_feedback:
-                        turn_goal += "\n\n" + response_feedback
+                        feedback_parts.append(response_feedback)
                         response_feedback = ""
+                    turn_feedback = "\n\n".join(feedback_parts)
+                    if glm_protocol:
+                        agent.turn_feedback = turn_feedback
+                    elif turn_feedback:
+                        turn_goal += "\n\n" + turn_feedback
                     expect_final_json = structured_repair_pending
                     agent.structured_response_schema = (
                         response_schema if structured_repair_pending else None

@@ -510,7 +510,15 @@ class Campaign:
             else:
                 intent["post_attempted"] = True
                 _atomic_json(intent_path, intent)
-                created = self.client.create(intent["payload"])
+                try:
+                    created = self.client.create(intent["payload"])
+                except requests.HTTPError as error:
+                    # An explicit 429 rejected the create request. Keep the
+                    # nonce, but permit a later retry after reconciliation.
+                    if error.response is not None and error.response.status_code == 429:
+                        intent["post_attempted"] = False
+                        _atomic_json(intent_path, intent)
+                    raise
             if (created.get("metadata") or {}).get("session_nonce") != intent["nonce"]:
                 raise RuntimeError(f"created sandbox nonce mismatch for worker {worker}")
             cluster[worker] = {"id": created["id"], "nonce": intent["nonce"]}

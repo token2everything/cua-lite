@@ -225,6 +225,29 @@ def test_create_reconciles_ambiguous_post_by_nonce(campaign):
     assert campaign._cluster()["01"]["id"] == "owned-1"
 
 
+def test_create_can_retry_an_explicit_rate_limit(campaign):
+    class ThrottledClient(FakeClient):
+        def create(self, payload):
+            if self.create_calls == 0:
+                self.create_calls += 1
+                response = orchestrator.requests.Response()
+                response.status_code = 429
+                raise orchestrator.requests.HTTPError("rate limited", response=response)
+            return super().create(payload)
+
+    client = ThrottledClient()
+    campaign.client = client
+    with pytest.raises(orchestrator.requests.HTTPError):
+        campaign.create(["01"])
+    intent = json.loads((campaign.root / "worker-intents/01.json").read_text())
+    assert intent["post_attempted"] is False
+
+    campaign.create(["01"])
+
+    assert client.create_calls == 2
+    assert campaign._cluster()["01"]["id"] == "owned-2"
+
+
 def test_foreign_sandbox_and_unscored_error_are_not_silent(campaign):
     client = FakeClient()
     campaign.client = client

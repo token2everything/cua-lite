@@ -18,8 +18,9 @@
   "canary_ids": [0, 44, 63, 118, 811],
   "verification": {
     "offline_tests_passed": 106,
-    "online_canary_status": "pending",
+    "online_canary_status": "passed",
     "qwen_default_unchanged": true
   },
-  "rollback_to": "webarena-verified-v5-provider-projection"
+  "rollback_to": "webarena-verified-v5-provider-projection",
+  "next_version": "webarena-verified-v7-gitlab-readiness"
 }

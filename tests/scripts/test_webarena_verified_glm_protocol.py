@@ -318,6 +318,9 @@ def test_glm_projects_observed_list_wrapper_and_inline_keys(tmp_path):
         "<html><body>"
         + tool_call("left_click", coordinate=[559, 114]).split("\n", 1)[1]
         + "</body></html>",
+        "<table>" + tool_call("left_click", coordinate=[558, 113]).split("\n", 1)[1] + "</table>",
+        "<table><function=computer_use><parameter=action>left_click</parameter>"
+        "<parameter=coordinate>[558, 113]</parameter></function></table>",
     ],
 )
 def test_glm_projects_balanced_observed_wrappers_around_complete_call(tmp_path, call):
@@ -346,12 +349,16 @@ def test_glm_projects_balanced_observed_wrappers_around_complete_call(tmp_path, 
         ("<body>unexpected text", "</body>"),
         ("<html>unexpected text<body>", "</body>"),
         ("</body><html>", "</html>"),
+        ("<table>", "</body>"),
+        ("<table>", "</table>extra text"),
+        ("<table>unexpected text", "</table>"),
+        ('<table class="action">', "</table>"),
     ],
 )
 def test_glm_wrapper_projection_keeps_mismatched_or_nonempty_wrappers_rejected(
     tmp_path, prefix, suffix
 ):
-    content = prefix + tool_call("left_click", coordinate=[559, 114]) + suffix
+    content = prefix + tool_call("left_click", coordinate=[559, 114]).split("\n", 1)[1] + suffix
     agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "glm53flash")
     agent.last_provider_content = content
     _, actions = agent._parse_response(
@@ -363,6 +370,31 @@ def test_glm_wrapper_projection_keeps_mismatched_or_nonempty_wrappers_rejected(
     )
     assert agent.last_provider_content == content
     assert classify(agent.last_projected_content, actions).kind == "action_error"
+
+
+@pytest.mark.parametrize(
+    "prefix",
+    [
+        "<table>",
+        "<html><body>Action: Click Forums.</body></html>\n",
+        "Action: <li>Click Forums.</li>\n",
+        "<table><tr><td>Action: Click Forums.</td></tr></table>\n",
+        "Action: Type the literal markup <table>\n",
+    ],
+)
+def test_glm_keeps_unprojected_prefix_text_and_its_existing_action_meaning(tmp_path, prefix):
+    content = prefix + tool_call("left_click", coordinate=[558, 113]).split("\n", 1)[1]
+    agent = make_agent(tmp_path, FakeProviderResponse(content, ""), "glm53flash")
+    agent.last_provider_content = content
+    _, actions = agent._parse_response(
+        content,
+        original_width=1920,
+        original_height=1080,
+        processed_width=1920,
+        processed_height=1088,
+    )
+    assert agent.last_projected_content == agent.last_provider_content == content
+    assert classify(agent.last_projected_content, actions).kind == "action"
 
 
 @pytest.mark.parametrize(
@@ -405,6 +437,7 @@ def test_glm_projection_keeps_incomplete_ambiguous_and_invalid_fields_rejected(t
         "<coordinate>559</coordinate><coordinate>113</coordinate>",
         "<li><function=computer_use><action>left_click</action>"
         "<coordinate>50, 70</coordinate></function></li>",
+        "<table>literal HTML text</table>",
     ],
 )
 def test_glm_projection_preserves_tag_like_type_text(tmp_path, text):

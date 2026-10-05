@@ -150,12 +150,13 @@ _GLM_NATIVE_FIELD_BLOCK = re.compile(
     r"|<keys=(?P<keys>\[[^<>\n]*\])>",
     re.DOTALL,
 )
+_GLM_WRAPPER_NAMES = "li|head|html|body|table"
 _GLM_FUNCTION_WRAPPER_BLOCK = re.compile(
-    r"<(?P<wrapper>li|head|html|body)>\s*"
+    rf"<(?P<wrapper>{_GLM_WRAPPER_NAMES})>\s*"
     r"(?P<function><function=computer_use>.*?</function>)\s*</(?P=wrapper)>",
     re.DOTALL,
 )
-_GLM_WRAPPER_TAG = re.compile(r"<(/?)(li|head|html|body)>")
+_GLM_WRAPPER_TAG = re.compile(rf"<(/?)({_GLM_WRAPPER_NAMES})>")
 _GLM_COORDINATE_TEXT_PAIR = re.compile(r"(-?\d+(?:\.\d+)?)(?:\s*,\s*|\s+)(-?\d+(?:\.\d+)?)")
 _GLM_NATIVE_FIELDS = frozenset(
     {"action", "coordinate", "text", "keys", "pixels", "time", "duration", "status"}

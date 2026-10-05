@@ -147,6 +147,8 @@ def test_large_upload_assembles_verified_chunks(monkeypatch):
     commands = []
 
     class Response:
+        status_code = 200
+
         def raise_for_status(self):
             pass
 
@@ -173,6 +175,39 @@ def test_large_upload_assembles_verified_chunks(monkeypatch):
     assert "cat /tmp/bundle.tar.gz.part-0000 /tmp/bundle.tar.gz.part-0001" in commands[0]
     assert hashlib.sha256(payload).hexdigest() in commands[0]
     assert "chmod 600 /tmp/bundle.tar.gz.assembled" in commands[0]
+
+
+def test_upload_retries_one_transient_timeout(monkeypatch):
+    client = orchestrator.SandboxClient(
+        {
+            "BASE": "https://sandbox.example.test",
+            "PROJECT": "test",
+            "OPEN_SANDBOX_ACCESS_KEY": "access",
+            "OPEN_SANDBOX_SECRET_KEY": "secret",
+            "GLM_TEST_API_KEY": "model-secret",
+            "OPENAI_BASE_URL": "https://model.example.test/v1",
+        }
+    )
+    attempts = []
+
+    class Response:
+        status_code = 200
+
+        def raise_for_status(self):
+            pass
+
+    def post(url, *, files, timeout):
+        attempts.append((files[1][1][1].read(), timeout))
+        if len(attempts) == 1:
+            raise orchestrator.requests.Timeout("transient upload timeout")
+        return Response()
+
+    monkeypatch.setattr(orchestrator.requests, "post", post)
+    monkeypatch.setattr(orchestrator.time, "sleep", lambda seconds: None)
+
+    client.upload("owned-1", "/tmp/receipt.json", b"receipt")
+
+    assert attempts == [(b"receipt", (15, 30)), (b"receipt", (15, 30))]
 
 
 def test_create_reconciles_ambiguous_post_by_nonce(campaign):

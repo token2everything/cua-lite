@@ -240,15 +240,32 @@ class SandboxClient:
             )
             return
         metadata = {"path": remote_path, "owner": "root", "group": "root", "mode": mode}
-        response = requests.post(
-            f"{self.base}/v1/sandboxes/{sandbox_id}/proxy/44772/files/upload",
-            files=[
-                ("metadata", ("metadata.json", json.dumps(metadata).encode(), "application/json")),
-                ("file", (Path(remote_path).name, io.BytesIO(data), "application/octet-stream")),
-            ],
-            timeout=120,
-        )
-        response.raise_for_status()
+        for attempt in range(1, 4):
+            try:
+                response = requests.post(
+                    f"{self.base}/v1/sandboxes/{sandbox_id}/proxy/44772/files/upload",
+                    files=[
+                        (
+                            "metadata",
+                            ("metadata.json", json.dumps(metadata).encode(), "application/json"),
+                        ),
+                        (
+                            "file",
+                            (Path(remote_path).name, io.BytesIO(data), "application/octet-stream"),
+                        ),
+                    ],
+                    timeout=(15, 30),
+                )
+            except requests.RequestException:
+                if attempt == 3:
+                    raise
+            else:
+                if response.status_code not in {429} and response.status_code < 500:
+                    response.raise_for_status()
+                    return
+                if attempt == 3:
+                    response.raise_for_status()
+            time.sleep(min(10, 2**attempt))
 
     def download(self, sandbox_id: str, remote_path: str) -> bytes | None:
         url = f"{self.base}/v1/sandboxes/{sandbox_id}/proxy/44772/files/download"

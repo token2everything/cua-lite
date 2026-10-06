@@ -3,6 +3,9 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
+import shlex
+import shutil
 import subprocess
 import threading
 import time
@@ -114,6 +117,110 @@ def test_capture_overlay_rejects_unknown_source_before_output(tmp_path):
     )
     assert result.returncode != 0
     assert not output.exists()
+
+
+def test_capture_builder_uses_short_checksum_and_git_without_patch(capture_runtime, tmp_path):
+    _, package, expected_overlay = capture_runtime
+    tools = tmp_path / "tools"
+    tools.mkdir()
+    for name in (
+        "bash",
+        "git",
+        "dirname",
+        "basename",
+        "mktemp",
+        "rm",
+        "rmdir",
+        "mkdir",
+        "cp",
+        "mv",
+        "cmp",
+    ):
+        (tools / name).symlink_to(shutil.which(name))
+    checksum = tools / "sha256sum"
+    checksum.write_text(
+        f"#!{shutil.which('bash')}\n"
+        'for argument in "$@"; do\n'
+        '    case "$argument" in --*|-s) exit 2 ;; esac\n'
+        "done\n"
+        f'exec {shlex.quote(shutil.which("sha256sum"))} "$@"\n'
+    )
+    checksum.chmod(0o700)
+    environment = {**os.environ, "PATH": str(tools)}
+    assert (
+        subprocess.run(
+            [str(tools / "bash"), "-c", "command -v patch"],
+            capture_output=True,
+            env=environment,
+        ).returncode
+        != 0
+    )
+    source = package / "lib/server"
+    before = {
+        relative: (source / relative).read_bytes()
+        for relative in ("har/harTracer.js", "trace/recorder/tracing.js")
+    }
+    output = tmp_path / "overlay"
+    for _ in range(2):
+        result = subprocess.run(
+            [
+                str(tools / "bash"),
+                str(CAMPAIGN / "build-playwright-capture.sh"),
+                str(source),
+                str(output),
+            ],
+            capture_output=True,
+            env=environment,
+        )
+        assert result.returncode == 0, result.stderr.decode()
+    for relative, data in before.items():
+        assert (source / relative).read_bytes() == data
+        assert (output / relative).read_bytes() == (expected_overlay / relative).read_bytes()
+    assert not list(tmp_path.glob(".playwright-capture.*"))
+
+
+def test_capture_builder_rejects_wrong_output_hash_before_publish(capture_runtime, tmp_path):
+    _, package, _ = capture_runtime
+    builder = tmp_path / "builder"
+    builder.mkdir()
+    for name in (
+        "build-playwright-capture.sh",
+        "playwright-capture.patch",
+        "playwright-capture.sha256",
+    ):
+        shutil.copyfile(CAMPAIGN / name, builder / name)
+    lock = builder / "playwright-capture.sha256"
+    lock.write_text("0" * 64 + "  har/harTracer.js\n" + lock.read_text().splitlines()[1] + "\n")
+    output = tmp_path / "overlay"
+    source = package / "lib/server"
+    before = (source / "har/harTracer.js").read_bytes()
+    result = subprocess.run(
+        ["bash", str(builder / "build-playwright-capture.sh"), str(source), str(output)],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0 and "computed checksum" in result.stderr
+    assert not output.exists()
+    assert (source / "har/harTracer.js").read_bytes() == before
+    assert not list(tmp_path.glob(".playwright-capture.*"))
+
+
+def test_capture_builder_rejects_corrupt_existing_output(capture_runtime, tmp_path):
+    _, package, expected_overlay = capture_runtime
+    source = package / "lib/server"
+    before = (source / "har/harTracer.js").read_bytes()
+    output = tmp_path / "overlay"
+    shutil.copytree(expected_overlay, output)
+    corrupt = output / "trace/recorder/tracing.js"
+    corrupt.write_text("corrupt immutable output\n")
+    result = subprocess.run(
+        ["bash", str(CAMPAIGN / "build-playwright-capture.sh"), str(source), str(output)],
+        capture_output=True,
+    )
+    assert result.returncode != 0
+    assert corrupt.read_text() == "corrupt immutable output\n"
+    assert (source / "har/harTracer.js").read_bytes() == before
+    assert not list(tmp_path.glob(".playwright-capture.*"))
 
 
 @pytest.mark.live

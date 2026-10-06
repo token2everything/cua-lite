@@ -32,6 +32,31 @@ def _run_shell(source: str, variables: dict[str, str]) -> subprocess.CompletedPr
     )
 
 
+@pytest.fixture
+def short_capture_checks(tmp_path, monkeypatch):
+    tools = tmp_path / "short-capture-checks"
+    tools.mkdir()
+    checksum = tools / "sha256sum"
+    checksum.write_text(
+        f"#!{shutil.which('bash')}\n"
+        'for argument in "$@"; do\n'
+        '    case "$argument" in --*|-s) exit 2 ;; esac\n'
+        "done\n"
+        f'exec {shlex.quote(shutil.which("sha256sum"))} "$@"\n'
+    )
+    checksum.chmod(0o700)
+    compare = tools / "cmp"
+    compare.write_text(
+        f"#!{shutil.which('bash')}\n"
+        'for argument in "$@"; do\n'
+        '    case "$argument" in --*) exit 2 ;; esac\n'
+        "done\n"
+        f'exec {shlex.quote(shutil.which("cmp"))} "$@"\n'
+    )
+    compare.chmod(0o700)
+    monkeypatch.setenv("PATH", str(tools) + os.pathsep + os.environ["PATH"])
+
+
 @pytest.mark.parametrize("already_prepared", [False, True])
 def test_prepare_refreshes_capture_assets_and_preserves_driver(tmp_path, already_prepared):
     spec = importlib.util.find_spec("playwright")
@@ -137,7 +162,9 @@ def frozen_capture(tmp_path):
 @pytest.mark.parametrize(
     "invalid", [None, "missing-overlay", "missing-file", "wrong-hash", "stale-lock"]
 )
-def test_case_capture_gate_precedes_mutation_and_rejects_invalid(tmp_path, frozen_capture, invalid):
+def test_case_capture_gate_precedes_mutation_and_rejects_invalid(
+    tmp_path, frozen_capture, short_capture_checks, invalid
+):
     stage, source, lock, overlays, overlay, _ = frozen_capture
     if invalid == "missing-overlay":
         overlay.rename(overlays / "wrong-source-sha")
@@ -268,7 +295,7 @@ def test_runner_fake_docker_argv_preserves_frozen_python_and_base_mounts():
 
 @pytest.mark.parametrize("invalid", [None, "wrong-hash", "missing-file"])
 def test_actual_launch_envelope_preserves_cwd_and_checks_files_before_python(
-    tmp_path, frozen_capture, invalid
+    tmp_path, frozen_capture, short_capture_checks, invalid
 ):
     _, _, lock, _, overlay, _ = frozen_capture
     argv = _runner_argv()

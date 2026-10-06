@@ -1,5 +1,25 @@
 ## Unreleased
 
+### V19 — Portable capture build on the sandbox host
+
+The fresh V18 sandbox failed preparation before any model call: its BusyBox
+checksum tool rejected GNU long options and no patch command was installed.
+V19 uses common checksum/comparison flags and the already available Git to
+check and apply the pinned diff in the private staging directory. Input and
+output hashes, atomic publication, readonly mounts and receipt bindings remain
+unchanged. Both produced JS files are byte-identical to the V18 capture lock;
+runner, model, prompt, parser, history and scoring behavior do not change.
+The failed V18 sandbox was retired after preserving its complete preparation
+and host diagnostics. Known-working deployment rollback targets
+`wav-infra-v17-nav-wrapper`, not the deployment-blocked V18 release.
+
+Regression: 324 relevant offline tests and four actual Chromium/CDP tests
+passed. Restricted-tool tests reject long checksum/comparison flags, expose
+no patch executable, and exercise initial/repeated builds, invalid hashes,
+pre-model gates and the original output working directory. These fixtures
+are not a substitute for the pending fresh BusyBox sandbox verification.
+Task 451 request-order repair remains a separate V20 change.
+
 ### V18 — Finished response metadata capture
 
 V17 task 514 retained redirect Set-Cookie headers in HAR but serialized the

@@ -39,8 +39,8 @@ PLAYWRIGHT_CAPTURE_DIR="/var/lib/wav-qwen/playwright-capture/$SOURCE_SHA"
 PLAYWRIGHT_CAPTURE_LOCK=/var/lib/wav-qwen/source/devs/exps/eval/browsergym.webarena_verified/campaign/playwright-capture.sha256
 tar -xOf /mnt/results/cua-lite-source.tar.gz \
     ./devs/exps/eval/browsergym.webarena_verified/campaign/playwright-capture.sha256 \
-    | cmp --silent "$PLAYWRIGHT_CAPTURE_LOCK" -
-(cd -- "$PLAYWRIGHT_CAPTURE_DIR" && sha256sum --check --status "$PLAYWRIGHT_CAPTURE_LOCK")
+    | cmp -s "$PLAYWRIGHT_CAPTURE_LOCK" -
+(cd -- "$PLAYWRIGHT_CAPTURE_DIR" && sha256sum -c "$PLAYWRIGHT_CAPTURE_LOCK" >/dev/null)
 
 test -f /var/lib/wav-qwen/private/model.env
 test -f "$IMAGE_LOCK"
@@ -308,7 +308,7 @@ runner_args=(
     -v /var/lib/wav-qwen/locks:/locks
     -v /var/lib/wav-qwen/baselines:/baselines:ro
     -w /outputs "$RUNTIME_IMAGE" bash -c
-    '(cd /opt/venv/lib/python3.12/site-packages/playwright/driver/package/lib/server && sha256sum --check --status /root/cua-lite/devs/exps/eval/browsergym.webarena_verified/campaign/playwright-capture.sha256) && exec /opt/venv/bin/python -B "$@"'
+    '(cd /opt/venv/lib/python3.12/site-packages/playwright/driver/package/lib/server && sha256sum -c /root/cua-lite/devs/exps/eval/browsergym.webarena_verified/campaign/playwright-capture.sha256 >/dev/null) && exec /opt/venv/bin/python -B "$@"'
     playwright-capture-entrypoint
     /root/cua-lite/scripts/webarena_verified_qwen.py
     --task-id "$TASK_ID"

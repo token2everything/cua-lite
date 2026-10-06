@@ -1,0 +1,117 @@
+{
+  "run_id": "wav-glm53flash-infra-v20-request-order-canary-20261006",
+  "stage": "isolated-request-order-and-redirect-metadata-sandbox-canary",
+  "benchmark": "webarena-verified",
+  "benchmark_version": "1.2.3",
+  "task_count": 2,
+  "dataset_sha256": "d65275660814663375028e9017e1f929e3c38321041b125795e2713b52243d30",
+  "entrypoint": "scripts/webarena_verified_qwen.py",
+  "model": "glm-5.3-flash",
+  "model_key_environment_variable": "GLM_TEST_API_KEY",
+  "argv": [
+    "--model-profile",
+    "glm53flash",
+    "--startup-page-gate",
+    "--max-steps",
+    "150",
+    "--final-response-reserve-steps",
+    "7",
+    "--layered-step-budget",
+    "--repair-invalid-response"
+  ],
+  "thinking": true,
+  "reasoning_effort": "max",
+  "max_tokens": 32768,
+  "temperature": 0,
+  "top_p": 0.9,
+  "coordinate_type": "absolute",
+  "screen_size": [
+    1920,
+    1080
+  ],
+  "history_n": 100,
+  "image_max": 20,
+  "fold_size": 10,
+  "sandbox_count": 2,
+  "sandbox_plan": "two fresh nonce-owned sandboxes, one gitlab task451 and one shopping task514; no V17 or V19 sandbox refresh",
+  "campaign_script_revision": "v20-single-chunk-request-start-order",
+  "campaign_run_case_sha256": "e2767317c30a1d6b366bb3c8c0f93f2bc5ce8f8e2d28d2fcf67fd8f7f3ae0509",
+  "per_sandbox_case_concurrency": 1,
+  "startup_gate": "one archived, hash-bound terminal case per worker; inspect every protocol failure before full-shard launch",
+  "task_attempts": "one terminal scored attempt; at most three shard relaunches for missing validated receipts",
+  "evaluator": "official-webarena-verified-1.2.3-all-or-nothing",
+  "score_policy": "evaluator errors remain unscored; no 812-denominator accuracy until all official scores exist",
+  "verification_requirements": [
+    "both task451 and task514 retain source-bound actual capture producer hashes and locally hash-verified archives; no full release before canary review",
+    "the immutable source lock owns the two installed capture producer file identities; mismatches block model launch",
+    "finished responses retain completed raw response headers before trace serialization, including redirects",
+    "trace finalization bounds missing finished response metadata at 30000ms and fails without publishing an archive",
+    "capture errors close only the runner-owned browser before context HAR flush; happy-path finalization order remains unchanged",
+    "real Chromium/CDP regression preserves redirect-chain ExtraInfo FIFO and demonstrates original missing-cookie red versus patched green",
+    "active unfinished streams keep the existing partial trace policy instead of waiting for every response body",
+    "fresh and repeated overlay builds preserve the shared driver; only two version-private JS files are mounted readonly",
+    "source refresh includes patch, builder and lock; actual installed hashes bind prepared markers, runtime metadata and terminal receipts",
+    "all agent/parser/prompt/transport/sampling/history/coordinate/budget policies remain at V17; no old score substitution",
+    "Qwen running environments and frozen V17 sandboxes are not refreshed or patched",
+    "capture build and pre-model gates use common BusyBox/GNU checksum and comparison flags plus existing Git; no patch command or shared dependency installation",
+    "equal startedDateTime entries completed before final archive preserve request-start insertion order, even when response completion order is inverted",
+    "the current runner has one task.setup tracing.start and one final tracing.stop; no repeated chunks or trace resets",
+    "unrelated timestamp streams do not block completed groups; same-timestamp unfinished entries retain request-start order at final partial flush",
+    "inherited partial-flush then late-full duplication and last-event drift across chunks are tested but not claimed repaired; final snapshot also precedes tracer stop",
+    "actual original task451 archived request callback replay is original-red and version-private producer-green; no GT or loader repair"
+  ],
+  "model_retry_policy": {
+    "logged_outer_attempts": 5,
+    "sdk_max_retries": 0,
+    "timeout_seconds": {
+      "connect": 130,
+      "read": 600,
+      "write": 130,
+      "pool": 130
+    },
+    "qwen_sdk_defaults_unchanged": true
+  },
+  "desktop_pacing_policy": {
+    "glm_explicit_wait": "desktop clock; ceil(seconds * 1000) / 1000",
+    "glm_post_action_delay_seconds": 0.35,
+    "qwen_page_wait_unchanged": true,
+    "select_or_reopen_tabs": false,
+    "replay_executed_actions": false
+  },
+  "call_markup_projection_policy": {
+    "owner": "GLM provider _parse_response",
+    "empty_balanced_nav_around_one_complete_call": true,
+    "paired_single_backtick_around_one_complete_call": true,
+    "raw_content_and_history_unchanged": true,
+    "classifier_suffix_policy_unchanged": true,
+    "unpaired_prefix_meaning_unchanged": true,
+    "literal_text_unchanged": true
+  },
+  "playwright_capture_lock_sha256": "20c2daa69a9b0762db5202f3edbd3f684f59b481be5b774b839f1824786d17f9",
+  "capture_policy": {
+    "owner": "version-private Playwright 1.44 capture producer",
+    "base_driver_files_unchanged": true,
+    "finished_response_metadata_deadline_ms": 30000,
+    "shared_venv_mutated": false,
+    "runtime_overlay_mounts_readonly": true,
+    "har_to_trace_repair": false,
+    "official_evaluator_or_dataset_modified": false,
+    "original_v17_scores_replaced": false,
+    "same_millisecond_order_repair_included": true,
+    "request_order_scope": "Equal startedDateTime entries completed before final archive preserve request-start callback insertion order in this runner's single chunk, not response completion order",
+    "cross_chunk_late_full_order_fixed": false,
+    "late_completion_after_final_snapshot_fixed": false
+  },
+  "capture_build_policy": {
+    "checksum_cli": "sha256sum -c with stdout suppressed; no GNU-only long flags or BusyBox-only -s",
+    "diff_application": "git apply --check then git apply in a private staging directory",
+    "host_lock_comparison": "cmp -s",
+    "producer_output_identity": "V20 immutable capture lock; HarTracer identical to V19, only Tracing request-order owner changes",
+    "sandbox_verification_status": "pending",
+    "request_order_repair_included": true
+  },
+  "task_ids": [
+    451,
+    514
+  ]
+}

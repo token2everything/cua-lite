@@ -41,6 +41,15 @@ diff --git a/har/harTracer.js b/har/harTracer.js
 diff --git a/trace/recorder/tracing.js b/trace/recorder/tracing.js
 --- a/trace/recorder/tracing.js
 +++ b/trace/recorder/tracing.js
+@@ -62,7 +62,7 @@ class Tracing extends _instrumentation.SdkObject {
+     this._tracesTmpDir = void 0;
+     this._allResources = new Set();
+     this._contextCreatedEvent = void 0;
+-    this._pendingHarEntries = new Set();
++    this._pendingHarEntries = new Map();
+     this._context = context;
+     this._precreatedTracesDir = tracesDir;
+     this._harTracer = new _harTracer.HarTracer(context, null, this, {
 @@ -223,5 +223,22 @@ class Tracing extends _instrumentation.SdkObject {
      if (this._state.options.screenshots) this._stopScreencast();
      if (this._state.options.snapshots) await ((_this$_snapshotter4 = this._snapshotter) === null || _this$_snapshotter4 === void 0 ? void 0 : _this$_snapshotter4.stop());
@@ -64,3 +73,46 @@ diff --git a/trace/recorder/tracing.js b/trace/recorder/tracing.js
      this.flushHarEntries();
  
      // Network file survives across chunks, make a snapshot before returning the resulting entries.
+@@ -326,18 +343,33 @@ class Tracing extends _instrumentation.SdkObject {
+   onEntryStarted(entry) {
+-    this._pendingHarEntries.add(entry);
++    this._pendingHarEntries.set(entry, false);
+   }
+   onEntryFinished(entry) {
+-    this._pendingHarEntries.delete(entry);
+-    const event = {
+-      type: 'resource-snapshot',
+-      snapshot: entry
+-    };
+-    const visited = visitTraceEvent(event, this._state.networkSha1s);
+-    this._fs.appendFile(this._state.networkFile, JSON.stringify(visited) + '\n', true /* flush */);
++    const readyEntries = [];
++    if (this._pendingHarEntries.has(entry)) {
++      this._pendingHarEntries.set(entry, true);
++      // Preserve request-start order within a tied millisecond, not response order.
++      for (const [pending, ready] of this._pendingHarEntries) {
++        if (pending.startedDateTime !== entry.startedDateTime) continue;
++        if (!ready) break;
++        readyEntries.push(pending);
++      }
++    } else {
++      // A prior chunk may have flushed the partial entry; retain its full response.
++      readyEntries.push(entry);
++    }
++    for (const ready of readyEntries) {
++      this._pendingHarEntries.delete(ready);
++      const event = {
++        type: 'resource-snapshot',
++        snapshot: ready
++      };
++      const visited = visitTraceEvent(event, this._state.networkSha1s);
++      this._fs.appendFile(this._state.networkFile, JSON.stringify(visited) + '\n', true /* flush */);
++    }
+   }
+   flushHarEntries() {
+     const harLines = [];
+-    for (const entry of this._pendingHarEntries) {
++    for (const entry of this._pendingHarEntries.keys()) {
+       const event = {
+         type: 'resource-snapshot',
+         snapshot: entry

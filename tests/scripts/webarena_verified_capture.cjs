@@ -52,15 +52,12 @@ function fixture(status = 302, finished = true) {
 function setup(first) {
   const chunks = [];
   let exported;
-  const tracing = Object.create(Tracing.prototype);
-  tracing._allResources = new Set();
-  tracing._pendingHarEntries = new Set();
-  tracing._eventListeners = [];
-  tracing._isStopping = false;
+  const context = {_options: {}, instrumentation: {removeListener() {}},
+    attribution: {playwright: {options: {sdkLanguage: 'javascript'}}}};
+  const tracing = new Tracing(context, 'memory');
   tracing._state = {recording: true, options: {}, networkSha1s: new Set(),
     traceSha1s: new Set(), networkFile: 'memory.network', traceFile: 'memory.trace',
     tracesDir: 'memory', traceName: 'test', chunkOrdinal: 1, resourcesDir: 'resources'};
-  tracing._context = {instrumentation: {removeListener() {}}};
   tracing._fs = {appendFile(file, data) { chunks.push(data); },
     copyFile() { exported = chunks.join(''); },
     async syncAndGetError() { return undefined; }, writeFile() {}};
@@ -71,12 +68,119 @@ function setup(first) {
   tracing._harTracer = tracer;
   tracer._started = true;
   const add = entry => { tracer._onRequest(entry.request); tracer._onResponse(entry.response); };
-  add(first);
+  if (first) add(first);
   return {tracing, tracer, add, exported: () => exported,
     rows: () => chunks.join('').trim().split('\n').filter(Boolean).map(JSON.parse)};
 }
 
+function orderEntry(id, time, status) {
+  return {_probe_id: id, startedDateTime: time,
+    request: {method: 'POST', url: 'http://capture.invalid/-/profile',
+      headers: [], cookies: [], postData: {mimeType: 'application/x-www-form-urlencoded', text: 'name=probe'}},
+    response: {status, headers: [], cookies: [], content: {mimeType: 'text/html'}}};
+}
+
+async function checkOrder() {
+  const run = setup();
+  const firstTime = '2026-10-06T05:58:29.696Z';
+  const lastTime = '2026-10-06T05:58:55.814Z';
+  const ids = () => run.rows().map(row => row.snapshot._probe_id);
+  if (scenario === 'order451' || scenario === 'orderPair' || scenario === 'orderTriple') {
+    const entries = scenario === 'order451'
+      ? [orderEntry('har73', firstTime, 200), orderEntry('har74', firstTime, 302),
+        orderEntry('har76', lastTime, 200), orderEntry('har77', lastTime, 302)]
+      : scenario === 'orderTriple'
+      ? [orderEntry('first200', lastTime, 200), orderEntry('second201', lastTime, 201),
+        orderEntry('third302', lastTime, 302)]
+      : [orderEntry('slow200', lastTime, 200), orderEntry('fast302', lastTime, 302)];
+    for (const entry of entries) run.tracing.onEntryStarted(entry);
+    const completions = scenario === 'order451' ? [0, 1, 3, 2]
+      : entries.map((_, index) => index).reverse();
+    for (const index of completions) run.tracing.onEntryFinished(entries[index]);
+    assert.deepEqual(ids(), entries.map(entry => entry._probe_id));
+    assert.equal(run.rows().at(-1).snapshot.response.status, 302);
+    assert.equal(run.tracing._pendingHarEntries.size, 0);
+  } else if (scenario === 'orderStream') {
+    const stream = orderEntry('old-stream', firstTime, -1);
+    const ready = orderEntry('new-ready', lastTime, 200);
+    run.tracing.onEntryStarted(stream);
+    run.tracing.onEntryStarted(ready);
+    run.tracing.onEntryFinished(ready);
+    assert.deepEqual(ids(), ['new-ready']);
+    await run.tracing.stopChunk({mode: 'entries'});
+    assert.deepEqual(ids(), ['new-ready', 'old-stream']);
+    assert.equal(run.rows()[1].snapshot.response.status, -1);
+  } else if (scenario === 'orderSameStream') {
+    const stream = fixture(200, false);
+    const ready = fixture(200);
+    run.add(stream);
+    run.add(ready);
+    for (const item of [stream, ready])
+      run.tracer._entryForRequest(item.request).startedDateTime = lastTime;
+    await run.tracer._onRequestFinished(ready.request, ready.response);
+    ready.release();
+    await tick();
+    assert.equal(run.rows().length, 0);
+    assert.equal(run.tracer._pendingFinishedEntries.size, 0);
+    assert.equal(run.tracing._pendingHarEntries.size, 2);
+    await run.tracing.stopChunk({mode: 'entries'});
+    const [partial, finished] = run.rows().map(row => row.snapshot);
+    assert.deepEqual(run.rows().map(row => row.snapshot.response.status), [200, 200]);
+    assert.equal(partial.response.content._sha1, undefined);
+    assert.ok(finished.response.content._sha1);
+    assert.equal(finished.response.cookies[0].name, 'capture_probe');
+    assert.equal(run.tracing._pendingHarEntries.size, 0);
+  } else if (scenario === 'orderFailed') {
+    const aborted = fixture();
+    const ready = fixture();
+    run.add(aborted);
+    run.add(ready);
+    for (const item of [aborted, ready])
+      run.tracer._entryForRequest(item.request).startedDateTime = lastTime;
+    await run.tracer._onRequestFinished(ready.request, ready.response);
+    ready.release();
+    await tick();
+    assert.equal(run.rows().length, 0);
+    aborted.request._failureText = 'net::ERR_ABORTED';
+    run.tracer._onRequestAborted(aborted.request);
+    await run.tracer._onRequestFailed(aborted.request);
+    assert.equal(run.rows().length, 2);
+    assert.equal(run.rows()[0].snapshot.response._failureText, 'net::ERR_ABORTED');
+    assert.equal(run.rows()[0].snapshot._wasAborted, true);
+    assert.equal(run.rows()[1].snapshot.response.cookies[0].name, 'capture_probe');
+  } else if (scenario === 'orderLateFull') {
+    const stream = orderEntry('stream', lastTime, -1);
+    run.tracing.onEntryStarted(stream);
+    await run.tracing.stopChunk({mode: 'entries'});
+    stream.response.status = 200;
+    run.tracing.onEntryFinished(stream);
+    // The baseline already writes partial+full entries across chunks.
+    assert.deepEqual(ids(), ['stream', 'stream']);
+    assert.deepEqual(run.rows().map(row => row.snapshot.response.status), [-1, 200]);
+  } else if (scenario === 'orderAcrossChunk') {
+    const slow = orderEntry('slow200', lastTime, -1);
+    const fast = orderEntry('fast302', lastTime, 302);
+    run.tracing.onEntryStarted(slow);
+    run.tracing.onEntryStarted(fast);
+    run.tracing.onEntryFinished(fast);
+    await run.tracing.stopChunk({mode: 'entries'});
+    slow.response.status = 200;
+    run.tracing.onEntryFinished(slow);
+    assert.equal(run.rows().length, 3);
+    assert.equal(ids().filter(id => id === 'slow200').length, 2);
+    assert.equal(ids().at(-1), 'slow200');
+    assert.equal(run.rows().at(-1).snapshot.response.status, 200);
+    // This repair does not remove inherited late-full ordering drift across chunks.
+  }
+  return {scenario, passed: true, realClasses: true, modelCalls: 0, network: false,
+    ids: ids(), statuses: run.rows().map(row => row.snapshot.response.status)};
+}
+
 (async () => {
+  if (scenario.startsWith('order')) {
+    console.log(JSON.stringify(await checkOrder()));
+    return;
+  }
   const first = fixture(scenario === 'normal200' || scenario === 'stream' ? 200 : 302, scenario !== 'stream');
   const run = setup(first);
   if (scenario === 'failed') {

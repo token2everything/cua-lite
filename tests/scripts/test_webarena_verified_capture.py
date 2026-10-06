@@ -83,6 +83,89 @@ def test_patched_actual_capture_producer(capture_runtime, scenario):
     assert '"passed":true' in result.stdout
 
 
+@pytest.mark.parametrize("scenario", ["orderPair", "order451"])
+def test_original_same_millisecond_trace_uses_completion_order(capture_runtime, scenario):
+    node, package, _ = capture_runtime
+    result = subprocess.run(
+        [
+            str(node),
+            "--unhandled-rejections=strict",
+            str(HARNESS),
+            str(package),
+            str(package / "lib/server"),
+            scenario,
+        ],
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    assert result.returncode != 0
+    assert "ERR_ASSERTION" in result.stderr
+    expected_ids = ("fast302", "slow200") if scenario == "orderPair" else ("har77", "har76")
+    assert all(identifier in result.stderr for identifier in expected_ids)
+
+
+@pytest.mark.parametrize(
+    "scenario",
+    [
+        "orderPair",
+        "order451",
+        "orderTriple",
+        "orderStream",
+        "orderSameStream",
+        "orderFailed",
+        "orderLateFull",
+        "orderAcrossChunk",
+    ],
+)
+def test_patched_actual_request_start_order(capture_runtime, scenario):
+    node, package, overlay = capture_runtime
+    result = subprocess.run(
+        [
+            str(node),
+            "--unhandled-rejections=strict",
+            str(HARNESS),
+            str(package),
+            str(overlay),
+            scenario,
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    proof = json.loads(result.stdout)
+    assert proof["passed"] and proof["realClasses"]
+    if scenario == "order451":
+        assert proof["ids"] == ["har73", "har74", "har76", "har77"]
+        assert proof["statuses"] == [200, 302, 200, 302]
+
+
+@pytest.mark.parametrize("scenario", ["orderLateFull", "orderAcrossChunk"])
+def test_original_and_patched_inherit_cross_chunk_partial_full_entries(capture_runtime, scenario):
+    node, package, overlay = capture_runtime
+    counts = []
+    for source in (package / "lib/server", overlay):
+        result = subprocess.run(
+            [
+                str(node),
+                "--unhandled-rejections=strict",
+                str(HARNESS),
+                str(package),
+                str(source),
+                scenario,
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        proof = json.loads(result.stdout)
+        counts.append(len(proof["ids"]))
+        assert proof["statuses"][-1] == 200
+    assert counts == ([2, 2] if scenario == "orderLateFull" else [3, 3])
+
+
 def test_capture_overlay_repeated_build_preserves_source(capture_runtime):
     _, package, overlay = capture_runtime
     source = package / "lib/server/har/harTracer.js"

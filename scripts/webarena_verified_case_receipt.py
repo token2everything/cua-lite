@@ -60,6 +60,7 @@ def make_receipt(
     task_id: int,
     runner_sha256: str,
     image_lock_sha256: str,
+    playwright_capture: dict[str, str],
     runner_exit_code: int,
 ) -> dict[str, Any]:
     """Return a terminal receipt or raise EvidenceInvalid for retry/inspection."""
@@ -87,6 +88,10 @@ def make_receipt(
     _require(parameters.get("startup_page_gate") is True, "startup gate was not enabled")
     _require(parameters.get("reasoning_effort") == "max", "reasoning effort mismatch")
     _require(metadata.get("script_sha256") == runner_sha256, "runner SHA mismatch")
+    _require(
+        metadata.get("playwright_capture") == playwright_capture,
+        "capture producer SHA mismatch",
+    )
     _require(startup.get("result") == "passed", "startup page gate did not pass")
     _require(
         isinstance(startup.get("selected_page_url"), str) and bool(startup["selected_page_url"]),
@@ -248,6 +253,7 @@ def make_receipt(
         "archive_sha256": archive_sha256,
         "runner_sha256": runner_sha256,
         "image_lock_sha256": image_lock_sha256,
+        "playwright_capture": playwright_capture,
         "terminal_status": terminal_status,
         "score": score,
         "official_evaluation_status": har["status"],
@@ -268,8 +274,19 @@ def main() -> int:
     parser.add_argument("--task-id", required=True, type=int)
     parser.add_argument("--runner-sha256", required=True)
     parser.add_argument("--image-lock-sha256", required=True)
+    parser.add_argument("--playwright-capture-lock", required=True, type=Path)
     parser.add_argument("--runner-exit-code", required=True, type=int)
     args = parser.parse_args()
+    capture = {
+        relative: expected
+        for expected, relative in (
+            line.split("  ", 1) for line in args.playwright_capture_lock.read_text().splitlines()
+        )
+    }
+    _require(
+        set(capture) == {"har/harTracer.js", "trace/recorder/tracing.js"},
+        "capture producer lock must identify both driver modules",
+    )
     try:
         receipt = make_receipt(
             args.index,
@@ -281,6 +298,7 @@ def main() -> int:
             task_id=args.task_id,
             runner_sha256=args.runner_sha256,
             image_lock_sha256=args.image_lock_sha256,
+            playwright_capture=capture,
             runner_exit_code=args.runner_exit_code,
         )
     except EvidenceInvalid as error:

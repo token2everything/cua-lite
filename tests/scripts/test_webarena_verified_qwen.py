@@ -572,6 +572,63 @@ def test_failure_finalization_flushes_trace_and_har(tmp_path):
     assert har_path.is_file()
 
 
+def test_capture_failure_closes_owned_browser_before_har_flush(tmp_path):
+    events = []
+    capture_error = RuntimeError("Finished response metadata capture timeout")
+
+    class Tracing:
+        def stop(self, *, path):
+            events.append("trace")
+            raise capture_error
+
+    class Context:
+        tracing = Tracing()
+
+        def close(self):
+            assert events == ["trace", "browser"]
+            events.append("har")
+
+    browser = SimpleNamespace(close=lambda: events.append("browser"))
+    error = runner.finalize_browser_artifacts(
+        Context(),
+        browser,
+        tmp_path / "trace.zip",
+        tracing_started=True,
+        sleep_fn=lambda _: None,
+    )
+    assert error is capture_error
+    assert events == ["trace", "browser", "har"]
+
+
+def test_capture_failure_preserved_when_owned_browser_close_also_fails(tmp_path):
+    events = []
+    capture_error = RuntimeError("incomplete response metadata")
+
+    class Tracing:
+        def stop(self, *, path):
+            raise capture_error
+
+    class Context:
+        tracing = Tracing()
+
+        def close(self):
+            events.append("har")
+
+    def close_browser():
+        events.append("browser")
+        raise RuntimeError("browser already disconnected")
+
+    error = runner.finalize_browser_artifacts(
+        Context(),
+        SimpleNamespace(close=close_browser),
+        tmp_path / "trace.zip",
+        tracing_started=True,
+        sleep_fn=lambda _: None,
+    )
+    assert error is capture_error
+    assert events == ["browser", "har"]
+
+
 def test_secure_result_tree_makes_browser_artifacts_private(tmp_path):
     output = tmp_path / "output"
     nested = output / "requests"

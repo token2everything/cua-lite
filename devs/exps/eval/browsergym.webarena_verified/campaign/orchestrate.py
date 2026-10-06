@@ -354,6 +354,28 @@ class Campaign:
                 raise ValueError("source archive runner SHA mismatch")
             if source.extractfile("./scripts/webarena_verified_case_receipt.py") is None:
                 raise ValueError("source archive lacks case receipt validator")
+            capture = source.extractfile(
+                "./devs/exps/eval/browsergym.webarena_verified/campaign/playwright-capture.sha256"
+            )
+            if capture is None:
+                raise ValueError("source archive lacks capture producer lock")
+            capture_lock = capture.read()
+            if hashlib.sha256(capture_lock).hexdigest() != config["playwright_capture_lock_sha256"]:
+                raise ValueError("capture producer lock differs from experiment config")
+            self.playwright_capture = {
+                relative: expected
+                for expected, relative in (
+                    line.split("  ", 1) for line in capture_lock.decode().splitlines()
+                )
+            }
+            if set(self.playwright_capture) != {
+                "har/harTracer.js",
+                "trace/recorder/tracing.js",
+            } or any(
+                not re.fullmatch(r"[0-9a-f]{64}", digest)
+                for digest in self.playwright_capture.values()
+            ):
+                raise ValueError("invalid capture producer lock")
 
     @staticmethod
     def load_plan(root: Path, catalog_path: Path, config: dict[str, Any]) -> dict[str, Any]:
@@ -645,6 +667,7 @@ class Campaign:
             "capabilities": ",".join(self.plan["workers"][worker]["capabilities"]),
             "source_sha256": _sha(self.root / "cua-lite-source.tar.gz"),
             "image_lock_sha256": self.image_sha,
+            "playwright_capture": self.playwright_capture,
         }
         if any(marker.get(name) != value for name, value in expected.items()):
             raise RuntimeError(f"worker {worker} prepared marker differs from campaign")
@@ -736,6 +759,7 @@ class Campaign:
             "task_id": task_id,
             "runner_sha256": self.runner_sha,
             "image_lock_sha256": self.image_sha,
+            "playwright_capture": self.playwright_capture,
         }
         if any(receipt.get(name) != value for name, value in expected.items()):
             raise RuntimeError(f"task {task_id} receipt belongs to another campaign")

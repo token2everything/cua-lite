@@ -76,14 +76,23 @@ if [ ! -f /var/lib/wav-qwen/source/.full-source-ready ]; then
     tar -xzf /mnt/results/cua-lite-source.tar.gz -C /var/lib/wav-qwen/source
     touch /var/lib/wav-qwen/source/.full-source-ready
 fi
-# Source-refresh runs keep the heavy prepared assets but replace both campaign
-# scripts before the prepared marker is republished.
+# Refresh the frozen runner and capture assets without changing shared drivers.
 tar -xzf /mnt/results/cua-lite-source.tar.gz -C /var/lib/wav-qwen/source \
     ./scripts/webarena_verified_qwen.py \
-    ./scripts/webarena_verified_case_receipt.py
+    ./scripts/webarena_verified_case_receipt.py \
+    ./devs/exps/eval/browsergym.webarena_verified/campaign/build-playwright-capture.sh \
+    ./devs/exps/eval/browsergym.webarena_verified/campaign/playwright-capture.patch \
+    ./devs/exps/eval/browsergym.webarena_verified/campaign/playwright-capture.sha256
 printf '%s  %s\n' \
     "$RUNNER_SHA256" \
     '/var/lib/wav-qwen/source/scripts/webarena_verified_qwen.py' | sha256sum -c -
+
+SOURCE_SHA=$(sha256sum /mnt/results/cua-lite-source.tar.gz | awk '{print $1}')
+PLAYWRIGHT_CAPTURE_DIR="/var/lib/wav-qwen/playwright-capture/$SOURCE_SHA"
+mkdir -p /var/lib/wav-qwen/playwright-capture
+bash /var/lib/wav-qwen/source/devs/exps/eval/browsergym.webarena_verified/campaign/build-playwright-capture.sh \
+    /var/lib/wav-runtime/venv/lib/python3.12/site-packages/playwright/driver/package/lib/server \
+    "$PLAYWRIGHT_CAPTURE_DIR"
 
 if [ ! -d /var/lib/wav-qwen/desktop-python ]; then
     tar -xzf "$CAL_ROOT/desktop-python.tar.gz" -C /var/lib/wav-qwen
@@ -98,7 +107,6 @@ test "$(git -C /var/lib/wav-qwen/OSWorld rev-parse HEAD)" = \
 mkdir -p /var/lib/wav-qwen/locks /var/lib/wav-qwen/results \
     /var/lib/wav-qwen/baselines /mnt/results/archives /mnt/results/index \
     /mnt/results/incomplete
-SOURCE_SHA=$(sha256sum /mnt/results/cua-lite-source.tar.gz | awk '{print $1}')
 IMAGE_LOCK_SHA=$(sha256sum "$IMAGE_LOCK" | awk '{print $1}')
 PREPARED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 IMAGES_JSON={}
@@ -135,14 +143,34 @@ export IMAGES_JSON IMAGE_IDS_JSON
 docker run --rm -i --network none \
     -v /var/lib/wav-runtime/venv:/opt/venv:ro \
     -v /var/lib/wav-runtime/python:/root/.local/share/uv/python:ro \
+    -v /var/lib/wav-qwen/source:/root/cua-lite:ro \
+    -v "$PLAYWRIGHT_CAPTURE_DIR/har/harTracer.js:/opt/venv/lib/python3.12/site-packages/playwright/driver/package/lib/server/har/harTracer.js:ro" \
+    -v "$PLAYWRIGHT_CAPTURE_DIR/trace/recorder/tracing.js:/opt/venv/lib/python3.12/site-packages/playwright/driver/package/lib/server/trace/recorder/tracing.js:ro" \
+    -e PYTHONDONTWRITEBYTECODE=1 \
     -e RUN_ID -e WORKER -e SANDBOX_ID -e CAPABILITIES \
     -e SOURCE_SHA -e IMAGE_LOCK_SHA -e PREPARED_AT \
     -e IMAGES_JSON -e IMAGE_IDS_JSON \
     "$QWENRUNNER_RUNTIME_IMAGE" /opt/venv/bin/python - <<'PY' \
     > "$WORKER_DIR/.prepared.json.tmp"
+import hashlib
 import json
 import os
 import sys
+from pathlib import Path
+
+import playwright
+
+capture_root = Path(playwright.__file__).parent / "driver/package/lib/server"
+capture_lock = Path(
+    "/root/cua-lite/devs/exps/eval/browsergym.webarena_verified/campaign/playwright-capture.sha256"
+)
+playwright_capture = {}
+for line in capture_lock.read_text().splitlines():
+    expected, relative = line.split("  ", 1)
+    actual = hashlib.sha256((capture_root / relative).read_bytes()).hexdigest()
+    if actual != expected:
+        raise ValueError(f"installed Playwright capture differs from lock: {relative}")
+    playwright_capture[relative] = actual
 
 json.dump(
     {
@@ -152,6 +180,7 @@ json.dump(
         "capabilities": os.environ["CAPABILITIES"],
         "source_sha256": os.environ["SOURCE_SHA"],
         "image_lock_sha256": os.environ["IMAGE_LOCK_SHA"],
+        "playwright_capture": playwright_capture,
         "images": json.loads(os.environ["IMAGES_JSON"]),
         "image_ids": json.loads(os.environ["IMAGE_IDS_JSON"]),
         "prepared_at": os.environ["PREPARED_AT"],

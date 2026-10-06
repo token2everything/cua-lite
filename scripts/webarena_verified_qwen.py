@@ -404,8 +404,10 @@ def secure_result_tree(root: Path) -> None:
 
 
 def runtime_metadata(dataset_sha256: str) -> dict[str, Any]:
-    """Identify this uncommitted runner and every score-relevant runtime package."""
+    """Identify the runner, runtime packages, and installed capture producer."""
     script = Path(__file__).resolve()
+    playwright = importlib.import_module("playwright")
+    driver = Path(playwright.__file__).parent / "driver/package/lib/server"
     packages = {}
     for distribution in (
         "openai",
@@ -424,6 +426,10 @@ def runtime_metadata(dataset_sha256: str) -> dict[str, Any]:
         "osworld_sha": OSWORLD_SHA,
         "dataset_sha256": dataset_sha256,
         "packages": packages,
+        "playwright_capture": {
+            relative: hashlib.sha256((driver / relative).read_bytes()).hexdigest()
+            for relative in ("har/harTracer.js", "trace/recorder/tracing.js")
+        },
     }
 
 
@@ -1421,6 +1427,14 @@ def finalize_browser_artifacts(
                 context.tracing.stop(path=trace_path)
             except BaseException as caught:
                 error = caught
+                # Closing the owned browser releases response-header scopes before
+                # context.close can wait for the same incomplete HAR metadata.
+                if browser is not None:
+                    try:
+                        browser.close()
+                    except BaseException:
+                        pass  # Preserve the capture error as the retry reason.
+                    browser = None
         try:
             context.close()
         except BaseException as caught:

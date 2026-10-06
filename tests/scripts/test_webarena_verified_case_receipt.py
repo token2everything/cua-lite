@@ -19,6 +19,7 @@ RUN_ID = "wav-glm53flash-infra-v2-canary-20261005"
 RUNNER_SHA = "a" * 64
 PLAN_SHA = "b" * 64
 IMAGE_SHA = "c" * 64
+CAPTURE = {"har/harTracer.js": "d" * 64, "trace/recorder/tracing.js": "e" * 64}
 SANDBOX = "owned-canary"
 TASK_ID = 63
 
@@ -73,7 +74,9 @@ def case_files(
             {"result": "passed", "selected_page_url": "http://localhost:7780/admin"}
         ).encode(),
         "status.json": json.dumps(status).encode(),
-        "run_metadata.json": json.dumps({"script_sha256": RUNNER_SHA}).encode(),
+        "run_metadata.json": json.dumps(
+            {"script_sha256": RUNNER_SHA, "playwright_capture": CAPTURE}
+        ).encode(),
         "baseline_receipt.json": json.dumps(
             {
                 "session_id": RUN_ID,
@@ -144,6 +147,7 @@ def validate(index: Path, archive: Path, runner_exit_code: int = 0) -> dict:
         task_id=TASK_ID,
         runner_sha256=RUNNER_SHA,
         image_lock_sha256=IMAGE_SHA,
+        playwright_capture=CAPTURE,
         runner_exit_code=runner_exit_code,
     )
 
@@ -154,6 +158,7 @@ def test_completed_case_has_scored_terminal_receipt(tmp_path: Path) -> None:
     assert receipt["terminal_status"] == "completed"
     assert receipt["score"] == 1.0
     assert receipt["archive_sha256"] == hashlib.sha256(archive.read_bytes()).hexdigest()
+    assert receipt["playwright_capture"] == CAPTURE
 
 
 def test_model_protocol_failure_is_terminal_and_scored_once(tmp_path: Path) -> None:
@@ -185,6 +190,8 @@ def test_official_evaluator_error_is_terminal_but_unscored(tmp_path: Path) -> No
         "tampered_har",
         "evaluator_as_model_failure",
         "score_only_agreement",
+        "wrong_capture_producer",
+        "missing_capture_producer",
     ],
 )
 def test_nonterminal_evidence_never_publishes_receipt(tmp_path: Path, change: str) -> None:
@@ -207,6 +214,13 @@ def test_nonterminal_evidence_never_publishes_receipt(tmp_path: Path, change: st
         value = json.loads(files["evaluation.json"])
         value["inputs_agree"] = False
         files["evaluation.json"] = json.dumps(value).encode()
+    elif change in {"wrong_capture_producer", "missing_capture_producer"}:
+        value = json.loads(files["run_metadata.json"])
+        if change == "wrong_capture_producer":
+            value["playwright_capture"] = {**CAPTURE, "har/harTracer.js": "f" * 64}
+        else:
+            del value["playwright_capture"]
+        files["run_metadata.json"] = json.dumps(value).encode()
     index, archive = write_case(tmp_path, files)
     with pytest.raises(receipt_module.EvidenceInvalid):
         validate(index, archive)

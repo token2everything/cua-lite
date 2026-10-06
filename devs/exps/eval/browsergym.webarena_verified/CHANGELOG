@@ -1,5 +1,28 @@
 ## Unreleased
 
+### V18 — Finished response metadata capture
+
+V17 task 514 retained redirect Set-Cookie headers in HAR but serialized the
+trace entry before those raw headers completed. A version-private Playwright
+1.44 producer overlay now waits for finished-response metadata before trace
+export, with a 30-second deadline that fails without publishing an archive.
+Unfinished streams keep the existing partial-entry policy. Capture failure
+closes only the runner-owned browser before context HAR flush; successful
+finalization keeps its original order. The two readonly overlay file hashes
+are bound to source, preparation, runtime metadata and terminal receipts.
+The shared driver, frozen V17 workers, evaluator, dataset and old scores are
+not changed. Rollback targets `wav-infra-v17-nav-wrapper`.
+
+Regression: 321 relevant offline tests and four actual Chromium/CDP tests
+passed, including an original missing-cookie red and patched green, redirect
+ExtraInfo FIFO, browser closure, and the real 30-second metadata deadline.
+Independent review passed 315 script tests. All 130 agent Python files and
+42 of 44 runner functions are unchanged; the two shared function changes are
+runtime producer identity and failure cleanup. Model parameters, prompts,
+parsers, histories, retry policy, budgets and action argv remain at V17.
+These regressions made no model API calls. Fresh sandbox canary verification
+is pending. Task 451's same-millisecond request ordering is not fixed here.
+
 ### V17 — GLM balanced nav call wrapper
 
 V16 task 50 supplied one canonical click inside an empty, balanced `nav`

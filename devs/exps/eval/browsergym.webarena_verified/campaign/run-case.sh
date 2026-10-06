@@ -33,6 +33,15 @@ IMAGE_LOCK=/mnt/results/image-lock.env
 PLAN_SHA256=$(sha256sum /mnt/results/PLAN_MANIFEST.sha256 | awk '{print $1}')
 IMAGE_LOCK_SHA256=$(sha256sum "$IMAGE_LOCK" | awk '{print $1}')
 
+# Reject missing or changed capture code before resetting sites or calling a model.
+SOURCE_SHA=$(sha256sum /mnt/results/cua-lite-source.tar.gz | awk '{print $1}')
+PLAYWRIGHT_CAPTURE_DIR="/var/lib/wav-qwen/playwright-capture/$SOURCE_SHA"
+PLAYWRIGHT_CAPTURE_LOCK=/var/lib/wav-qwen/source/devs/exps/eval/browsergym.webarena_verified/campaign/playwright-capture.sha256
+tar -xOf /mnt/results/cua-lite-source.tar.gz \
+    ./devs/exps/eval/browsergym.webarena_verified/campaign/playwright-capture.sha256 \
+    | cmp --silent "$PLAYWRIGHT_CAPTURE_LOCK" -
+(cd -- "$PLAYWRIGHT_CAPTURE_DIR" && sha256sum --check --status "$PLAYWRIGHT_CAPTURE_LOCK")
+
 test -f /var/lib/wav-qwen/private/model.env
 test -f "$IMAGE_LOCK"
 
@@ -287,6 +296,8 @@ runner_args=(
     -e WA_MAP=http://localhost:8080
     -e WA_HOMEPAGE=http://127.0.0.1:4399
     -v /var/lib/wav-runtime/venv:/opt/venv:ro
+    -v "$PLAYWRIGHT_CAPTURE_DIR/har/harTracer.js:/opt/venv/lib/python3.12/site-packages/playwright/driver/package/lib/server/har/harTracer.js:ro"
+    -v "$PLAYWRIGHT_CAPTURE_DIR/trace/recorder/tracing.js:/opt/venv/lib/python3.12/site-packages/playwright/driver/package/lib/server/trace/recorder/tracing.js:ro"
     -v /var/lib/wav-runtime/python:/root/.local/share/uv/python:ro
     -v /var/lib/wav-runtime/api-extra:/opt/api-extra:ro
     -v /var/lib/wav-runtime/nltk_data:/root/nltk_data:ro
@@ -296,7 +307,9 @@ runner_args=(
     -v /var/lib/wav-qwen/results:/outputs
     -v /var/lib/wav-qwen/locks:/locks
     -v /var/lib/wav-qwen/baselines:/baselines:ro
-    -w /outputs "$RUNTIME_IMAGE" /opt/venv/bin/python -B
+    -w /outputs "$RUNTIME_IMAGE" bash -c
+    '(cd /opt/venv/lib/python3.12/site-packages/playwright/driver/package/lib/server && sha256sum --check --status /root/cua-lite/devs/exps/eval/browsergym.webarena_verified/campaign/playwright-capture.sha256) && exec /opt/venv/bin/python -B "$@"'
+    playwright-capture-entrypoint
     /root/cua-lite/scripts/webarena_verified_qwen.py
     --task-id "$TASK_ID"
     --osworld-root /opt/OSWorld
@@ -333,6 +346,7 @@ if [ "$runner_rc" -eq 0 ] && runtime_python \
     --sandbox-id "$SANDBOX_ID" --task-id "$TASK_ID" \
     --runner-sha256 "$RUNNER_SHA256" \
     --image-lock-sha256 "$IMAGE_LOCK_SHA256" \
+    --playwright-capture-lock /root/cua-lite/devs/exps/eval/browsergym.webarena_verified/campaign/playwright-capture.sha256 \
     --runner-exit-code "$runner_rc" > "$INDEX/.completed.json.tmp"; then
     mv "$INDEX/.completed.json.tmp" "$INDEX/completed.json"
     exit 0

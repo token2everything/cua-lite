@@ -1,0 +1,66 @@
+diff --git a/har/harTracer.js b/har/harTracer.js
+--- a/har/harTracer.js
++++ b/har/harTracer.js
+@@ -39,6 +39,7 @@ class HarTracer {
+   constructor(context, page, delegate, options) {
+     this._context = void 0;
+     this._barrierPromises = new Set();
++    this._pendingFinishedEntries = new Map();
+     this._delegate = void 0;
+     this._options = void 0;
+     this._pageEntries = new Map();
+@@ -269,8 +270,13 @@ class HarTracer {
+     }).catch(() => {
+       compressionCalculationBarrier === null || compressionCalculationBarrier === void 0 || compressionCalculationBarrier.setDecodedBodySize(0);
+-    }).then(() => {
++    }).then(async () => {
++      // Finished snapshots must include this response's real extra headers.
++      this._recordResponseHeaders(harEntry, await response.rawResponseHeaders());
++      this._pendingFinishedEntries.delete(harEntry);
+       if (this._started) this._delegate.onEntryFinished(harEntry);
+     });
++    const target = page || request.serviceWorker();
++    this._pendingFinishedEntries.set(harEntry, target.openScope.safeRace(promise));
+     this._addBarrier(page || request.serviceWorker(), promise);
+ 
+     // Respose end timing is only available after the response event was received.
+@@ -402,5 +408,13 @@ class HarTracer {
+   async flush() {
+     await Promise.all(this._barrierPromises);
++    // Drain only finished requests. Active streaming remains a partial snapshot.
++    while (this._pendingFinishedEntries.size) {
++      const batch = [...this._pendingFinishedEntries.entries()];
++      await Promise.all(batch.map(([, completion]) => completion));
++      // A closed scope can cancel waiting; it cannot complete missing headers.
++      if (batch.some(([entry]) => this._pendingFinishedEntries.has(entry)))
++        throw new Error('Finished response metadata capture incomplete');
++    }
+   }
+   stop() {
+     this._started = false;
+diff --git a/trace/recorder/tracing.js b/trace/recorder/tracing.js
+--- a/trace/recorder/tracing.js
++++ b/trace/recorder/tracing.js
+@@ -223,5 +223,22 @@ class Tracing extends _instrumentation.SdkObject {
+     if (this._state.options.screenshots) this._stopScreencast();
+     if (this._state.options.snapshots) await ((_this$_snapshotter4 = this._snapshotter) === null || _this$_snapshotter4 === void 0 ? void 0 : _this$_snapshotter4.stop());
++    if (params.mode !== 'discard') {
++      let captureTimer;
++      try {
++        await Promise.race([
++          this._harTracer.flush(),
++          new Promise((_, reject) => {
++            captureTimer = setTimeout(() => reject(new Error('Finished response metadata capture timeout after 30000ms')), 30000);
++          })
++        ]);
++      } catch (error) {
++        // Fail closed: a late callback must not turn a failed capture into an archive.
++        this._harTracer.stop();
++        throw error;
++      } finally {
++        clearTimeout(captureTimer);
++      }
++    }
+     this.flushHarEntries();
+ 
+     // Network file survives across chunks, make a snapshot before returning the resulting entries.

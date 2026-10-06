@@ -19,6 +19,7 @@ orchestrator = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(orchestrator)
 
 RUN_ID = "wav-glm53flash-infra-v6-test-20261005"
+CAPTURE = {"har/harTracer.js": "d" * 64, "trace/recorder/tracing.js": "e" * 64}
 
 
 @pytest.fixture
@@ -38,11 +39,18 @@ def campaign(tmp_path):
     root.mkdir(parents=True)
     runner = b"# pinned runner\n"
     receipt = b"# receipt validator\n"
+    capture_lock = "".join(
+        f"{digest}  {relative}\n" for relative, digest in CAPTURE.items()
+    ).encode()
     runner_sha = hashlib.sha256(runner).hexdigest()
     with tarfile.open(root / "cua-lite-source.tar.gz", "w:gz") as archive:
         for name, content in (
             ("./scripts/webarena_verified_qwen.py", runner),
             ("./scripts/webarena_verified_case_receipt.py", receipt),
+            (
+                "./devs/exps/eval/browsergym.webarena_verified/campaign/playwright-capture.sha256",
+                capture_lock,
+            ),
         ):
             member = tarfile.TarInfo(name)
             member.size = len(content)
@@ -55,7 +63,14 @@ def campaign(tmp_path):
     for name in ("prepare-worker.sh", "run-case.sh", "run-worker.sh"):
         (root / name).write_text("#!/usr/bin/env bash\n")
     (root / "EXPERIMENT_CONFIG.json").write_text(
-        json.dumps({"run_id": RUN_ID, "model": "glm-5.3-flash", "task_count": 2})
+        json.dumps(
+            {
+                "run_id": RUN_ID,
+                "model": "glm-5.3-flash",
+                "task_count": 2,
+                "playwright_capture_lock_sha256": hashlib.sha256(capture_lock).hexdigest(),
+            }
+        )
     )
     workers = {
         "01": {"capabilities": ["shopping_admin"], "startup_task": 0, "tasks": 1},
@@ -265,6 +280,7 @@ def test_foreign_sandbox_and_unscored_error_are_not_silent(campaign):
         "task_id": 0,
         "runner_sha256": campaign.runner_sha,
         "image_lock_sha256": campaign.image_sha,
+        "playwright_capture": CAPTURE,
         "archive_sha256": "a" * 64,
         "terminal_status": "evaluator_error",
         "score": None,
@@ -294,3 +310,32 @@ def test_launch_reuses_recorded_command_instead_of_double_submitting(campaign):
     assert first == second
     assert len(client.command_calls) == 1
     assert first["launch_id"] in first["command"]
+
+
+@pytest.mark.parametrize("capture", [None, {**CAPTURE, "har/harTracer.js": "f" * 64}, CAPTURE])
+def test_prepared_marker_binds_actual_capture_producer(campaign, monkeypatch, capture):
+    marker = {
+        "run_id": RUN_ID,
+        "worker": "01",
+        "sandbox_id": "owned-1",
+        "capabilities": "shopping_admin",
+        "source_sha256": orchestrator._sha(campaign.root / "cua-lite-source.tar.gz"),
+        "image_lock_sha256": campaign.image_sha,
+    }
+    if capture is not None:
+        marker["playwright_capture"] = capture
+    monkeypatch.setattr(campaign.client, "download", lambda *_: json.dumps(marker).encode())
+    if capture == CAPTURE:
+        assert campaign._prepared("01", "owned-1")
+    else:
+        with pytest.raises(RuntimeError, match="prepared marker differs"):
+            campaign._prepared("01", "owned-1")
+
+
+def test_campaign_rejects_capture_lock_not_bound_by_config(campaign):
+    config_path = campaign.root / "EXPERIMENT_CONFIG.json"
+    config = json.loads(config_path.read_text())
+    config["playwright_capture_lock_sha256"] = "f" * 64
+    config_path.write_text(json.dumps(config))
+    with pytest.raises(ValueError, match="capture producer lock differs"):
+        orchestrator.Campaign(campaign.root, campaign.root.parents[2] / ".env")

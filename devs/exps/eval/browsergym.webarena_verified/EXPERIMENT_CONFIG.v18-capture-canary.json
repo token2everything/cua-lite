@@ -1,0 +1,100 @@
+{
+  "run_id": "wav-glm53flash-infra-v18-capture-canary-20261006",
+  "stage": "isolated-response-metadata-capture-sandbox-canary",
+  "benchmark": "webarena-verified",
+  "benchmark_version": "1.2.3",
+  "task_count": 1,
+  "dataset_sha256": "d65275660814663375028e9017e1f929e3c38321041b125795e2713b52243d30",
+  "entrypoint": "scripts/webarena_verified_qwen.py",
+  "model": "glm-5.3-flash",
+  "model_key_environment_variable": "GLM_TEST_API_KEY",
+  "argv": [
+    "--model-profile",
+    "glm53flash",
+    "--startup-page-gate",
+    "--max-steps",
+    "150",
+    "--final-response-reserve-steps",
+    "7",
+    "--layered-step-budget",
+    "--repair-invalid-response"
+  ],
+  "thinking": true,
+  "reasoning_effort": "max",
+  "max_tokens": 32768,
+  "temperature": 0,
+  "top_p": 0.9,
+  "coordinate_type": "absolute",
+  "screen_size": [
+    1920,
+    1080
+  ],
+  "history_n": 100,
+  "image_max": 20,
+  "fold_size": 10,
+  "sandbox_count": 1,
+  "sandbox_plan": "one fresh owned shopping sandbox; no frozen V17 sandbox reuse",
+  "campaign_script_revision": "v18-response-metadata-capture",
+  "campaign_run_case_sha256": "335c209a28b6b2557fb8c37eaed5ec40b5640324e6b976a6221bd9048051137c",
+  "per_sandbox_case_concurrency": 1,
+  "startup_gate": "one archived, hash-bound terminal case per worker; inspect every protocol failure before full-shard launch",
+  "task_attempts": "one terminal scored attempt; at most three shard relaunches for missing validated receipts",
+  "evaluator": "official-webarena-verified-1.2.3-all-or-nothing",
+  "score_policy": "evaluator errors remain unscored; no 812-denominator accuracy until all official scores exist",
+  "verification_requirements": [
+    "the selected task514 startup case retains source-bound actual capture producer hashes and a locally hash-verified archive",
+    "the immutable source lock owns the two installed capture producer file identities; mismatches block model launch",
+    "finished responses retain completed raw response headers before trace serialization, including redirects",
+    "trace finalization bounds missing finished response metadata at 30000ms and fails without publishing an archive",
+    "capture errors close only the runner-owned browser before context HAR flush; happy-path finalization order remains unchanged",
+    "real Chromium/CDP regression preserves redirect-chain ExtraInfo FIFO and demonstrates original missing-cookie red versus patched green",
+    "active unfinished streams keep the existing partial trace policy instead of waiting for every response body",
+    "fresh and repeated overlay builds preserve the shared driver; only two version-private JS files are mounted readonly",
+    "source refresh includes patch, builder and lock; actual installed hashes bind prepared markers, runtime metadata and terminal receipts",
+    "all agent/parser/prompt/transport/sampling/history/coordinate/budget policies remain at V17; no old score substitution",
+    "Qwen running environments and frozen V17 sandboxes are not refreshed or patched",
+    "task451 same-millisecond event-order disagreement remains a separate repair, not claimed fixed by response-header completion"
+  ],
+  "model_retry_policy": {
+    "logged_outer_attempts": 5,
+    "sdk_max_retries": 0,
+    "timeout_seconds": {
+      "connect": 130,
+      "read": 600,
+      "write": 130,
+      "pool": 130
+    },
+    "qwen_sdk_defaults_unchanged": true
+  },
+  "desktop_pacing_policy": {
+    "glm_explicit_wait": "desktop clock; ceil(seconds * 1000) / 1000",
+    "glm_post_action_delay_seconds": 0.35,
+    "qwen_page_wait_unchanged": true,
+    "select_or_reopen_tabs": false,
+    "replay_executed_actions": false
+  },
+  "call_markup_projection_policy": {
+    "owner": "GLM provider _parse_response",
+    "empty_balanced_nav_around_one_complete_call": true,
+    "paired_single_backtick_around_one_complete_call": true,
+    "raw_content_and_history_unchanged": true,
+    "classifier_suffix_policy_unchanged": true,
+    "unpaired_prefix_meaning_unchanged": true,
+    "literal_text_unchanged": true
+  },
+  "playwright_capture_lock_sha256": "8f1e626336edb228e9bb0065b4c3eff8da141c013b5e6ce1c4d550c013c6b346",
+  "capture_policy": {
+    "owner": "version-private Playwright 1.44 capture producer",
+    "base_driver_files_unchanged": true,
+    "finished_response_metadata_deadline_ms": 30000,
+    "shared_venv_mutated": false,
+    "runtime_overlay_mounts_readonly": true,
+    "har_to_trace_repair": false,
+    "official_evaluator_or_dataset_modified": false,
+    "original_v17_scores_replaced": false,
+    "same_millisecond_order_repair_included": false
+  },
+  "task_ids": [
+    514
+  ]
+}

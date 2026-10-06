@@ -1,0 +1,47 @@
+{
+  "infra_version": "webarena-verified-v20-request-order",
+  "rollback_ready": true,
+  "rollback_to": "wav-infra-v19-capture-build",
+  "baseline_commit": "71aec569f2fae8e869ae09e55ca6fdf27391d247",
+  "git_commit": "ef8d8754e5f493c1dd82f8e0e063037107a3ce75",
+  "runner_sha256": "0ec9211fb80d50c094175b540567d91423df2b7308b1740ad460c5cf9f076ac2",
+  "entrypoint": "scripts/webarena_verified_qwen.py",
+  "argv": [
+    "--model-profile",
+    "glm53flash",
+    "--startup-page-gate",
+    "--max-steps",
+    "150",
+    "--final-response-reserve-steps",
+    "7",
+    "--layered-step-budget",
+    "--repair-invalid-response"
+  ],
+  "protocol_version": "glm-v17-observed-nav-wrapper-with-literal-type",
+  "osworld_commit": "b138d348256078fa634fc3b73567a7337c793e6b",
+  "browsergym_version": "0.14.3",
+  "evaluator_version": "1.2.3",
+  "evaluator_sha256": "35c3385b1db4b3378657589f95f50defd4234bd36e5b93d44733fd561b01db4e",
+  "dataset_sha256": "d65275660814663375028e9017e1f929e3c38321041b125795e2713b52243d30",
+  "site_image_digests": {
+    "shopping": "sha256:3e8cb9b945ea9b1c94ab26dba53e8d12dd0406abbf4bf686fd3bb2b6a5908feb",
+    "shopping_admin": "sha256:d0531dd27ed98d0c459ff9e88118bf2ed8b660b0ed99c38837db46c065a5be13",
+    "reddit": "sha256:0594908059a03e5f610005689440a95c05e776e734006197c7b1eba12734cb46",
+    "gitlab": "sha256:673ba94d757c5b3f4bb55751ad8b745a33bad2b987349322403cbc41035a92e0",
+    "map": "sha256:c769aa312c979d68e696dace7049d58eeeb016ce608f0f8779a181bf3714206f",
+    "map_runtime": "sha256:07a91e1954238fac62d88430c6170c98f7961b8a23cbcd869a2f9781c5d139d8",
+    "runner_runtime": "sha256:b9d5ab79e01d490a3a0d6a46d5b69225bbd2b94585a0828df057f3754f22407f"
+  },
+  "config_sha256": "20da148602399077379a827031db2d7bc9ef3188541336d2829fbe373411b229",
+  "experiment_config": "devs/exps/eval/browsergym.webarena_verified/EXPERIMENT_CONFIG.v20-full50.json",
+  "verification": {
+    "offline_tests_passed": 336,
+    "online_canary_status": "pending",
+    "qwen_default_unchanged": true
+  },
+  "scoring_policy": "official raw 1.2.3 score; capture and evaluator errors remain unscored; versioned campaigns and original scores remain separate",
+  "canary_ids": [
+    451,
+    514
+  ]
+}

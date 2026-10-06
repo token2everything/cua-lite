@@ -1,5 +1,27 @@
 ## Unreleased
 
+### V20 — Request-start order for tied trace timestamps
+
+Task 451 started two profile requests in the same millisecond, while Trace
+serialized their completed responses in the reverse order. The private
+Tracing producer now keeps request-start insertion order within each equal
+startedDateTime group. A slow request in another timestamp group does not
+block ready entries. Final partial flush preserves start order for streams.
+HarTracer metadata completion, the 30-second failure deadline, readonly
+mounts, runner, agents, evaluator and dataset are unchanged from V19.
+
+Regression: 336 relevant offline tests and four actual Chromium/CDP tests
+passed. Replaying task 451's original archived callbacks through actual
+original/private classes reproduces and fixes the ordering inversion.
+Three reverse-completed requests, failed requests, same-millisecond streams
+and independent timestamp groups are covered. The current runner uses one
+tracing chunk. This repair does not claim to eliminate inherited cross-chunk
+partial/late-full duplicates or completion after the final archive snapshot.
+The separate V19 task 514 sandbox passed with raw HAR/Trace redirect headers
+and cookies equal; it is not a controlled accuracy-uplift comparison.
+Fresh V20 task 451 and task 514 sandbox verification remains pending.
+Rollback targets the deployed V19 release `wav-infra-v19-capture-build`.
+
 ### V19 — Portable capture build on the sandbox host
 
 The fresh V18 sandbox failed preparation before any model call: its BusyBox

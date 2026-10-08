@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate one GLM campaign case before publishing its terminal receipt.
+"""Validate one config-bound native campaign case before publishing its receipt.
 
 Only a complete, run-bound archive can be terminal. Official evaluator errors
 are archived as unscored cases, never silently converted into model failures.
@@ -61,6 +61,8 @@ def make_receipt(
     runner_sha256: str,
     image_lock_sha256: str,
     runner_exit_code: int,
+    config: dict[str, Any],
+    version_manifest: dict[str, Any],
 ) -> dict[str, Any]:
     """Return a terminal receipt or raise EvidenceInvalid for retry/inspection."""
     _require(runner_exit_code == 0, "runner did not exit successfully")
@@ -73,20 +75,80 @@ def make_receipt(
     startup = _json(index / "startup_receipt.json")
 
     _require(status.get("task_id") == task_id, "status task ID mismatch")
-    _require(status.get("model") == "glm-5.3-flash", "wrong model")
-    _require(status.get("model_profile") == "glm53flash", "wrong model profile")
+    _require(config["run_id"] == run_id, "config run ID mismatch")
+    _require(status.get("model") == config["model"], "wrong model")
+    _require(status.get("model_profile") == config["model_profile"], "wrong model profile")
     _require(
         status.get("status") in {"completed", "model_protocol_failed", "evaluator_error"},
         "case is not terminal",
     )
     _require(not status.get("error"), "runner reported an execution error")
     parameters = status.get("fixed_parameters") or {}
-    _require(parameters.get("base_max_steps") == 150, "step budget mismatch")
-    _require(parameters.get("final_response_reserve_steps") == 7, "reserve budget mismatch")
-    _require(parameters.get("coordinate_type") == "absolute", "coordinate policy mismatch")
+    _require(
+        parameters.get("base_max_steps") == config["environment"]["max_steps"],
+        "step budget mismatch",
+    )
+    _require(
+        parameters.get("final_response_reserve_steps")
+        == config["environment"]["final_response_reserve_steps"],
+        "reserve budget mismatch",
+    )
+    _require(
+        parameters.get("coordinate_type") == config["environment"]["coordinates"],
+        "coordinate policy mismatch",
+    )
     _require(parameters.get("startup_page_gate") is True, "startup gate was not enabled")
-    _require(parameters.get("reasoning_effort") == "max", "reasoning effort mismatch")
+    _require(
+        parameters.get("reasoning_effort") == config["reasoning_effort"],
+        "reasoning effort mismatch",
+    )
+    _require(parameters.get("text_history") == "all", "text history mismatch")
+    _require(
+        parameters.get("image_max") == config["agent"]["image_budget_including_current"],
+        "image budget mismatch",
+    )
+    _require(
+        parameters.get("fold_size") == config["agent"]["image_fold_size"], "image folding mismatch"
+    )
     _require(metadata.get("script_sha256") == runner_sha256, "runner SHA mismatch")
+    _require(metadata.get("harness") == "native_chat_gateway", "harness mismatch")
+    _require(
+        metadata.get("osworld_sha") == version_manifest["osworld_commit"],
+        "OSWorld cursor source mismatch",
+    )
+    dependencies = metadata.get("dependencies") or {}
+    _require(
+        {
+            "agent",
+            "loop",
+            "prompt",
+            "action_space",
+            "env_ingress",
+            "desktop_action_projection",
+            "model_input_projection",
+            "desktop_scoring_helpers",
+            "catalog_trace_loader",
+            "cursor",
+        }
+        <= set(dependencies),
+        "actual imported dependency identities missing",
+    )
+    for owner, identity in dependencies.items():
+        module_file = Path(identity["module_file"])
+        if owner == "cursor":
+            _require(
+                Path("/opt/OSWorld") in module_file.parents,
+                "cursor imported outside pinned OSWorld checkout",
+            )
+            continue
+        _require(
+            Path("/root/cua-lite") in module_file.parents, f"{owner} imported outside frozen source"
+        )
+        relative = str(module_file.relative_to("/root/cua-lite"))
+        _require(
+            version_manifest["source_artifacts"].get(relative) == identity["sha256"],
+            f"{owner} imported hash differs from frozen source",
+        )
     _require(startup.get("result") == "passed", "startup page gate did not pass")
     _require(
         isinstance(startup.get("selected_page_url"), str) and bool(startup["selected_page_url"]),
@@ -98,6 +160,7 @@ def make_receipt(
         "worker": worker,
         "task_id": task_id,
         "image_lock_sha256": image_lock_sha256,
+        "source_sha256": version_manifest["source_sha256"],
     }.items():
         _require(baseline.get(key) == expected, f"baseline {key} mismatch")
     _require(baseline.get("fresh_service_processes") is True, "site baseline is not fresh")
@@ -117,6 +180,12 @@ def make_receipt(
     ):
         _require(har.get(field) == trace.get(field), f"HAR/trace {field} mismatch")
     _require(har.get("task_id") == task_id, "official task ID mismatch")
+    for field, expected in {
+        "webarena_verified_version": config["benchmark"]["version"],
+        "webarena_verified_evaluator_checksum": config["benchmark"]["evaluator_sha256"],
+        "webarena_verified_data_checksum": config["benchmark"]["dataset_sha256"],
+    }.items():
+        _require(har.get(field) == expected, f"official {field} differs from pinned config")
     _require(har.get("status") in {"success", "failure", "error"}, "unknown official status")
     _require(
         _numeric(har.get("score")) and evaluation.get("score") == har["score"],
@@ -176,6 +245,7 @@ def make_receipt(
                     "status.json",
                     "run_metadata.json",
                     "trajectory.jsonl",
+                    "agent_trajectory.jsonl",
                     "agent_response_raw.txt",
                     "baseline_receipt.json",
                     "startup_receipt.json",
@@ -183,32 +253,42 @@ def make_receipt(
             }
             _require(required <= names, "archive lacks required evidence")
             stems = []
-            for suffix in ("_request.json", "_response.json", "_metadata.json"):
+            for suffix in (".request.json", ".response.json", ".metadata.json"):
                 stems.append(
                     {
                         name.removesuffix(suffix)
                         for name in names
-                        if name.startswith(f"{case_key}/requests/") and name.endswith(suffix)
+                        if name.startswith(f"{case_key}/requests/")
+                        and name.endswith(suffix)
+                        and ".attempt-" not in name
                     }
                 )
             _require(
                 bool(stems[0]) and stems[0] == stems[1] == stems[2],
                 "model request/response evidence is unmatched",
             )
-            for request_name in sorted(name + "_request.json" for name in stems[0]):
+            for request_name in sorted(name + ".request.json" for name in stems[0]):
                 request = json.load(bundle.extractfile(request_name))
                 expected_request = {
-                    "model": "glm-5.3-flash",
-                    "max_tokens": 32768,
-                    "temperature": 0.0,
-                    "top_p": 0.9,
-                    "enable_thinking": True,
-                    "preserve_thinking": True,
-                    "reasoning_effort": "max",
+                    **config["agent"]["request_params"],
+                    "model": config["model"],
+                    "reasoning_effort": config["reasoning_effort"],
                 }
                 _require(
                     all(request.get(key) == value for key, value in expected_request.items()),
                     "model request settings mismatch",
+                )
+                _require(
+                    all(
+                        key not in request for key in config["agent"]["omitted_request_parameters"]
+                    ),
+                    "sampling defaults were overridden",
+                )
+                _require(
+                    isinstance(request.get("tools"), list)
+                    and bool(request["tools"])
+                    and all(tool.get("type") == "function" for tool in request["tools"]),
+                    "native function tools missing",
                 )
             input_receipt = evaluation.get("input_receipt") or {}
             for identity_key, filename in (
@@ -248,6 +328,7 @@ def make_receipt(
         "archive_sha256": archive_sha256,
         "runner_sha256": runner_sha256,
         "image_lock_sha256": image_lock_sha256,
+        "source_sha256": version_manifest["source_sha256"],
         "terminal_status": terminal_status,
         "score": score,
         "official_evaluation_status": har["status"],
@@ -269,6 +350,8 @@ def main() -> int:
     parser.add_argument("--runner-sha256", required=True)
     parser.add_argument("--image-lock-sha256", required=True)
     parser.add_argument("--runner-exit-code", required=True, type=int)
+    parser.add_argument("--config", required=True, type=Path)
+    parser.add_argument("--version-manifest", required=True, type=Path)
     args = parser.parse_args()
     try:
         receipt = make_receipt(
@@ -282,6 +365,8 @@ def main() -> int:
             runner_sha256=args.runner_sha256,
             image_lock_sha256=args.image_lock_sha256,
             runner_exit_code=args.runner_exit_code,
+            config=_json(args.config),
+            version_manifest=_json(args.version_manifest),
         )
     except EvidenceInvalid as error:
         print(f"non-terminal case evidence: {error}", file=sys.stderr)

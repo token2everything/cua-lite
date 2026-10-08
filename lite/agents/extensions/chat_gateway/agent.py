@@ -17,6 +17,7 @@ import copy
 import json
 import logging
 import math
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -45,6 +46,10 @@ class ChatGatewayError(RuntimeError):
     """Sanitized transport/protocol failure; raw provider details stay in logs."""
 
 
+class ChatGatewayProtocolError(ChatGatewayError):
+    """A successful completion cannot be projected into canonical model output."""
+
+
 @dataclass
 class ChatGatewayAgent(AdapterBasedAgent):
     """Stateless desktop Chat agent with canonical function-tool schemas.
@@ -53,7 +58,9 @@ class ChatGatewayAgent(AdapterBasedAgent):
     projects canonical messages directly, without its T=1 renderer or text
     parser. Requests keep all text, reasoning and paired tool calls/results.
     Only screenshots are limited to ``history_turns`` past screenshots plus the
-    current screenshot (default 4); None keeps every screenshot. The stored
+    current screenshot (default 4); None keeps every screenshot. Screenshots
+    exceeding that budget are omitted oldest-first in ``image_fold_size`` groups
+    (default 1); groups larger than one leave text placeholders. The stored
     trajectory stays complete. Canonical coordinates remain normalized to [0, 1000].
 
     Chat tool results contain text; their screenshots become an associated user
@@ -79,7 +86,8 @@ class ChatGatewayAgent(AdapterBasedAgent):
     request_log_dir: Path | None = None
     request_image_dir: Path | None = None
     history_turns: int | None = 4
-    request_timeout: float = 600.0
+    image_fold_size: int = 1
+    request_timeout: float | httpx.Timeout = 600.0
     api_retry_max: int = 24
     api_retry_base_delay: float = 2.0
     api_retry_max_delay: float = 60.0
@@ -112,14 +120,30 @@ class ChatGatewayAgent(AdapterBasedAgent):
         if not path and not full_endpoint:
             path = "/v1"
         self.api_base = urlunsplit((parsed.scheme, parsed.netloc, path, "", ""))
-        if not math.isfinite(self.request_timeout) or self.request_timeout <= 0:
-            raise ValueError("request_timeout must be finite and positive")
+        timeouts = (
+            self.request_timeout.as_dict().values()
+            if isinstance(self.request_timeout, httpx.Timeout)
+            else (self.request_timeout,)
+        )
+        if any(value is None or not math.isfinite(value) or value <= 0 for value in timeouts):
+            raise ValueError("request_timeout phases must be finite and positive")
         if self.api_retry_max < 0:
             raise ValueError("api_retry_max must be nonnegative")
         if self.history_turns is not None and (
             type(self.history_turns) is not int or self.history_turns < 0
         ):
             raise ValueError("history_turns must be a nonnegative integer or None")
+        if (
+            type(self.image_fold_size) is not int
+            or self.image_fold_size <= 0
+            or (
+                self.history_turns is not None
+                and self.image_fold_size > self.history_turns + 1
+            )
+        ):
+            raise ValueError(
+                "image_fold_size must be a positive integer no greater than the image budget"
+            )
         if not isinstance(self.request_params, dict):
             raise TypeError("request_params must contain an HTTP JSON object")
         self.request_params = copy.deepcopy(self.request_params)
@@ -207,7 +231,10 @@ class ChatGatewayAgent(AdapterBasedAgent):
                 if isinstance(message.get("content"), list)
                 for part in message["content"]
             )
-            images_to_skip = max(0, total_images - self.history_turns - 1)
+            excess_images = max(0, total_images - self.history_turns - 1)
+            images_to_skip = (
+                (excess_images + self.image_fold_size - 1) // self.image_fold_size
+            ) * self.image_fold_size
         # Select the request view before encoding images. Persistent messages,
         # image indices, and the full viewer trajectory are never rewritten.
         for message in source:
@@ -222,6 +249,14 @@ class ChatGatewayAgent(AdapterBasedAgent):
                 if part["type"] == "image":
                     if images_to_skip:
                         images_to_skip -= 1
+                        if self.image_fold_size > 1:
+                            wire_parts.append({
+                                "type": "text",
+                                "text": (
+                                    f"[Screenshot {part['index']} folded from image history; "
+                                    "the original remains in the full trajectory.]"
+                                ),
+                            })
                         continue
                     index = part["index"]
                     image = processed_images[index]
@@ -292,11 +327,15 @@ class ChatGatewayAgent(AdapterBasedAgent):
                 write_log, self.request_log_dir, f"{prefix}.request.json", api_kwargs, secrets,
                 image_directory=self.request_image_dir,
             )
+        attempts: list[dict[str, Any]] = []
+        started = time.monotonic()
         async with httpx.AsyncClient(
             timeout=self.request_timeout, trust_env=False, follow_redirects=False
         ) as client:
             for attempt in range(int(self.api_retry_max) + 1):
                 response = None
+                attempt_started = time.monotonic()
+                error_type = None
                 try:
                     response = await client.post(
                         f"{self.api_base}/chat/completions",
@@ -307,9 +346,30 @@ class ChatGatewayAgent(AdapterBasedAgent):
                         },
                     )
                 except httpx.TransportError as error:
+                    error_type = type(error).__name__
                     message = f"Chat gateway transport failed ({type(error).__name__})"
                     retryable = True
-                else:
+                # Time only the provider request, excluding artifact serialization.
+                elapsed = time.monotonic() - attempt_started
+                attempts.append({
+                    "attempt": attempt + 1,
+                    "elapsed_seconds": elapsed,
+                    "status_code": response.status_code if response is not None else None,
+                    "error_type": error_type,
+                })
+                if self.request_log_dir is not None:
+                    await asyncio.to_thread(
+                        write_log,
+                        self.request_log_dir,
+                        f"{prefix}.metadata.json",
+                        {
+                            "elapsed_seconds": sum(item["elapsed_seconds"] for item in attempts),
+                            "wall_seconds": time.monotonic() - started,
+                            "attempts": attempts,
+                        },
+                        secrets,
+                    )
+                if response is not None:
                     try:
                         data = response.json()
                     except ValueError:
@@ -380,16 +440,18 @@ class ChatGatewayAgent(AdapterBasedAgent):
         response = await self._acompletion_with_retry(**body)
         choice = response["choices"][0]
         if not isinstance(choice, dict) or not isinstance(choice.get("message"), dict):
-            raise ChatGatewayError("Chat gateway omitted the assistant message")
+            raise ChatGatewayProtocolError("Chat gateway omitted the assistant message")
         message = choice["message"]
         if message.get("role") != "assistant" or message.get("function_call"):
-            raise ChatGatewayError("Chat gateway returned an unsupported assistant message")
+            raise ChatGatewayProtocolError("Chat gateway returned an unsupported assistant message")
         if message.get("refusal") or choice.get("finish_reason") == "content_filter":
-            raise ChatGatewayError("Chat gateway refused the model request")
+            raise ChatGatewayProtocolError("Chat gateway refused the model request")
         if choice.get("finish_reason") not in {
             "stop", "tool_calls", "length", "max_tokens", "context_length_exceeded",
         }:
-            raise ChatGatewayError("Chat gateway returned an unsupported completion finish reason")
+            raise ChatGatewayProtocolError(
+                "Chat gateway returned an unsupported completion finish reason"
+            )
         content = message.get("content")
         if content is None:
             parts = []
@@ -401,18 +463,18 @@ class ChatGatewayAgent(AdapterBasedAgent):
         ):
             parts = copy.deepcopy(content)
         else:
-            raise ChatGatewayError("Chat gateway returned unsupported assistant content")
+            raise ChatGatewayProtocolError("Chat gateway returned unsupported assistant content")
         canonical: LiteMessage = {"role": "assistant", "content": parts}
         reasoning = message.get("reasoning_content")
         if reasoning is not None:
             if not isinstance(reasoning, str):
-                raise ChatGatewayError("Chat gateway returned non-text reasoning_content")
+                raise ChatGatewayProtocolError("Chat gateway returned non-text reasoning_content")
             canonical["reasoning_content"] = reasoning
         raw_calls = message.get("tool_calls")
         if raw_calls is None:
             raw_calls = []
         if not isinstance(raw_calls, list):
-            raise ChatGatewayError("Chat gateway returned invalid tool_calls")
+            raise ChatGatewayProtocolError("Chat gateway returned invalid tool_calls")
         seen_ids = {
             call["id"] for turn in lite_sample.messages for call in turn.get("tool_calls", [])
         }
@@ -425,14 +487,16 @@ class ChatGatewayAgent(AdapterBasedAgent):
                 or not raw_call["id"]
                 or not isinstance(raw_call.get("function"), dict)
             ):
-                raise ChatGatewayError("Chat gateway returned an invalid function call")
+                raise ChatGatewayProtocolError("Chat gateway returned an invalid function call")
             function = raw_call["function"]
             try:
                 arguments = json.loads(function["arguments"])
             except (KeyError, TypeError, ValueError):
-                raise ChatGatewayError("Chat gateway returned invalid function arguments") from None
+                raise ChatGatewayProtocolError(
+                    "Chat gateway returned invalid function arguments"
+                ) from None
             if not isinstance(arguments, dict):
-                raise ChatGatewayError("Chat gateway function arguments must be an object")
+                raise ChatGatewayProtocolError("Chat gateway function arguments must be an object")
             call = {
                 "id": raw_call["id"],
                 "type": "function",
@@ -442,13 +506,15 @@ class ChatGatewayAgent(AdapterBasedAgent):
                 validate_lite_tool_call(call, "Chat tool call", require_id=True) is not None
                 or call["id"] in seen_ids
             ):
-                raise ChatGatewayError("Chat gateway returned invalid or duplicate tool call IDs")
+                raise ChatGatewayProtocolError(
+                    "Chat gateway returned invalid or duplicate tool call IDs"
+                )
             seen_ids.add(call["id"])
             calls.append(call)
         if calls:
             canonical["tool_calls"] = calls
         elif choice.get("finish_reason") == "tool_calls" or not any(p["text"] for p in parts):
-            raise ChatGatewayError("Chat gateway omitted usable assistant output")
+            raise ChatGatewayProtocolError("Chat gateway omitted usable assistant output")
 
         # RL/debug prompts retain the actual Chat envelope but reference the
         # sample's image slots. Full wire images are archived by request_logs.

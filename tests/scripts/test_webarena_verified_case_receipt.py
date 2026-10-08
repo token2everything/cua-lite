@@ -15,12 +15,44 @@ assert SPEC is not None and SPEC.loader is not None
 receipt_module = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(receipt_module)
 
-RUN_ID = "wav-glm53flash-infra-v2-canary-20261005"
+RUN_ID = "wav-generic-qwen38max-full128-20261007-v1"
 RUNNER_SHA = "a" * 64
 PLAN_SHA = "b" * 64
 IMAGE_SHA = "c" * 64
 SANDBOX = "owned-canary"
 TASK_ID = 63
+CONFIG = {
+    "run_id": RUN_ID,
+    "model": "qwen3.8-max",
+    "model_profile": "qwen",
+    "reasoning_effort": "xhigh",
+    "environment": {
+        "max_steps": 150,
+        "final_response_reserve_steps": 7,
+        "coordinates": "canonical_normalized_0_1000",
+    },
+    "agent": {
+        "image_budget_including_current": 20,
+        "image_fold_size": 10,
+        "request_params": {
+            "max_tokens": 32768,
+            "enable_thinking": True,
+            "preserve_thinking": True,
+            "stream": False,
+        },
+        "omitted_request_parameters": ["temperature", "top_p"],
+    },
+    "benchmark": {
+        "version": "1.2.3",
+        "evaluator_sha256": "evaluator-checksum",
+        "dataset_sha256": "data-checksum",
+    },
+}
+VERSION = {
+    "source_sha256": "d" * 64,
+    "osworld_commit": "b138d348256078fa634fc3b73567a7337c793e6b",
+    "source_artifacts": {"lite/agent.py": "agent-source-hash"},
+}
 
 
 def _identity(data: bytes, *, path: str | None = None) -> dict:
@@ -40,17 +72,20 @@ def case_files(
         "task_id": TASK_ID,
         "status": status_name,
         "score": score,
-        "model": "glm-5.3-flash",
-        "model_profile": "glm53flash",
+        "model": CONFIG["model"],
+        "model_profile": CONFIG["model_profile"],
         "model_protocol_error": "invalid computer_use action"
         if status_name == "model_protocol_failed"
         else None,
         "fixed_parameters": {
             "base_max_steps": 150,
             "final_response_reserve_steps": 7,
-            "coordinate_type": "absolute",
+            "coordinate_type": "canonical_normalized_0_1000",
             "startup_page_gate": True,
-            "reasoning_effort": "max",
+            "reasoning_effort": "xhigh",
+            "text_history": "all",
+            "image_max": 20,
+            "fold_size": 10,
         },
     }
     official = {
@@ -69,11 +104,41 @@ def case_files(
         "trace.zip": b"trace-evidence",
         "agent_response_raw.txt": b"result",
         "trajectory.jsonl": b"{}\n",
+        "agent_trajectory.jsonl": b"{}\n",
         "startup_receipt.json": json.dumps(
             {"result": "passed", "selected_page_url": "http://localhost:7780/admin"}
         ).encode(),
         "status.json": json.dumps(status).encode(),
-        "run_metadata.json": json.dumps({"script_sha256": RUNNER_SHA}).encode(),
+        "run_metadata.json": json.dumps(
+            {
+                "script_sha256": RUNNER_SHA,
+                "harness": "native_chat_gateway",
+                "osworld_sha": VERSION["osworld_commit"],
+                "dependencies": {
+                    owner: {
+                        "module_file": "/root/cua-lite/lite/agent.py",
+                        "sha256": "agent-source-hash",
+                    }
+                    for owner in (
+                        "agent",
+                        "loop",
+                        "prompt",
+                        "action_space",
+                        "env_ingress",
+                        "desktop_action_projection",
+                        "model_input_projection",
+                        "desktop_scoring_helpers",
+                        "catalog_trace_loader",
+                    )
+                }
+                | {
+                    "cursor": {
+                        "module_file": "/opt/OSWorld/desktop_env/server/pyxcursor.py",
+                        "sha256": "cursor-hash",
+                    }
+                },
+            }
+        ).encode(),
         "baseline_receipt.json": json.dumps(
             {
                 "session_id": RUN_ID,
@@ -81,6 +146,7 @@ def case_files(
                 "worker": "01",
                 "task_id": TASK_ID,
                 "image_lock_sha256": IMAGE_SHA,
+                "source_sha256": VERSION["source_sha256"],
                 "fresh_service_processes": True,
             }
         ).encode(),
@@ -104,17 +170,14 @@ def case_files(
     }
     files["evaluation.json"] = json.dumps(evaluation).encode()
     request = {
-        "model": "glm-5.3-flash",
-        "max_tokens": 32768,
-        "temperature": 0.0,
-        "top_p": 0.9,
-        "enable_thinking": True,
-        "preserve_thinking": True,
-        "reasoning_effort": "max",
+        **CONFIG["agent"]["request_params"],
+        "model": CONFIG["model"],
+        "reasoning_effort": CONFIG["reasoning_effort"],
+        "tools": [{"type": "function", "function": {"name": "computer"}}],
     }
-    files["requests/step_000_request.json"] = json.dumps(request).encode()
-    files["requests/step_000_response.json"] = b"{}"
-    files["requests/step_000_metadata.json"] = b"{}"
+    files["requests/00001.request.json"] = json.dumps(request).encode()
+    files["requests/00001.response.json"] = b"{}"
+    files["requests/00001.metadata.json"] = b"{}"
     return files
 
 
@@ -145,6 +208,8 @@ def validate(index: Path, archive: Path, runner_exit_code: int = 0) -> dict:
         runner_sha256=RUNNER_SHA,
         image_lock_sha256=IMAGE_SHA,
         runner_exit_code=runner_exit_code,
+        config=CONFIG,
+        version_manifest=VERSION,
     )
 
 
@@ -198,7 +263,7 @@ def test_nonterminal_evidence_never_publishes_receipt(tmp_path: Path, change: st
     elif change == "bad_startup":
         files["startup_receipt.json"] = b'{"result":"failed"}'
     elif change == "missing_response":
-        del files["requests/step_000_response.json"]
+        del files["requests/00001.response.json"]
     elif change == "tampered_har":
         files["network.har"] = b"tampered"
     elif change == "evaluator_as_model_failure":
@@ -216,3 +281,49 @@ def test_nonzero_runner_exit_cannot_be_terminal(tmp_path: Path) -> None:
     index, archive = write_case(tmp_path, case_files())
     with pytest.raises(receipt_module.EvidenceInvalid, match="runner did not exit"):
         validate(index, archive, runner_exit_code=1)
+
+
+@pytest.mark.parametrize("key", ["temperature", "top_p"])
+def test_native_request_must_leave_sampling_defaults_unspecified(tmp_path, key):
+    files = case_files()
+    request = json.loads(files["requests/00001.request.json"])
+    request[key] = 0.9
+    files["requests/00001.request.json"] = json.dumps(request).encode()
+    index, archive = write_case(tmp_path, files)
+    with pytest.raises(receipt_module.EvidenceInvalid, match="sampling defaults"):
+        validate(index, archive)
+
+
+def test_native_failed_transport_response_is_retained_not_mistaken_for_extra_success(tmp_path):
+    files = case_files()
+    files["requests/00001.attempt-01.response.json"] = b'{"error":"timeout"}'
+    files["requests/00001.attempt-01.error.json"] = b'{"elapsed_seconds":600}'
+    index, archive = write_case(tmp_path, files)
+    assert validate(index, archive)["score"] == 1
+
+
+def test_wrong_official_dataset_pin_prevents_publication(tmp_path):
+    files = case_files()
+    evaluation = json.loads(files["evaluation.json"])
+    evaluation["har"]["webarena_verified_data_checksum"] = "wrong-published-dataset"
+    evaluation["playwright_trace"]["webarena_verified_data_checksum"] = "wrong-published-dataset"
+    files["evaluation.json"] = json.dumps(evaluation).encode()
+    index, archive = write_case(tmp_path, files)
+    with pytest.raises(receipt_module.EvidenceInvalid, match="pinned config"):
+        validate(index, archive)
+
+
+@pytest.mark.parametrize("change", ["outside_source", "wrong_hash", "missing_loop"])
+def test_actual_imported_code_must_match_frozen_source(tmp_path, change):
+    files = case_files()
+    metadata = json.loads(files["run_metadata.json"])
+    if change == "outside_source":
+        metadata["dependencies"]["agent"]["module_file"] = "/root/editable-old-source/lite/agent.py"
+    elif change == "wrong_hash":
+        metadata["dependencies"]["agent"]["sha256"] = "different-old-source"
+    else:
+        del metadata["dependencies"]["loop"]
+    files["run_metadata.json"] = json.dumps(metadata).encode()
+    index, archive = write_case(tmp_path, files)
+    with pytest.raises(receipt_module.EvidenceInvalid, match="imported|dependency"):
+        validate(index, archive)

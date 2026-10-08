@@ -3,13 +3,22 @@
 set -uo pipefail
 umask 077
 
-test "$#" -eq 4 || exit 2
+[[ "$#" -eq 4 || "$#" -eq 6 ]] || exit 2
 WORKER="$1"
 SANDBOX_ID="$2"
 MODE="$3"
 LAUNCH_ID="$4"
+export LAUNCH_ID
 [[ "$WORKER" =~ ^[0-9]{2,3}$ ]] || exit 2
-[[ "$MODE" == startup || "$MODE" == full ]] || exit 2
+[[ "$MODE" == startup || "$MODE" == full || "$MODE" == case ]] || exit 2
+if [ "$MODE" = case ]; then
+    test "$#" -eq 6 || exit 2
+    CASE_TASK_ID="$5"
+    CASE_SITES="$6"
+    [[ "$CASE_TASK_ID" =~ ^[0-9]+$ ]] || exit 2
+else
+    test "$#" -eq 4 || exit 2
+fi
 [[ "$LAUNCH_ID" =~ ^[0-9a-f]{32}$ ]] || exit 2
 
 test -f /mnt/results/campaign.env || exit 2
@@ -18,16 +27,15 @@ source /mnt/results/campaign.env
 : "${RUN_ID:?campaign RUN_ID is required}"
 : "${RUNNER_SHA256:?campaign RUNNER_SHA256 is required}"
 : "${NAME_PREFIX:?campaign NAME_PREFIX is required}"
-: "${MODEL_PROFILE:?campaign MODEL_PROFILE is required}"
-[[ "$RUN_ID" =~ ^wav-glm53flash-infra-v[0-9]+-[a-z0-9-]+-[0-9]{8}$ ]] || exit 2
+[[ "$RUN_ID" =~ ^wav-generic-[a-z0-9]+-full[1-9][0-9]*-[0-9]{8}-v[0-9]+$ ]] || exit 2
 [[ "$RUNNER_SHA256" =~ ^[0-9a-f]{64}$ ]] || exit 2
 [[ "$NAME_PREFIX" =~ ^[a-z0-9][a-z0-9-]{1,40}$ ]] || exit 2
-[[ "$MODEL_PROFILE" == glm53flash ]] || exit 2
 
 WORKER_DIR="/mnt/results/workers/$WORKER"
 TASKS="$WORKER_DIR/tasks.tsv"
 PLAN_SHA256=$(sha256sum /mnt/results/PLAN_MANIFEST.sha256 | awk '{print $1}')
 IMAGE_LOCK_SHA256=$(sha256sum /mnt/results/image-lock.env | awk '{print $1}')
+SOURCE_SHA256=$(sha256sum /mnt/results/cua-lite-source.tar.gz | awk '{print $1}')
 test -f "$WORKER_DIR/prepared.json" || exit 2
 test -f "$TASKS" || exit 2
 exec > >(tee -a "$WORKER_DIR/run.log") 2>&1
@@ -53,7 +61,7 @@ runtime_python() {
         -v /var/lib/wav-runtime/python:/root/.local/share/uv/python:ro \
         -v /mnt/results:/mnt/results:ro \
         -e RUN_ID -e PLAN_SHA256 -e WORKER -e SANDBOX_ID \
-        -e TASK_ID_FOR_RECEIPT -e IMAGE_LOCK_SHA256 -e RUNNER_SHA256 \
+        -e TASK_ID_FOR_RECEIPT -e IMAGE_LOCK_SHA256 -e RUNNER_SHA256 -e SOURCE_SHA256 \
         "$QWENRUNNER_RUNTIME_IMAGE" /opt/venv/bin/python "$@"
 }
 
@@ -84,6 +92,7 @@ expected = {
     "task_id": int(os.environ["TASK_ID_FOR_RECEIPT"]),
     "image_lock_sha256": os.environ["IMAGE_LOCK_SHA256"],
     "runner_sha256": os.environ["RUNNER_SHA256"],
+    "source_sha256": os.environ["SOURCE_SHA256"],
 }
 if any(receipt.get(key) != value for key, value in expected.items()):
     raise SystemExit(1)
@@ -102,7 +111,7 @@ raise SystemExit(0 if receipt.get("archive_sha256") == actual_hash else 1)
 PY
 }
 
-export RUN_ID PLAN_SHA256 WORKER SANDBOX_ID IMAGE_LOCK_SHA256 RUNNER_SHA256
+export RUN_ID PLAN_SHA256 WORKER SANDBOX_ID IMAGE_LOCK_SHA256 RUNNER_SHA256 SOURCE_SHA256
 printf '{"worker":"%s","sandbox_id":"%s","mode":"%s","launch_id":"%s","started_at":"%s"}\n' \
     "$WORKER" "$SANDBOX_ID" "$MODE" "$LAUNCH_ID" \
     "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$WORKER_DIR/$MODE-running.json"
@@ -110,6 +119,11 @@ printf '{"worker":"%s","sandbox_id":"%s","mode":"%s","launch_id":"%s","started_a
 overall_rc=0
 # Keep the plan on a dedicated descriptor: run-case and its Docker children may
 # read stdin, but must not consume the remaining task rows.
+if [ "$MODE" = case ]; then
+    exec 3< <(printf '%s\t%s\n' "$CASE_TASK_ID" "$CASE_SITES")
+else
+    exec 3< "$TASKS"
+fi
 while IFS=$'\t' read -r task_id sites <&3; do
     [ -n "$task_id" ] || continue
     case_key=$(printf 'task-%04d' "$task_id")
@@ -130,7 +144,7 @@ while IFS=$'\t' read -r task_id sites <&3; do
     if [ "$MODE" = startup ]; then
         break
     fi
-done 3< "$TASKS"
+done
 
 printf '{"run_id":"%s","plan_sha256":"%s","worker":"%s","sandbox_id":"%s","mode":"%s","launch_id":"%s","exit_code":%s,"finished_at":"%s"}\n' \
     "$RUN_ID" "$PLAN_SHA256" "$WORKER" "$SANDBOX_ID" "$MODE" \

@@ -13,7 +13,11 @@ import pytest
 from PIL import Image
 
 from lite.agents.core.agent.jsonl_logger import JsonlTrajectoryLogger
-from lite.agents.extensions.chat_gateway import ChatGatewayAgent, ChatGatewayError
+from lite.agents.extensions.chat_gateway import (
+    ChatGatewayAgent,
+    ChatGatewayError,
+    ChatGatewayProtocolError,
+)
 from lite.agents.extensions.chat_gateway.prompt import DESKTOP_SYSTEM_PROMPT
 from lite.core import LiteCUAMetadata, LiteSample
 from lite.core.tools.action_space import validate_lite_action_batch_structure
@@ -114,6 +118,31 @@ def fake_http(monkeypatch):
         return clients
 
     return install
+
+
+async def test_phase_timeouts_reach_transport_and_provider_timing_is_recorded(fake_http, tmp_path):
+    clients = fake_http(lambda _: httpx.Response(200, json=_response()))
+    timeout = httpx.Timeout(130, read=600)
+    await _agent(request_timeout=timeout, request_log_dir=tmp_path).sample(_Env())
+    assert clients[0]["timeout"].as_dict() == {
+        "connect": 130, "read": 600, "write": 130, "pool": 130,
+    }
+    metadata = json.loads((tmp_path / "00001.metadata.json").read_text())
+    assert metadata["elapsed_seconds"] >= 0
+    assert metadata["wall_seconds"] >= metadata["elapsed_seconds"]
+    assert len(metadata["attempts"]) == 1
+    assert metadata["attempts"][0]["status_code"] == 200
+    assert metadata["attempts"][0]["error_type"] is None
+
+
+@pytest.mark.parametrize("timeout", [
+    0, -1, float("inf"), float("nan"),
+    httpx.Timeout(130, read=None), httpx.Timeout(130, connect=0),
+    httpx.Timeout(130, write=-1), httpx.Timeout(130, pool=float("inf")),
+])
+def test_invalid_phase_timeouts_are_rejected(timeout):
+    with pytest.raises(ValueError, match="request_timeout phases"):
+        _agent(request_timeout=timeout)
 
 
 @pytest.mark.parametrize("shared_images", [False, True])
@@ -448,6 +477,167 @@ def test_rejects_invalid_history_window(history_turns):
         _agent(history_turns=history_turns)
 
 
+@pytest.mark.parametrize("image_count,first_visible", [
+    (20, 0), (21, 10), (30, 10), (31, 20), (121, 110),
+])
+def test_image_fold_staircase_retains_entire_text_reasoning_and_original_history(
+    image_count, first_visible,
+):
+    messages = [{"role": "user", "content": [
+        {"type": "text", "text": "Keep the complete task instruction."},
+        {"type": "image", "index": 0},
+    ]}]
+    for index in range(1, image_count):
+        call = _call(f"call_{index}")
+        call["function"]["arguments"] = json.loads(call["function"]["arguments"])
+        messages.extend([
+            {"role": "assistant", "content": [{"type": "text", "text": f"decision {index}"}],
+             "reasoning_content": f"reasoning {index}", "tool_calls": [call]},
+            {"role": "tool", "tool_call_id": call["id"], "content": [
+                {"type": "text", "text": f"observation {index}"},
+                {"type": "image", "index": index},
+            ]},
+        ])
+    original = copy.deepcopy(messages)
+    images = [Image.new("RGB", (4, 3), "blue") for _ in range(image_count)]
+    sample = LiteSample(metadata=LiteCUAMetadata(dims=("desktop", "use")),
+                        messages=messages, images=images)
+    request, indices = _agent(history_turns=19, image_fold_size=10)._build_request_kwargs(
+        sample, images,
+    )
+    assert indices == tuple(range(first_visible, image_count))
+    assert sample.messages == original and len(sample.images) == image_count
+    wire = request["messages"]
+    assert "Keep the complete task instruction." in wire[1]["content"][0]["text"]
+    assert [m["content"] for m in wire if m["role"] == "assistant"] == [
+        f"decision {index}" for index in range(1, image_count)
+    ]
+    assert [m["reasoning_content"] for m in wire if m["role"] == "assistant"] == [
+        f"reasoning {index}" for index in range(1, image_count)
+    ]
+    assert [m["content"].splitlines()[0] for m in wire if m["role"] == "tool"] == [
+        f"observation {index}" for index in range(1, image_count)
+    ]
+    assert [m["tool_call_id"] for m in wire if m["role"] == "tool"] == [
+        f"call_{index}" for index in range(1, image_count)
+    ]
+    assert [m["tool_calls"][0]["id"] for m in wire if m["role"] == "assistant"] == [
+        f"call_{index}" for index in range(1, image_count)
+    ]
+    assert json.dumps(wire).count("folded from image history") == first_visible
+    assert sum(
+        part["type"] == "image_url"
+        for message in wire if isinstance(message.get("content"), list)
+        for part in message["content"]
+    ) == image_count - first_visible
+
+
+@pytest.mark.parametrize("fold_size,first_visible", [(1, 3), (10, 10), (20, 20)])
+def test_image_fold_boundary_keeps_parallel_multi_image_tool_results(fold_size, first_visible):
+    calls = [_call(f"call_{index}") for index in range(4)]
+    for call in calls:
+        call["function"]["arguments"] = json.loads(call["function"]["arguments"])
+    messages = [{"role": "user", "content": [
+        {"type": "text", "text": "Task."}, {"type": "image", "index": 0},
+    ]}]
+    for batch in range(2):
+        messages.append({"role": "assistant", "tool_calls": calls[batch * 2:batch * 2 + 2]})
+        for call_index in range(batch * 2, batch * 2 + 2):
+            start, stop = [(1, 6), (6, 12), (12, 18), (18, 23)][call_index]
+            messages.append({"role": "tool", "tool_call_id": calls[call_index]["id"],
+                             "content": [
+                                 {"type": "text", "text": f"result {call_index}"},
+                                 *[{"type": "image", "index": i} for i in range(start, stop)],
+                             ]})
+    images = [Image.new("RGB", (4, 3), "blue") for _ in range(23)]
+    sample = LiteSample(metadata=LiteCUAMetadata(dims=("desktop", "use")),
+                        messages=messages, images=images)
+    original = copy.deepcopy(sample.messages)
+    request, indices = _agent(history_turns=19, image_fold_size=fold_size)._build_request_kwargs(
+        sample, images,
+    )
+    assert indices == tuple(range(first_visible, 23))
+    wire = request["messages"]
+    assert [m["role"] for m in wire if m["role"] != "user"] == [
+        "system", "assistant", "tool", "tool", "assistant", "tool", "tool",
+    ]
+    assert [m["tool_call_id"] for m in wire if m["role"] == "tool"] == [
+        call["id"] for call in calls
+    ]
+    for call_index, message in enumerate(m for m in wire if m["role"] == "tool"):
+        assert message["content"].splitlines()[0] == f"result {call_index}"
+    for call_index, (start, stop) in enumerate([(1, 6), (6, 12), (12, 18), (18, 23)]):
+        if stop > first_visible:
+            associated = next(m for m in wire if m["role"] == "user" and any(
+                p.get("text") == f"Screenshots from tool_call_id=call_{call_index}:"
+                for p in m["content"]
+            ))
+            assert any(p["type"] == "image_url" for p in associated["content"])
+    assert sample.messages == original and len(sample.images) == 23
+    assert json.dumps(wire).count("folded from image history") == (
+        first_visible if fold_size > 1 else 0
+    )
+
+
+@pytest.mark.parametrize("history_turns,image_fold_size", [
+    (19, 0), (19, -1), (19, True), (19, 1.5), (19, 21), (0, 2), (None, 0),
+])
+def test_rejects_invalid_image_fold_size(history_turns, image_fold_size):
+    with pytest.raises(ValueError, match="image_fold_size"):
+        _agent(history_turns=history_turns, image_fold_size=image_fold_size)
+
+
+def test_unbounded_image_history_does_not_fold():
+    images = [Image.new("RGB", (4, 3), "blue") for _ in range(31)]
+    sample = LiteSample(metadata=LiteCUAMetadata(dims=("desktop", "use")),
+                        images=images, messages=[{"role": "user", "content": [
+                            *[{"type": "image", "index": i} for i in range(31)],
+                        ]}])
+    request, indices = _agent(history_turns=None, image_fold_size=10)._build_request_kwargs(
+        sample, images,
+    )
+    assert indices == tuple(range(31))
+    assert "folded from image history" not in json.dumps(request["messages"])
+
+
+async def test_image_fold_keeps_full_archived_trajectory(fake_http, tmp_path):
+    requests = []
+
+    def handle(request):
+        body = json.loads(request.content)
+        requests.append(body)
+        index = len(requests) - 1
+        if index == 30:
+            return httpx.Response(200, json=_response())
+        return httpx.Response(200, json=_response({
+            "role": "assistant", "content": f"decision {index}",
+            "reasoning_content": f"reasoning {index}",
+            "tool_calls": [_call(f"call_{index}")],
+        }, "tool_calls"))
+
+    fake_http(handle)
+    agent = _agent(history_turns=19, image_fold_size=10)
+    sample = await agent.sample(
+        _Env(), max_steps=32, hooks=[JsonlTrajectoryLogger(tmp_path, model_id=_MODEL)],
+    )
+    assert sample.terminated and not sample.truncated
+    assert [len(sample.steps[i].image_indices) for i in (19, 20, 29, 30)] == [20, 11, 20, 11]
+    assert sample.steps[-1].image_indices == tuple(range(20, 31))
+    assert len(sample.lite_sample.images) == 31
+    assert json.dumps(requests[-1]["messages"]).count("folded from image history") == 20
+    exported = (tmp_path / "agent_trajectory.jsonl").read_text()
+    assert len(exported.splitlines()) == 1
+    row = json.loads(exported)
+    assert sum(
+        part["type"] == "image"
+        for message in row["messages"] for part in message.get("content", [])
+    ) == 31
+    assert [m["reasoning_content"] for m in row["messages"] if "reasoning_content" in m] == [
+        f"reasoning {index}" for index in range(30)
+    ]
+    assert "folded from image history" not in exported
+
+
 def test_sample_metadata_owns_extra_tools_and_action_filter():
     extra = {
         "type": "function",
@@ -543,6 +733,15 @@ async def test_retries_only_model_transport_and_never_reexecutes_actions(
     archived = "\n".join(p.read_text() for p in tmp_path.glob("*.json"))
     assert _KEY not in archived and _BASE not in archived
     assert len(list(tmp_path.glob("*.request.json"))) == 1
+    metadata = json.loads((tmp_path / "00001.metadata.json").read_text())
+    assert [item["attempt"] for item in metadata["attempts"]] == [1, 2]
+    assert metadata["attempts"][0]["error_type"] == (
+        "ReadTimeout" if failure == "timeout" else None
+    )
+    assert metadata["attempts"][0]["status_code"] == (None if failure == "timeout" else 503)
+    assert metadata["elapsed_seconds"] == sum(
+        item["elapsed_seconds"] for item in metadata["attempts"]
+    )
 
 
 @pytest.mark.parametrize("status", [301, 400, 401])
@@ -562,6 +761,7 @@ async def test_http_errors_are_not_retried_or_leaked(status, fake_http, tmp_path
     with pytest.raises(ChatGatewayError) as failure:
         await agent.sample(env)
     assert str(failure.value) == f"Chat gateway returned HTTP {status}"
+    assert not isinstance(failure.value, ChatGatewayProtocolError)
     assert env.closed and env.actions == [] and len(requests) == 1
     archived = "\n".join(p.read_text() for p in tmp_path.glob("*.json"))
     assert _KEY not in archived and _BASE not in archived and "other-secret" not in archived
@@ -593,7 +793,7 @@ async def test_malformed_provider_output_never_becomes_successful_final(
 
     fake_http(handle)
     env = _Env()
-    with pytest.raises(ChatGatewayError):
+    with pytest.raises(ChatGatewayProtocolError):
         await _agent(request_log_dir=tmp_path, api_retry_max=2).sample(env)
     assert len(requests) == 1 and env.actions == [] and env.closed
     assert json.loads((tmp_path / "00001.response.json").read_text())["choices"][0][
@@ -606,11 +806,18 @@ async def test_invalid_argument_json_is_sanitized_and_raw_response_preserved(fak
     call["function"]["arguments"] = f"invalid JSON containing {_KEY} {_BASE}"
     message = {"role": "assistant", "tool_calls": [call]}
     fake_http(lambda _: httpx.Response(200, json=_response(message, "tool_calls")))
-    with pytest.raises(ChatGatewayError, match="invalid function arguments") as failure:
+    with pytest.raises(ChatGatewayProtocolError, match="invalid function arguments") as failure:
         await _agent(request_log_dir=tmp_path).sample(_Env())
     assert _KEY not in str(failure.value) and _BASE not in str(failure.value)
     raw = (tmp_path / "00001.response.json").read_text()
     assert "invalid JSON containing" in raw and _KEY not in raw and _BASE not in raw
+
+
+async def test_invalid_completion_envelope_is_provider_failure_not_model_protocol(fake_http):
+    fake_http(lambda _: httpx.Response(200, json={"choices": [], "error": "gateway failure"}))
+    with pytest.raises(ChatGatewayError) as failure:
+        await _agent().sample(_Env())
+    assert not isinstance(failure.value, ChatGatewayProtocolError)
 
 
 @pytest.mark.parametrize("failure", ["http", "cancelled"])

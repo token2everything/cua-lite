@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Provision and run a GLM WebArena-Verified campaign on owned sandboxes.
+"""Provision and run a native generic WebArena-Verified campaign on owned sandboxes.
 
 Usage: uv run python devs/exps/eval/browsergym.webarena_verified/campaign/orchestrate.py
     --root /path/to/results/<run> create
@@ -13,6 +13,7 @@ result root. Run `create -> wait-ready -> stage -> prepare -> startup -> full`.
 from __future__ import annotations
 
 import argparse
+import fcntl
 import gzip
 import hashlib
 import io
@@ -33,6 +34,7 @@ IMAGE = "registry2-cloud.d.pjlab.org.cn/ccr-sandbox/sandbox-dind:dind-2026083112
 ASSET_SUBPATH = "eval/benchmark/webarena-verified/1.2.3"
 BUNDLE_FILES = (
     "EXPERIMENT_CONFIG.json",
+    "VERSION_MANIFEST.json",
     "campaign.env",
     "PLAN_MANIFEST.sha256",
     "worker-plan.json",
@@ -105,13 +107,13 @@ def _read_env(path: Path) -> dict[str, str]:
 class SandboxClient:
     """Open Sandbox transport for one authenticated project."""
 
-    def __init__(self, env: dict[str, str]) -> None:
+    def __init__(self, env: dict[str, str], *, api_key_env: str) -> None:
         required = (
             "BASE",
             "PROJECT",
             "OPEN_SANDBOX_ACCESS_KEY",
             "OPEN_SANDBOX_SECRET_KEY",
-            "GLM_TEST_API_KEY",
+            api_key_env,
             "OPENAI_BASE_URL",
         )
         missing = [name for name in required if not env.get(name)]
@@ -125,8 +127,7 @@ class SandboxClient:
             )
         }
         self.model_env = (
-            f"OPENAI_API_KEY={env['GLM_TEST_API_KEY']}\n"
-            f"OPENAI_BASE_URL={env['OPENAI_BASE_URL']}\n"
+            f"OPENAI_API_KEY={env[api_key_env]}\nOPENAI_BASE_URL={env['OPENAI_BASE_URL']}\n"
         ).encode()
 
     def detail(self, sandbox_id: str) -> dict[str, Any]:
@@ -205,12 +206,8 @@ class SandboxClient:
             time.sleep(min(10, 2**attempt))
         raise AssertionError("unreachable")
 
-    def checked_command(
-        self, sandbox_id: str, command: str, *, timeout_ms: int = 30_000
-    ) -> None:
-        command_id = self.command(
-            sandbox_id, command, background=False, timeout_ms=timeout_ms
-        )
+    def checked_command(self, sandbox_id: str, command: str, *, timeout_ms: int = 30_000) -> None:
+        command_id = self.command(sandbox_id, command, background=False, timeout_ms=timeout_ms)
         status = self.command_status(sandbox_id, command_id)
         if status.get("running") or status.get("exit_code") != 0:
             raise RuntimeError(
@@ -271,9 +268,7 @@ class SandboxClient:
         url = f"{self.base}/v1/sandboxes/{sandbox_id}/proxy/44772/files/download"
         for attempt in range(1, 4):
             try:
-                response = requests.get(
-                    url, params={"path": remote_path}, timeout=(15, 60)
-                )
+                response = requests.get(url, params={"path": remote_path}, timeout=(15, 60))
                 if response.status_code == 404:
                     return None
                 if response.status_code != 429 and response.status_code < 500:
@@ -304,9 +299,7 @@ class SandboxClient:
         if part_manifest is None:
             raise RuntimeError(f"archive split manifest missing: {remote_path}")
         part_names = part_manifest.decode().splitlines()
-        if not part_names or any(
-            not re.fullmatch(r"part-[a-z]{4}", name) for name in part_names
-        ):
+        if not part_names or any(not re.fullmatch(r"part-[a-z]{4}", name) for name in part_names):
             raise RuntimeError(f"invalid archive split manifest: {remote_path}")
         local_path.parent.mkdir(parents=True, exist_ok=True)
         temporary = local_path.with_name(f".{local_path.name}.{uuid.uuid4().hex}.download")
@@ -328,28 +321,41 @@ class Campaign:
     def __init__(self, root: Path, env_path: Path) -> None:
         self.root = root.resolve()
         self.settings = _read_env(self.root / "campaign.env")
-        required = ("RUN_ID", "RUNNER_SHA256", "NAME_PREFIX", "MODEL_PROFILE")
+        required = ("RUN_ID", "RUNNER_SHA256", "NAME_PREFIX")
         if any(not self.settings.get(name) for name in required):
             raise ValueError("campaign.env is incomplete")
         self.run_id = self.settings["RUN_ID"]
         self.runner_sha = self.settings["RUNNER_SHA256"]
-        if not re.fullmatch(r"wav-glm53flash-infra-v[0-9]+-[a-z0-9-]+-[0-9]{8}", self.run_id):
-            raise ValueError("invalid GLM run ID")
+        if not re.fullmatch(r"wav-generic-[a-z0-9]+-full[1-9][0-9]*-[0-9]{8}-v[0-9]+", self.run_id):
+            raise ValueError("invalid generic campaign run ID")
         if not re.fullmatch(r"[0-9a-f]{64}", self.runner_sha):
             raise ValueError("invalid runner SHA")
-        if self.settings["MODEL_PROFILE"] != "glm53flash":
-            raise ValueError("this coordinator serves only GLM campaigns")
-        self.client = SandboxClient(_read_env(env_path))
         self.image_sha = _sha(self.root / "image-lock.env")
         self.plan_sha = _sha(self.root / "PLAN_MANIFEST.sha256")
         config = json.loads((self.root / "EXPERIMENT_CONFIG.json").read_text())
-        if config["run_id"] != self.run_id or config["model"] != "glm-5.3-flash":
+        self.config = config
+        self.version = json.loads((self.root / "VERSION_MANIFEST.json").read_text())
+        if self.version["source_sha256"] != _sha(self.root / "cua-lite-source.tar.gz"):
+            raise ValueError("source archive differs from version manifest")
+        if config["run_id"] != self.run_id:
             raise ValueError("experiment config differs from campaign.env")
+        if config["entrypoint"] != "scripts/webarena_verified_generic.py":
+            raise ValueError("native campaign entrypoint differs from approved contract")
+        self.client = SandboxClient(_read_env(env_path), api_key_env=config["api_key_env"])
         self.plan = self.load_plan(
             self.root, self.root.parents[1] / "dataset/webarena-verified.json", config
         )
+        self._initial_workers = {
+            int(line.split("\t", 1)[0]): worker
+            for worker in self.plan["workers"]
+            for line in (self.root / "workers" / worker / "tasks.tsv").read_text().splitlines()
+        }
         with tarfile.open(self.root / "cua-lite-source.tar.gz", "r:gz") as source:
-            runner = source.extractfile("./scripts/webarena_verified_qwen.py")
+            for relative, digest in self.version["source_artifacts"].items():
+                artifact = source.extractfile("./" + relative)
+                if artifact is None or hashlib.sha256(artifact.read()).hexdigest() != digest:
+                    raise ValueError(f"source archive artifact hash mismatch: {relative}")
+            runner = source.extractfile("./" + config["entrypoint"])
             if runner is None or hashlib.sha256(runner.read()).hexdigest() != self.runner_sha:
                 raise ValueError("source archive runner SHA mismatch")
             if source.extractfile("./scripts/webarena_verified_case_receipt.py") is None:
@@ -370,7 +376,7 @@ class Campaign:
         worker_ids = list(plan["workers"])
         if worker_ids != [f"{index:02d}" for index in range(1, len(worker_ids) + 1)]:
             raise ValueError("worker IDs must be contiguous")
-        expected_files = {"worker-plan.json"}
+        expected_files = {"EXPERIMENT_CONFIG.json", "worker-plan.json"}
         task_ids: list[int] = []
         dataset = {
             int(row["task_id"]): sorted(row["sites"])
@@ -396,6 +402,10 @@ class Campaign:
             sites = sorted({site for task_id in current for site in dataset[task_id]})
             if sites != plan["workers"][worker]["capabilities"]:
                 raise ValueError(f"capability mismatch for worker {worker}")
+            if (root / "workers" / worker / "capabilities.txt").read_text().strip().split(
+                ","
+            ) != sites:
+                raise ValueError(f"capability file mismatch for worker {worker}")
             task_ids.extend(current)
         if set(manifest) != expected_files or len(task_ids) != len(set(task_ids)):
             raise ValueError("plan manifest or task assignment is incomplete")
@@ -407,6 +417,10 @@ class Campaign:
             raise ValueError("plan differs from configured task IDs")
         if plan["selection"] == "full" and set(task_ids) != set(range(812)):
             raise ValueError("full plan must cover exactly 0..811")
+        if set(plan["tasks"]) != {str(task) for task in task_ids}:
+            raise ValueError("global dispatch plan must cover every task exactly")
+        if any(plan["tasks"][str(task)]["sites"] != dataset[task] for task in task_ids):
+            raise ValueError("global dispatch task sites differ from dataset")
         return plan
 
     def workers(self, requested: list[str] | None) -> list[str]:
@@ -481,10 +495,10 @@ class Campaign:
                             "plan_sha256": self.plan_sha,
                             "selection": self.plan["selection"],
                             "task_count": str(self.plan["workers"][worker]["tasks"]),
-                            "model": "glm-5.3-flash",
+                            "model": self.config["model"],
                             "benchmark_version": "1.2.3",
                             "owner": "codex-session",
-                            "purpose": "versioned-infra-regression",
+                            "purpose": "native-generic-full-evaluation",
                             "session_nonce": nonce,
                         },
                         "ports": [
@@ -572,11 +586,9 @@ class Campaign:
                 marker = json.loads(marker_path.read_text())
                 if marker["bundle_sha256"] != digest:
                     raise RuntimeError(f"worker {worker} already staged a different bundle")
-                self.client.checked_command(
-                    detail["id"], "test -f /mnt/results/run-worker.sh"
-                )
+                self.client.checked_command(detail["id"], "test -f /mnt/results/run-worker.sh")
                 continue
-            remote = "/tmp/wav-glm53-campaign-bundle.tar.gz"
+            remote = "/tmp/wav-generic-campaign-bundle.tar.gz"
             self.client.upload(detail["id"], remote, bundle)
             self.client.checked_command(
                 detail["id"],
@@ -587,9 +599,7 @@ class Campaign:
                 "test -f /mnt/results/prepare-worker.sh && "
                 f"rm -f {remote}",
             )
-            self.client.checked_command(
-                detail["id"], "install -d -m 700 /var/lib/wav-qwen/private"
-            )
+            self.client.checked_command(detail["id"], "install -d -m 700 /var/lib/wav-qwen/private")
             self.client.upload(
                 detail["id"], "/var/lib/wav-qwen/private/model.env", self.client.model_env
             )
@@ -616,7 +626,7 @@ class Campaign:
             command = (
                 "export NO_PROXY=registry-v2.h.pjlab.org.cn,10.102.254.2,.pjlab.org.cn; "
                 'export no_proxy="$NO_PROXY"; '
-                "exec dockerd >/tmp/wav-glm53-dockerd.log 2>&1"
+                "exec dockerd >/tmp/wav-generic-dockerd.log 2>&1"
             )
             command_id = self.client.command(detail["id"], command, background=True)
             _atomic_json(path, {"sandbox_id": detail["id"], "command_id": command_id})
@@ -632,9 +642,7 @@ class Campaign:
             print(f"{worker}: dockerd ready", flush=True)
 
     def _prepared(self, worker: str, sandbox_id: str) -> bool:
-        data = self.client.download(
-            sandbox_id, f"/mnt/results/workers/{worker}/prepared.json"
-        )
+        data = self.client.download(sandbox_id, f"/mnt/results/workers/{worker}/prepared.json")
         if data is None:
             return False
         marker = json.loads(data)
@@ -683,12 +691,8 @@ class Campaign:
                 status = self.client.command_status(record["sandbox_id"], record["command_id"])
                 if status.get("running"):
                     continue
-                if status.get("exit_code") != 0 or not self._prepared(
-                    worker, record["sandbox_id"]
-                ):
-                    raise RuntimeError(
-                        f"worker {worker} prepare failed: {status.get('exit_code')}"
-                    )
+                if status.get("exit_code") != 0 or not self._prepared(worker, record["sandbox_id"]):
+                    raise RuntimeError(f"worker {worker} prepare failed: {status.get('exit_code')}")
                 del active[worker]
                 print(f"{worker}: prepared", flush=True)
 
@@ -699,8 +703,7 @@ class Campaign:
                     break
                 capabilities = self.plan["workers"][worker]["capabilities"]
                 if "map" in capabilities and any(
-                    "map" in self.plan["workers"][current]["capabilities"]
-                    for current in active
+                    "map" in self.plan["workers"][current]["capabilities"] for current in active
                 ):
                     continue
                 detail = self._owned_detail(worker)
@@ -736,6 +739,7 @@ class Campaign:
             "task_id": task_id,
             "runner_sha256": self.runner_sha,
             "image_lock_sha256": self.image_sha,
+            "source_sha256": self.version["source_sha256"],
         }
         if any(receipt.get(name) != value for name, value in expected.items()):
             raise RuntimeError(f"task {task_id} receipt belongs to another campaign")
@@ -758,6 +762,7 @@ class Campaign:
             raise RuntimeError(f"task {task_id} receipt lacks archive hash")
 
     def _sync_one(self, worker: str, sandbox_id: str, task_id: int) -> str:
+        self._sync_attempts(worker, sandbox_id)
         case = f"task-{task_id:04d}"
         remote_index = f"/mnt/results/index/{case}"
         data = self.client.download(sandbox_id, f"{remote_index}/completed.json")
@@ -765,6 +770,11 @@ class Campaign:
             return "pending"
         receipt = json.loads(data)
         self._validated_receipt(receipt, worker, sandbox_id, task_id)
+        if not any(
+            json.loads(path.read_text()).get("archive_sha256") == receipt["archive_sha256"]
+            for path in (self.root / "attempts" / case).glob("*.json")
+        ):
+            raise RuntimeError(f"task {task_id} final archive is absent from the attempt ledger")
         index = self.root / "index" / case
         archive = self.root / "archives" / f"{case}.tar.gz"
         expected_sha = receipt["archive_sha256"]
@@ -780,9 +790,20 @@ class Campaign:
             if _sha(archive) != expected_sha:
                 raise RuntimeError(f"task {task_id} local archive hash mismatch")
         else:
-            self.client.download_large_file(
-                sandbox_id, f"/mnt/results/archives/{case}.tar.gz", archive, expected_sha
+            # _sync_attempts already downloaded and hash-verified these exact
+            # bytes. Publish a local link, not a second remote transfer.
+            attempt = next(
+                json.loads(path.read_text())
+                for path in (self.root / "attempts" / case).glob("*.json")
+                if json.loads(path.read_text()).get("archive_sha256") == expected_sha
             )
+            source_archive = Path(attempt["local_archive_path"])
+            if _sha(source_archive) != expected_sha:
+                raise RuntimeError(f"task {task_id} local attempt archive hash mismatch")
+            archive.parent.mkdir(parents=True, exist_ok=True)
+            temporary_archive = archive.with_name(f".{archive.name}.{uuid.uuid4().hex}.link")
+            os.link(source_archive, temporary_archive)
+            os.replace(temporary_archive, archive)
         index.parent.mkdir(parents=True, exist_ok=True)
         temporary = index.with_name(f".{case}.{uuid.uuid4().hex}.sync")
         temporary.mkdir()
@@ -808,19 +829,148 @@ class Campaign:
         os.replace(temporary, index)
         return "synced"
 
+    def _sync_attempts(self, worker: str, sandbox_id: str) -> None:
+        """Collect immutable successful and failed archives from their real owner."""
+        manifest = f"/mnt/results/workers/{worker}/attempt-files.txt"
+        self.client.checked_command(
+            sandbox_id,
+            "if [ -d /mnt/results/attempts ]; then "
+            "find /mnt/results/attempts -mindepth 2 -maxdepth 2 -type f -name '*.json' "
+            f"| sort > {manifest}; else : > {manifest}; fi",
+        )
+        files = self.client.download(sandbox_id, manifest)
+        if files is None:
+            raise RuntimeError(f"worker {worker} lacks attempt file manifest")
+        for remote in files.decode().splitlines():
+            if not re.fullmatch(r"/mnt/results/attempts/task-[0-9]{4}/[A-Za-z0-9-]+\.json", remote):
+                raise RuntimeError(f"worker {worker} has an invalid attempt path")
+            data = self.client.download(sandbox_id, remote)
+            if data is None:
+                raise RuntimeError(f"worker {worker} attempt receipt disappeared")
+            record = json.loads(data)
+            expected = {
+                "run_id": self.run_id,
+                "plan_sha256": self.plan_sha,
+                "worker": worker,
+                "sandbox_id": sandbox_id,
+                "runner_sha256": self.runner_sha,
+                "image_lock_sha256": self.image_sha,
+                "source_sha256": self.version["source_sha256"],
+            }
+            if any(record.get(key) != value for key, value in expected.items()):
+                raise RuntimeError(f"worker {worker} attempt evidence belongs to another run")
+            task = record["task_id"]
+            if str(task) not in self.plan["tasks"] or f"/task-{task:04d}/" not in remote:
+                raise RuntimeError("attempt task does not belong to the campaign")
+            local = self.root / remote.removeprefix("/mnt/results/")
+            archive = record["archive_path"]
+            if archive is not None:
+                if archive != remote.removesuffix(".json") + ".tar.gz":
+                    raise RuntimeError("attempt archive path differs from its receipt")
+                digest = record["archive_sha256"]
+                if not re.fullmatch(r"[0-9a-f]{64}", digest):
+                    raise RuntimeError("attempt archive hash is invalid")
+                destination = local.with_suffix(".tar.gz")
+                if destination.exists():
+                    if _sha(destination) != digest:
+                        raise RuntimeError("local attempt archive changed")
+                else:
+                    self.client.download_large_file(sandbox_id, archive, destination, digest)
+                record["local_archive_path"] = str(destination)
+            else:
+                if record["model_started"] is not False or record["archive_sha256"] is not None:
+                    raise RuntimeError("model attempt has missing archive evidence")
+                record["local_archive_path"] = None
+            if local.exists():
+                if json.loads(local.read_text()) != record:
+                    raise RuntimeError("local immutable attempt receipt changed")
+            else:
+                _atomic_json(local, record)
+
     def sync(self, workers: list[str]) -> None:
         totals = {"pending": 0, "already_synced": 0, "synced": 0}
-        for worker in workers:
+        for task in map(int, self.plan["tasks"]):
+            worker, sandbox_id = self._case_owner(task)
+            if worker not in workers:
+                continue
             detail = self._owned_detail(worker)
-            if detail["state"] != "running":
-                raise RuntimeError(f"worker {worker} sandbox is not running")
-            for line in (self.root / "workers" / worker / "tasks.tsv").read_text().splitlines():
-                task_id = int(line.split("\t", 1)[0])
-                result = self._sync_one(worker, detail["id"], task_id)
-                totals[result] += 1
-                if result == "synced":
-                    print(f"{worker} task {task_id}: synced", flush=True)
+            if detail["state"] != "running" or detail["id"] != sandbox_id:
+                raise RuntimeError(f"worker {worker} sandbox is not running or changed")
+            result = self._sync_one(worker, sandbox_id, task)
+            totals[result] += 1
+            if result == "synced":
+                print(f"{worker} task {task}: synced", flush=True)
         print(json.dumps(totals, indent=2), flush=True)
+
+    def _case_owner(self, task_id: int) -> tuple[str, str]:
+        """Resolve actual dispatch ownership, including coordinator restarts."""
+        path = self.root / "case-intents" / f"task-{task_id:04d}.json"
+        if path.exists():
+            intent = json.loads(path.read_text())
+            if intent["run_id"] != self.run_id or intent["plan_sha256"] != self.plan_sha:
+                raise RuntimeError(f"task {task_id} dispatch belongs to another campaign")
+            attempt = intent["attempts"][-1]
+            return attempt["worker"], attempt["sandbox_id"]
+        worker = self._initial_workers[task_id]
+        return worker, self._cluster()[worker]["id"]
+
+    def _launch_case(self, task_id: int, worker: str) -> dict[str, Any]:
+        """Persist the exact case/worker/launch identity before any execd POST."""
+        detail = self._owned_detail(worker)
+        if detail["state"] != "running" or not self._prepared(worker, detail["id"]):
+            raise RuntimeError(f"worker {worker} is not ready for task {task_id}")
+        task = self.plan["tasks"][str(task_id)]
+        if not set(task["sites"]) <= set(self.plan["workers"][worker]["capabilities"]):
+            raise RuntimeError(f"worker {worker} is incompatible with task {task_id}")
+        path = self.root / "case-intents" / f"task-{task_id:04d}.json"
+        if path.exists():
+            intent = json.loads(path.read_text())
+            if intent["run_id"] != self.run_id or intent["plan_sha256"] != self.plan_sha:
+                raise RuntimeError(f"task {task_id} dispatch belongs to another campaign")
+        else:
+            intent = {
+                "run_id": self.run_id,
+                "plan_sha256": self.plan_sha,
+                "task_id": task_id,
+                "attempts": [],
+            }
+        attempts = intent["attempts"]
+        if not attempts or "exit_code" in attempts[-1]:
+            if len(attempts) >= 3:
+                raise RuntimeError(f"task {task_id} exhausted infrastructure attempts")
+            launch_id = uuid.uuid4().hex
+            attempts.append(
+                {
+                    "worker": worker,
+                    "sandbox_id": detail["id"],
+                    "launch_id": launch_id,
+                    "command": shlex.join(
+                        [
+                            "bash",
+                            "/mnt/results/run-worker.sh",
+                            worker,
+                            detail["id"],
+                            "case",
+                            launch_id,
+                            str(task_id),
+                            ",".join(task["sites"]),
+                        ]
+                    ),
+                }
+            )
+            _atomic_json(path, intent)
+        attempt = attempts[-1]
+        if attempt["worker"] != worker or attempt["sandbox_id"] != detail["id"]:
+            raise RuntimeError(f"task {task_id} is already claimed by another live worker")
+        if "command_id" not in attempt:
+            # An ambiguous command POST is retried with the *same* launch ID.
+            # run-worker's lock and per-launch RC make repeated submission run
+            # the case once, even if the earlier execd command still exists.
+            attempt["command_id"] = self.client.command(
+                detail["id"], attempt["command"], background=True
+            )
+            _atomic_json(path, intent)
+        return attempt
 
     def _launch(self, worker: str, mode: str, attempt: int) -> dict[str, str]:
         detail = self._owned_detail(worker)
@@ -857,9 +1007,7 @@ class Campaign:
             _atomic_json(path, record)
         return record
 
-    def _wait_launches(
-        self, records: dict[str, dict[str, str]], *, mode: str
-    ) -> dict[str, int]:
+    def _wait_launches(self, records: dict[str, dict[str, str]], *, mode: str) -> dict[str, int]:
         deadline = time.monotonic() + (10_800 if mode == "startup" else 86_400)
         active = dict(records)
         completed: dict[str, int] = {}
@@ -981,28 +1129,110 @@ class Campaign:
 
     def full(self, workers: list[str]) -> None:
         self._verify_startup_gate()
-        remaining = [
-            worker
-            for worker in workers
-            if not self._worker_receipts_complete(worker, self._owned_detail(worker)["id"])
-        ]
-        for attempt in range(1, 4):
-            if not remaining:
-                break
-            records = {worker: self._launch(worker, "full", attempt) for worker in remaining}
-            exit_codes = self._wait_launches(records, mode="full")
-            next_remaining = []
-            for worker in remaining:
-                sandbox_id = records[worker]["sandbox_id"]
-                self.sync([worker])
-                if exit_codes[worker] == 0 and self._worker_receipts_complete(worker, sandbox_id):
-                    print(f"{worker}: full shard complete", flush=True)
-                else:
-                    next_remaining.append(worker)
-                    print(f"{worker}: full shard retry needed", flush=True)
-            remaining = next_remaining
-        if remaining:
-            raise RuntimeError(f"full campaign has incomplete workers: {remaining}")
+        if set(workers) != set(self.plan["workers"]):
+            raise ValueError("dynamic full dispatch requires the complete qualified fleet")
+        remaining = set(map(int, self.plan["tasks"]))
+        deadline = time.monotonic() + 86_400
+        while remaining:
+            busy: set[str] = set()
+            for task_id in sorted(remaining):
+                worker, sandbox_id = self._case_owner(task_id)
+                path = self.root / "case-intents" / f"task-{task_id:04d}.json"
+                if self._local_receipt(worker, sandbox_id, task_id):
+                    last = json.loads(path.read_text())["attempts"][-1] if path.exists() else None
+                    if last is None or "exit_code" in last:
+                        remaining.remove(task_id)
+                        continue
+                if not path.exists():
+                    continue
+                intent = json.loads(path.read_text())
+                attempt = intent["attempts"][-1]
+                if "exit_code" in attempt:
+                    outcome = self._sync_one(worker, sandbox_id, task_id)
+                    if not any(
+                        json.loads(receipt.read_text()).get("launch_id") == attempt["launch_id"]
+                        for receipt in (self.root / "attempts" / f"task-{task_id:04d}").glob(
+                            "*.json"
+                        )
+                    ):
+                        raise RuntimeError(
+                            f"task {task_id} lacks retained attempt evidence; inspect before retry"
+                        )
+                    if outcome != "pending":
+                        remaining.remove(task_id)
+                    elif len(intent["attempts"]) >= 3:
+                        raise RuntimeError(f"task {task_id} exhausted infrastructure attempts")
+                    continue
+                busy.add(worker)
+                if "command_id" not in attempt:
+                    attempt = self._launch_case(task_id, worker)
+                try:
+                    status = self.client.command_status(sandbox_id, attempt["command_id"])
+                except requests.RequestException as error:
+                    # An observation failure does not prove that the case has
+                    # stopped. Preserve its claim/handle and poll it again.
+                    print(
+                        f"task {task_id}: transient command observation {type(error).__name__}",
+                        flush=True,
+                    )
+                    continue
+                if status.get("running"):
+                    continue
+                code = status.get("exit_code")
+                if not isinstance(code, int):
+                    raise RuntimeError(f"task {task_id} stopped without an exit code")
+                attempt["exit_code"] = code
+                _atomic_json(path, intent)
+                outcome = self._sync_one(worker, sandbox_id, task_id)
+                if not any(
+                    json.loads(receipt.read_text()).get("launch_id") == attempt["launch_id"]
+                    for receipt in (self.root / "attempts" / f"task-{task_id:04d}").glob("*.json")
+                ):
+                    raise RuntimeError(
+                        f"task {task_id} stopped without retained attempt evidence; "
+                        "inspect before retry"
+                    )
+                if outcome != "pending":
+                    remaining.remove(task_id)
+                elif len(intent["attempts"]) >= 3:
+                    raise RuntimeError(f"task {task_id} exhausted infrastructure attempts")
+                busy.remove(worker)
+                print(f"task {task_id}: command exited {code}, archive {outcome}", flush=True)
+
+            idle = set(workers) - busy
+            for task_id in sorted(
+                remaining,
+                key=lambda task: (-self.plan["tasks"][str(task)]["estimated_seconds"], task),
+            ):
+                path = self.root / "case-intents" / f"task-{task_id:04d}.json"
+                if path.exists():
+                    last = json.loads(path.read_text())["attempts"][-1]
+                    if "exit_code" not in last:
+                        continue
+                sites = set(self.plan["tasks"][str(task_id)]["sites"])
+                compatible = [
+                    worker
+                    for worker in idle
+                    if sites <= set(self.plan["workers"][worker]["capabilities"])
+                ]
+                if not compatible:
+                    continue
+                worker = min(
+                    compatible,
+                    key=lambda current: (
+                        len(self.plan["workers"][current]["capabilities"]),
+                        current,
+                    ),
+                )
+                self._launch_case(task_id, worker)
+                idle.remove(worker)
+                print(f"{worker}: dispatched task {task_id}", flush=True)
+            if remaining:
+                if time.monotonic() >= deadline:
+                    raise TimeoutError(
+                        "full dispatch observation exceeded 24 hours; handles remain journaled"
+                    )
+                time.sleep(15)
 
         # Official evaluator errors remain terminal but unscored. Never present
         # an 812-denominator accuracy unless all 812 official scores exist.
@@ -1035,14 +1265,17 @@ class Campaign:
         for worker in workers:
             detail = self._owned_detail(worker)
             counts[detail["state"]] = counts.get(detail["state"], 0) + 1
-            for line in (self.root / "workers" / worker / "tasks.tsv").read_text().splitlines():
-                task_id = int(line.split("\t", 1)[0])
-                receipt_path = self.root / "index" / f"task-{task_id:04d}" / "completed.json"
-                if receipt_path.is_file():
-                    receipt = json.loads(receipt_path.read_text())
-                    if receipt.get("terminal_status") != "evaluator_error":
-                        scored += 1
-                        successes += receipt.get("score") == 1
+        for task_id in map(int, self.plan["tasks"]):
+            worker, sandbox_id = self._case_owner(task_id)
+            if worker not in workers:
+                continue
+            receipt_path = self.root / "index" / f"task-{task_id:04d}" / "completed.json"
+            if receipt_path.is_file():
+                receipt = json.loads(receipt_path.read_text())
+                self._validated_receipt(receipt, worker, sandbox_id, task_id)
+                if receipt.get("terminal_status") != "evaluator_error":
+                    scored += 1
+                    successes += receipt.get("score") == 1
         print(
             json.dumps(
                 {
@@ -1077,7 +1310,9 @@ def main() -> None:
     elif args.phase == "startup":
         campaign.startup(workers)
     elif args.phase == "full":
-        campaign.full(workers)
+        with (campaign.root / "full-dispatch-owner.lock").open("a") as owner:
+            fcntl.flock(owner, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            campaign.full(workers)
     else:
         raise AssertionError("unreachable")
 

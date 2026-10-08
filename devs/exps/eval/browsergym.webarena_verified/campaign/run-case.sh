@@ -17,11 +17,9 @@ source /mnt/results/campaign.env
 : "${RUN_ID:?campaign RUN_ID is required}"
 : "${RUNNER_SHA256:?campaign RUNNER_SHA256 is required}"
 : "${NAME_PREFIX:?campaign NAME_PREFIX is required}"
-: "${MODEL_PROFILE:?campaign MODEL_PROFILE is required}"
-[[ "$RUN_ID" =~ ^wav-glm53flash-infra-v[0-9]+-[a-z0-9-]+-[0-9]{8}$ ]] || exit 2
+[[ "$RUN_ID" =~ ^wav-generic-[a-z0-9]+-full[1-9][0-9]*-[0-9]{8}-v[0-9]+$ ]] || exit 2
 [[ "$RUNNER_SHA256" =~ ^[0-9a-f]{64}$ ]] || exit 2
 [[ "$NAME_PREFIX" =~ ^[a-z0-9][a-z0-9-]{1,40}$ ]] || exit 2
-[[ "$MODEL_PROFILE" == glm53flash ]] || exit 2
 NAME_PREFIX="$NAME_PREFIX-$WORKER"
 CASE_KEY=$(printf 'task-%04d' "$TASK_ID")
 CASE_NAME="$NAME_PREFIX-$CASE_KEY"
@@ -32,6 +30,7 @@ INDEX="/mnt/results/index/$CASE_KEY"
 IMAGE_LOCK=/mnt/results/image-lock.env
 PLAN_SHA256=$(sha256sum /mnt/results/PLAN_MANIFEST.sha256 | awk '{print $1}')
 IMAGE_LOCK_SHA256=$(sha256sum "$IMAGE_LOCK" | awk '{print $1}')
+SOURCE_SHA256=$(sha256sum /mnt/results/cua-lite-source.tar.gz | awk '{print $1}')
 
 test -f /var/lib/wav-qwen/private/model.env
 test -f "$IMAGE_LOCK"
@@ -46,6 +45,10 @@ MAP_IMAGE="$MAP_RUNTIME_IMAGE"
 
 runtime_python() {
     docker run --rm -i --network none --label "com.cua-lite.run-id=$RUN_ID" \
+        -e RUN_ID -e WORKER -e SANDBOX_ID -e TASK_ID -e RUNNER_SHA256 \
+        -e IMAGE_LOCK_SHA256 -e SOURCE_SHA256 -e PLAN_SHA256 -e attempt_started_at \
+        -e ATTEMPT_ARCHIVE -e ATTEMPT_RECEIPT -e runner_rc -e case_exit_code \
+        -e model_started -e INDEX -e LAUNCH_ID \
         -v /var/lib/wav-runtime/venv:/opt/venv:ro \
         -v /var/lib/wav-runtime/python:/root/.local/share/uv/python:ro \
         -v /var/lib/wav-qwen/source:/root/cua-lite:ro \
@@ -53,7 +56,76 @@ runtime_python() {
         "$RUNTIME_IMAGE" /opt/venv/bin/python "$@"
 }
 
+# The immutable campaign config owns model and agent parameters. Project only
+# the fields needed by the entrypoint; credentials remain in its private env.
+IFS=$'\t' read -r MODEL_ID MODEL_PROFILE REASONING_EFFORT MAX_STEPS FINAL_RESERVE < <(
+    runtime_python - /mnt/results/EXPERIMENT_CONFIG.json <<'PY'
+import json
+import sys
+config = json.load(open(sys.argv[1]))
+print("\t".join(str(value) for value in (
+    config["model"], config["model_profile"], config["reasoning_effort"],
+    config["environment"]["max_steps"], config["environment"]["final_response_reserve_steps"],
+)))
+PY
+)
+test -n "$MODEL_ID"
+[[ "$MAX_STEPS" =~ ^[0-9]+$ ]] || exit 2
+[[ "$FINAL_RESERVE" =~ ^[0-9]+$ ]] || exit 2
+
 attempt_stamp=$(date -u +%Y%m%dT%H%M%S%N)-"$WORKER"-"$SANDBOX_ID"
+attempt_started_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+ATTEMPT_DIR="/mnt/results/attempts/$CASE_KEY"
+ATTEMPT_ARCHIVE="$ATTEMPT_DIR/$attempt_stamp.tar.gz"
+ATTEMPT_RECEIPT="$ATTEMPT_DIR/$attempt_stamp.json"
+mkdir -p "$ATTEMPT_DIR"
+model_started=false
+runner_rc=-1
+finish_attempt() {
+    case_exit_code=$?
+    trap - EXIT
+    set +e
+    # Preserve partial provider evidence too. A setup failure without a model
+    # call is recorded explicitly rather than disguised as a scored failure.
+    if [ ! -e "$ATTEMPT_ARCHIVE" ] && [ -d "$CASE_PATH" ]; then
+        tar -C /var/lib/wav-qwen/results -czf "$ATTEMPT_ARCHIVE.tmp" "$CASE_KEY" \
+            && mv "$ATTEMPT_ARCHIVE.tmp" "$ATTEMPT_ARCHIVE"
+    fi
+    export RUN_ID WORKER SANDBOX_ID TASK_ID RUNNER_SHA256 IMAGE_LOCK_SHA256 SOURCE_SHA256 PLAN_SHA256
+    export attempt_started_at ATTEMPT_ARCHIVE ATTEMPT_RECEIPT runner_rc case_exit_code model_started INDEX
+    runtime_python - <<'PY' > "$ATTEMPT_RECEIPT.tmp"
+import hashlib
+import json
+import os
+from datetime import UTC, datetime
+from pathlib import Path
+archive = Path(os.environ["ATTEMPT_ARCHIVE"])
+completed = Path(os.environ["INDEX"]) / "completed.json"
+terminal = json.loads(completed.read_text())["terminal_status"] if completed.is_file() else "infrastructure_failed"
+print(json.dumps({
+    "run_id": os.environ["RUN_ID"], "plan_sha256": os.environ["PLAN_SHA256"],
+    "task_id": int(os.environ["TASK_ID"]), "worker": os.environ["WORKER"],
+    "sandbox_id": os.environ["SANDBOX_ID"], "runner_sha256": os.environ["RUNNER_SHA256"],
+    "image_lock_sha256": os.environ["IMAGE_LOCK_SHA256"],
+    "source_sha256": os.environ["SOURCE_SHA256"],
+    "started_at": os.environ["attempt_started_at"], "finished_at": datetime.now(UTC).isoformat(),
+    "runner_exit_code": int(os.environ["runner_rc"]), "case_exit_code": int(os.environ["case_exit_code"]),
+    "model_started": os.environ["model_started"] == "true", "terminal_status": terminal,
+    "launch_id": os.environ.get("LAUNCH_ID"),
+    "archive_path": str(archive) if archive.is_file() else None,
+    "archive_sha256": hashlib.sha256(archive.read_bytes()).hexdigest() if archive.is_file() else None,
+}, indent=2))
+PY
+    ledger_rc=$?
+    if [ "$ledger_rc" -eq 0 ]; then
+        mv "$ATTEMPT_RECEIPT.tmp" "$ATTEMPT_RECEIPT"
+    else
+        echo "Task $TASK_ID attempt ledger publication failed" >&2
+        case_exit_code=1
+    fi
+    exit "$case_exit_code"
+}
+trap finish_attempt EXIT
 if [ -e "$ARCHIVE" ] || [ -e "$INDEX" ] || [ -e "$CASE_PATH" ]; then
     incomplete="/mnt/results/incomplete/$CASE_KEY/$attempt_stamp"
     mkdir -p "$incomplete"
@@ -267,9 +339,9 @@ for site in "${sites[@]}"; do
     sites_json+="\"$site\""
 done
 
-printf '{"session_id":"%s","sandbox_id":"%s","worker":"%s","task_id":%s,"created_at":"%s","sites":[%s],"container_ids":{%s},"container_digests":{%s},"image_lock_sha256":"%s","fresh_service_processes":true,"map_database_policy":"pinned prepared baseline; map tasks are retrieval-only"}\n' \
+printf '{"session_id":"%s","sandbox_id":"%s","worker":"%s","task_id":%s,"created_at":"%s","sites":[%s],"container_ids":{%s},"container_digests":{%s},"image_lock_sha256":"%s","source_sha256":"%s","fresh_service_processes":true,"map_database_policy":"pinned prepared baseline; map tasks are retrieval-only"}\n' \
     "$RUN_ID" "$SANDBOX_ID" "$WORKER" "$TASK_ID" "$created_at" \
-    "$sites_json" "$container_pairs" "$digest_pairs" "$IMAGE_LOCK_SHA256" \
+    "$sites_json" "$container_pairs" "$digest_pairs" "$IMAGE_LOCK_SHA256" "$SOURCE_SHA256" \
     > "$BASELINE_PATH"
 
 runner_args=(
@@ -297,18 +369,22 @@ runner_args=(
     -v /var/lib/wav-qwen/locks:/locks
     -v /var/lib/wav-qwen/baselines:/baselines:ro
     -w /outputs "$RUNTIME_IMAGE" /opt/venv/bin/python -B
-    /root/cua-lite/scripts/webarena_verified_qwen.py
+    /root/cua-lite/scripts/webarena_verified_generic.py
     --task-id "$TASK_ID"
     --osworld-root /opt/OSWorld
     --baseline-receipt "/baselines/$CASE_KEY.json"
     --output-dir "/outputs/$CASE_KEY"
     --lock-dir /locks
     --model-profile "$MODEL_PROFILE"
+    --model-id "$MODEL_ID"
+    --reasoning-effort "$REASONING_EFFORT"
     --startup-page-gate
-    --max-steps 150
-    --final-response-reserve-steps 7
+    --max-steps "$MAX_STEPS"
+    --final-response-reserve-steps "$FINAL_RESERVE"
+    --repair-invalid-response
 )
 set +e
+model_started=true
 docker "${runner_args[@]}"
 runner_rc=$?
 set -e
@@ -316,6 +392,9 @@ set -e
 tmp_archive="/mnt/results/archives/.$CASE_KEY.tar.gz.tmp"
 tar -C /var/lib/wav-qwen/results -czf "$tmp_archive" "$CASE_KEY"
 mv "$tmp_archive" "$ARCHIVE"
+# Each attempt gets an immutable archive link before terminal validation. A
+# later retry can move/replace the canonical archive without losing this one.
+ln "$ARCHIVE" "$ATTEMPT_ARCHIVE"
 tmp_index="/mnt/results/index/.$CASE_KEY.tmp"
 mkdir "$tmp_index"
 for artifact in status.json evaluation.json run_metadata.json agent_response.json instruction.json startup_receipt.json; do
@@ -333,6 +412,8 @@ if [ "$runner_rc" -eq 0 ] && runtime_python \
     --sandbox-id "$SANDBOX_ID" --task-id "$TASK_ID" \
     --runner-sha256 "$RUNNER_SHA256" \
     --image-lock-sha256 "$IMAGE_LOCK_SHA256" \
+    --config /mnt/results/EXPERIMENT_CONFIG.json \
+    --version-manifest /mnt/results/VERSION_MANIFEST.json \
     --runner-exit-code "$runner_rc" > "$INDEX/.completed.json.tmp"; then
     mv "$INDEX/.completed.json.tmp" "$INDEX/completed.json"
     exit 0

@@ -15,11 +15,9 @@ source /mnt/results/campaign.env
 : "${RUN_ID:?campaign RUN_ID is required}"
 : "${RUNNER_SHA256:?campaign RUNNER_SHA256 is required}"
 : "${NAME_PREFIX:?campaign NAME_PREFIX is required}"
-: "${MODEL_PROFILE:?campaign MODEL_PROFILE is required}"
-[[ "$RUN_ID" =~ ^wav-glm53flash-infra-v[0-9]+-[a-z0-9-]+-[0-9]{8}$ ]] || exit 2
+[[ "$RUN_ID" =~ ^wav-generic-[a-z0-9]+-full[1-9][0-9]*-[0-9]{8}-v[0-9]+$ ]] || exit 2
 [[ "$RUNNER_SHA256" =~ ^[0-9a-f]{64}$ ]] || exit 2
 [[ "$NAME_PREFIX" =~ ^[a-z0-9][a-z0-9-]{1,40}$ ]] || exit 2
-[[ "$MODEL_PROFILE" == glm53flash ]] || exit 2
 CAL_ROOT=/mnt/webarena-verified/results/wav-qwenrunner-calibration-20260928-5b5f1a5f
 IMAGE_LOCK=/mnt/results/image-lock.env
 WORKER_DIR="/mnt/results/workers/$WORKER"
@@ -79,11 +77,11 @@ fi
 # Source-refresh runs keep the heavy prepared assets but replace both campaign
 # scripts before the prepared marker is republished.
 tar -xzf /mnt/results/cua-lite-source.tar.gz -C /var/lib/wav-qwen/source \
-    ./scripts/webarena_verified_qwen.py \
+    ./scripts/webarena_verified_generic.py \
     ./scripts/webarena_verified_case_receipt.py
 printf '%s  %s\n' \
     "$RUNNER_SHA256" \
-    '/var/lib/wav-qwen/source/scripts/webarena_verified_qwen.py' | sha256sum -c -
+    '/var/lib/wav-qwen/source/scripts/webarena_verified_generic.py' | sha256sum -c -
 
 if [ ! -d /var/lib/wav-qwen/desktop-python ]; then
     tar -xzf "$CAL_ROOT/desktop-python.tar.gz" -C /var/lib/wav-qwen

@@ -1,0 +1,195 @@
+{
+  "experiment_version": "webarena-verified-generic-desktop-v2",
+  "status": "reproducibility_template",
+  "baseline_git_commit": "cf2135b2a6b77bd6c23f8bcd12706af3011a07f3",
+  "benchmark": {
+    "name": "webarena-verified",
+    "version": "1.2.3",
+    "tasks": 812,
+    "task_ids": {
+      "first": 0,
+      "last": 811
+    },
+    "dataset_sha256": "d65275660814663375028e9017e1f929e3c38321041b125795e2713b52243d30",
+    "evaluator_sha256": "35c3385b1db4b3378657589f95f50defd4234bd36e5b93d44733fd561b01db4e"
+  },
+  "agent": {
+    "class": "lite.agents.extensions.chat_gateway.ChatGatewayAgent",
+    "loop": "lite.agents.core.agent.base.AdapterBasedAgent.sample",
+    "provider_protocol": "native_function_tools",
+    "request_params": {
+      "max_tokens": 32768,
+      "enable_thinking": true,
+      "preserve_thinking": true,
+      "stream": false
+    },
+    "omitted_request_parameters": [
+      "temperature",
+      "top_p"
+    ],
+    "text_history": "all",
+    "history_turns": 19,
+    "image_fold_size": 10,
+    "image_budget_including_current": 20,
+    "original_trajectory": "complete"
+  },
+  "environment": {
+    "observation": "full_desktop",
+    "screen": [
+      1920,
+      1080
+    ],
+    "coordinates": "canonical_normalized_0_1000",
+    "max_steps": 150,
+    "final_response_reserve_steps": 7,
+    "invalid_final_repair_attempts": 1,
+    "post_action_delay_seconds": 0.35,
+    "reset_settle_seconds": 60,
+    "evaluation_settle_seconds": 20,
+    "gui_only": true,
+    "no_dom_or_ax_tree": true,
+    "fresh_site_baseline_per_case": true
+  },
+  "transport": {
+    "read_timeout_seconds": 600,
+    "connect_write_pool_timeout_seconds": 130,
+    "max_attempts": 5,
+    "sdk_retries": 0
+  },
+  "scheduling": {
+    "workers_per_model": 120,
+    "max_concurrent_cases_per_worker": 1,
+    "separate_sandboxes_per_model": true,
+    "pool_allocation": [
+      {
+        "pool": "map",
+        "workers": 36,
+        "role": "core",
+        "capabilities": [
+          "map"
+        ]
+      },
+      {
+        "pool": "map+wikipedia",
+        "workers": 8,
+        "role": "core",
+        "capabilities": [
+          "map",
+          "wikipedia"
+        ]
+      },
+      {
+        "pool": "shopping_admin",
+        "workers": 24,
+        "role": "core",
+        "capabilities": [
+          "shopping_admin"
+        ]
+      },
+      {
+        "pool": "shopping",
+        "workers": 18,
+        "role": "core",
+        "capabilities": [
+          "shopping"
+        ]
+      },
+      {
+        "pool": "gitlab",
+        "workers": 20,
+        "role": "core",
+        "capabilities": [
+          "gitlab"
+        ]
+      },
+      {
+        "pool": "reddit",
+        "workers": 6,
+        "role": "core",
+        "capabilities": [
+          "reddit"
+        ]
+      },
+      {
+        "pool": "gitlab+reddit",
+        "workers": 4,
+        "role": "core",
+        "capabilities": [
+          "gitlab",
+          "reddit"
+        ]
+      },
+      {
+        "pool": "gitlab+wikipedia",
+        "workers": 1,
+        "role": "core",
+        "capabilities": [
+          "gitlab",
+          "wikipedia"
+        ]
+      },
+      {
+        "pool": "reddit+shopping",
+        "workers": 2,
+        "role": "core",
+        "capabilities": [
+          "reddit",
+          "shopping"
+        ]
+      },
+      {
+        "pool": "map+shopping_admin",
+        "workers": 1,
+        "role": "core",
+        "capabilities": [
+          "map",
+          "shopping_admin"
+        ]
+      }
+    ],
+    "dispatch": "compatible_site_pool_long_case_first_with_dynamic_compatible_reassignment",
+    "allocation_revision": "approved 120 core allocation; omit the 8 flex workers of V1"
+  },
+  "scoring": {
+    "official_evaluator": true,
+    "network_inputs": [
+      "har",
+      "playwright_trace"
+    ],
+    "require_complete_contract_agreement": true,
+    "evaluator_errors_separate": true,
+    "no_best_of_business_failure_retries": true,
+    "retain_all_attempts": true
+  },
+  "documents": {
+    "analysis_sections": [
+      "全量分析",
+      "单站按站点分类",
+      "多站按站点分析"
+    ],
+    "issues_section_last": true,
+    "create_before_experiment": true
+  },
+  "resource_cleanup": {
+    "scope": "verified_owned_webarena_old_sandboxes_only",
+    "foreign_business_resources": "preserve",
+    "inventory_before_delete": true,
+    "readback_after_delete": true
+  },
+  "entrypoint": "scripts/webarena_verified_generic.py",
+  "task_count": 812,
+  "experiments": [
+    {
+      "model": "qwen3.8-max",
+      "api_key_env": "QWEN_TEST_API_KEY",
+      "reasoning_effort": "xhigh",
+      "model_profile": "qwen"
+    },
+    {
+      "model": "glm-5.3-flash",
+      "api_key_env": "GLM_TEST_API_KEY",
+      "reasoning_effort": "max",
+      "model_profile": "glm53flash"
+    }
+  ]
+}

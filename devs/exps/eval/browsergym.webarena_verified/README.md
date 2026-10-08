@@ -1,21 +1,42 @@
-# WebArena-Verified：CUA-Lite 原生通用 Agent
+# WebArena-Verified 评测：从这里开始
 
-本目录的复现入口是 `campaign/initialize.py` 和 `campaign/orchestrate.py`，
-逐题执行 `scripts/webarena_verified_generic.py` → `ChatGatewayAgent` → 原生 agent loop。
-旧 `run.sh`、gateway 和模型专用 runner 不是这里交付的完整桌面实验入口。
+这套流程让模型看桌面截图、操作鼠标和键盘，在购物、地图、GitLab 等网站上
+完成 812 个任务，再由官方评分程序判断是否完成。基准版本固定为 1.2.3。
+已验证的后端是 Qwen 和 GLM；两者使用同一个 CUA-Lite 原生通用 agent。
 
-先读 [复现手册](/skills/webarena-verified-eval/references/reproduction.md)，
-agent 使用 [评测 skill](/skills/webarena-verified-eval/SKILL.md)。
-在线阅读 [飞书 Skill 与复现指南](https://gcnxubmy1vgu.feishu.cn/docx/YnArdkqJooQ8MOxO4UMcq3wLnCb)
-（文档访问权限独立于代码仓库）。
-手册提供资产/平台前提、离线初始化、单 worker 冒烟、120-worker 全量、
-诚实的 NULL 分数口径和 scoped cleanup 命令，不需要作者的旧共享盘路径。
+## 你应该读哪份文件
 
-已执行配置：812 题，150 模型决策预算，完整文字历史，20 图 fold10；
-Qwen `qwen3.8-max` / xhigh；GLM `glm-5.3-flash` / max。
-原生 V2 基线保留，管理入口的可移植化与后续版本单独提交。
-数值合同见 [配置模板](/devs/exps/eval/browsergym.webarena_verified/EXPERIMENT_CONFIG.generic-desktop-dual-v2.json)。
+| 你的目的 | 入口 |
+| --- | --- |
+| 第一次接手，想知道准备什么、怎样跑起来 | [快速上手指南](/skills/webarena-verified-eval/references/reproduction.md) |
+| 让 Codex 帮你检查环境、运行或分析 | [Codex 执行说明（skill）](/skills/webarena-verified-eval/SKILL.md) |
+| 核对配置、镜像、资产、异常或历史结果 | [技术参考](/skills/webarena-verified-eval/references/technical-reference.md) |
+| 在线阅读并与同事协作 | [飞书上手指南](https://gcnxubmy1vgu.feishu.cn/docx/YnArdkqJooQ8MOxO4UMcq3wLnCb) |
 
-代码不包含大型站点数据、离线浏览器资产或私有镜像授权。缺少这些前提时
-不要通过换数据/浏览器或降配置绕过门禁。所有收费模型调用与资源删除均应
-按本次用户授权范围执行。
+主线面向复用现有沙盒平台、镜像和共享资产的同事。克隆代码不会自动取得
+这些权限或下载大型数据；先按上手指南确认准备条件。换平台部署看技术参考。
+飞书权限与代码仓库权限独立。
+
+## 可以直接交给 Codex 的第一句话
+
+```text
+请读取 skills/webarena-verified-eval/SKILL.md，按快速上手指南接手评测。
+使用 Qwen 配置，先检查本机代码、凭证配置、共享资产和平台挂载参数，
+列出缺项并给出实验计划。不要输出密钥，不要申请沙盒或调用模型。
+```
+
+没有安装 skill 也可以明确要求 Codex 读取这个文件；安装后可使用
+`$webarena-verified-eval` 调用。如何继续授权冒烟和全量，见上手指南。
+
+## 操作顺序与实际入口
+
+准备条件 → 克隆配置 → 离线初始化 → 单沙盒验证 → 全量 → 归档分析 → 清理。
+
+初始化使用 `campaign/initialize.py`，阶段管理使用 `campaign/orchestrate.py`，
+逐题执行 `scripts/webarena_verified_generic.py`。本目录的旧 `run.sh`、gateway
+和模型专用 runner 不是这条完整桌面评测的入口；不需要另起 GPU 推理或 env-server。
+
+模型预算、图片历史和站点分配由
+[配置模板](/devs/exps/eval/browsergym.webarena_verified/EXPERIMENT_CONFIG.generic-desktop-dual-v2.json)
+维护；运行时生成的 config 和 manifest 记录本轮实际采用的配置与文件版本。
+文档不授权模型费用、资源创建或删除；按本次用户请求执行。

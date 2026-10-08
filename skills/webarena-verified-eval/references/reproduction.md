@@ -1,230 +1,163 @@
-# CUA-Lite × WebArena-Verified：原生通用 Agent 复现手册
+# WebArena-Verified：快速上手指南
 
-适用对象：熟悉 Linux/Python、接手评测的工程师或研究同事。
-目标：在具备数据、镜像和沙盒平台权限后，复现已验证的完整桌面评测配置。
-本分支提供可移植的管理入口；模型运行时保留成功跑通的 V2 字节。
-整理过程的离线回归不等同于重新跑了一次收费全量。
+目标：复用已有沙盒平台、镜像和共享资产，先验证一个沙盒，再运行完整评测。
+你可以自己执行命令，也可以把每一步交给 Codex。所有命令从仓库根目录运行。
+完整配置、镜像清单和排查方法见
+[技术参考](/skills/webarena-verified-eval/references/technical-reference.md)。
 
-## 1. 先确认采用的是哪条链路
+## 1. 开始前，先准备这四样东西
 
-`campaign/initialize.py` 生成本地冻结包；`campaign/orchestrate.py` 管理沙盒和队列。
-每题由 `campaign/run-case.sh` 调用 `scripts/webarena_verified_generic.py`，
-使用 `lite.agents.extensions.chat_gateway.ChatGatewayAgent` 和 CUA-Lite 原生
-`AdapterBasedAgent.sample`。输入是带浏览器顶栏的完整桌面截图，动作只走 GUI。
-
-`scripts/webarena_verified_qwen.py` 的名称是历史遗留：通用入口仍从它复用桌面、
-基线和评分工具，但不调用它的 Qwen agent、XML 动作解析或专用循环。
-`scripts/webarena_verified_gateway.py` 与目录下旧 `run.sh` 都不是本次入口。
-OSWorld 固定提交只提供桌面/光标捕获工具，不参与 agent 推理。
-
-官方来源：[WebArena-Verified](https://github.com/ServiceNow/webarena-verified)、
-[BrowserGym](https://github.com/ServiceNow/BrowserGym)。本实验固定 1.2.3，
-不要把官方仓库当前最新版的部署命令当成这个版本的环境锁。
-
-## 2. 两组已经执行的实验配置与结果
-
-共同基准是 WebArena-Verified 1.2.3，共 812 题，task ID 0–811。
-
-| 项目 | Qwen 组 | GLM 组 |
+| 准备项 | 你需要拿到什么 | 谁来做 |
 | --- | --- | --- |
-| 后端实际模型名 | `qwen3.8-max` | `glm-5.3-flash` |
-| model profile | `qwen` | `glm53flash` |
-| 本地 key 变量 | `QWEN_TEST_API_KEY` | `GLM_TEST_API_KEY` |
-| thinking 强度 | `xhigh` | `max` |
-| thinking 参数 | `enable_thinking=true`、`preserve_thinking=true` | 相同 |
-| 每组沙盒 | 120，互不混用 | 120，互不混用 |
-| canonical terminal | 812 | 811 |
-| 有官方分数 | 805 | 801 |
-| 官方成功 | 544 | 517 |
-| 已评分子集成功率 | 544/805 = 67.58% | 517/801 = 64.54% |
-| evaluator 未评分 | 7 | 10 |
-| Infra 耗尽且未评分 | 0 | 1（task 783） |
-| 全量官方准确率 | NULL | NULL |
+| 代码和控制机 | 本分支、Linux x86_64、Python 3.12、Git、uv | 你或 Codex 安装控制机依赖 |
+| 沙盒平台 | 项目权限、凭证、共享卷挂载参数、镜像拉取权限；全量每模型 120 个沙盒的可用配额 | 平台负责人提供权限；Codex 按授权检查 |
+| 离线资产 | 完整的 1.2.3 数据、浏览器和桌面依赖 | 资产维护者提供；Codex 检查文件 |
+| 模型 API | 支持图片、原生工具调用和 thinking 的代理地址，以及所选模型的 key | 你通过本地 `.env` 配置，不把密钥贴进聊天 |
 
-这两组结果不是 812 题都已有分数的完整准确率。GLM 的执行尝试行政收尾为
-812/812，但 task 783 没有 canonical terminal，不能把它写成 canonical 812。
-734 恢复后的官方分数为 1；783 经单独授权的第 4 次仍失败，用户决定按原 V2
-未评分收尾，不进行第 5 次或换浏览器补测。这个例外不进入新实验默认配置。
+镜像用来启动站点和运行容器；离线资产还包括地图数据库、Wikipedia 数据等；
+共享卷挂载则是把这些文件交给沙盒读取。三者不是同一个东西，只有镜像还不能运行。
 
-原始实验文件名分别是 `qwen3.8-max-generic-desktop-full120-20261007-v2` 和
-`glm5.3-flash-generic-desktop-full120-20261007-v2`。证据分析见
-[Qwen 全量文档](https://gcnxubmy1vgu.feishu.cn/docx/JdMId9pe9oaPi3xA003cJIhsndg) 与
-[GLM 全量文档](https://gcnxubmy1vgu.feishu.cn/docx/MT2fdJXZDoPelvxPx31cz3hMn8c)。
-这些文档的访问权限与公开代码仓库权限独立。
+### 我们已有的资产在哪里
 
-| 共同配置 | 固定值与含义 |
-| --- | --- |
-| 动作协议 | 原生 function tools；没有 XML/文本工具调用修复 |
-| 预算 | 150 次模型决策，不是 GUI 子动作数量 |
-| 收尾 | 最后 7 轮留给最终回答；最多 1 次模型可见 JSON/schema 修复，均计入 150 |
-| 输出参数 | `max_tokens=32768`，`stream=false`；不传 temperature/top_p，使用后端默认值 |
-| 文字历史 | 全部 user/assistant/thinking/tool call/tool result 保留 |
-| 图片历史 | `history_turns=19`，含当前图最多 20；超限一次删除最老 10 图，留下占位文字 |
-| fold 示例 | 可见图数量 20→11→20→11；不是摘要、降清晰度或丢原始归档图片 |
-| 桌面 | 1920×1080，包括浏览器顶栏；归一化 0–1000 坐标映射到真实桌面 |
-| 环境动作 | GUI-only；不读 DOM/AXTree，不通过直接 URL 导航捷径完成任务 |
-| 等待 | reset 60 秒；动作后 0.35 秒；评分前 20 秒 |
-| HTTP | read 600 秒；connect/write/pool 130 秒；最多 5 次受观测 transport 尝试；SDK 自动重试为 0 |
-| 题目隔离 | 每题新建站点进程；Map 的私有可写数据库在 worker 准备时复制，检索任务之间复用，巨大 flatnode/routing 只读共享 |
-| 评分 | 官方 evaluator；HAR/Playwright trace 证据契约；报错保留 NULL，不修改 evaluator 或补造 0 |
-| Infra 重试 | 每题默认最多 3 次，保留每次档案；耗尽隔离，继续其余题；不重抽正常业务失败 |
-| 沙盒资源 | 每个 4 CPU、20 GiB；sysbox Docker-in-Docker；Map worker 需要 fuse |
+当前控制机可见的历史资产根目录是：
 
-120 个 worker 的分配：Map 36、Map+Wikipedia 8、Shopping Admin 24、Shopping 18、
-GitLab 20、Reddit 6、GitLab+Reddit 4、GitLab+Wikipedia 1、Reddit+Shopping 2、
-Map+Shopping Admin 1。每 worker 同时只跑一题；共 45 个包含 Map 的 worker。
-公开 `campaign/scheduling-v17.jsonl` 只有任务 ID 与耗时估计，复用两组原计划的
-调度输入，不含答案或模型上下文。不提供 `--timing` 则明确采用统一成本调度，
-模型配置相同，但任务排序不是原实验排序。
+```text
+/mnt/shared-storage-user/songdemin/user/laibowen-p/webarena-verified/1.2.3
+```
 
-## 3. 准备条件：代码、平台、资产是三件事
+其中 `assets-full/` 放站点数据，`tools/` 放离线运行环境。
+桌面依赖放在资产根目录下的
+`results/wav-qwenrunner-calibration-20260928-5b5f1a5f/`，不是 `desktop-v2/`。
+官方题目文件是 `dataset/webarena-verified.json`。
 
-公开代码分支：`https://github.com/token2everything/cua-lite/tree/webarena-verified-generic-v2`。
-Python 3.12、Linux x86_64、Git、uv，以及能访问沙盒平台的控制机即可；
-本链路不要求控制机启动本地 Docker 或 GPU 推理服务。
+旧实验使用的平台卷子路径是 `eval/benchmark/webarena-verified/1.2.3`，
+沙盒内挂载位置为 `/mnt/webarena-verified`。控制机绝对路径与平台卷子路径是
+两种参数，不能互相替换；平台负责人要确认它们实际对应同一套文件。
+换机器后，本地路径可能不同，不要假定克隆代码就能看到这个目录。
+
+截至 2026-10-08，本控制机上述目录里看不到初始化所需的
+`assets-full/map-volumes-webdav/` 和 `assets-full/map-volumes/PERMISSIONS_READY`。
+这是需要确认的控制机/平台资产视图差异，不代表已查明旧平台卷也缺失。
+先让维护者提供符合清单的可读资产目录，并核对平台挂载；不要直接把此历史路径
+当作已经通过准备检查的输入，也不要创建空目录或标记文件冒充完整资产。
+所需结构见技术参考的“资产与挂载”。本指南不会自动迁移大型数据。
+
+## 2. 克隆代码，配置本地凭证
+
+**做什么：** 获得运行入口和控制机依赖。这里只安装软件，不启动评测。
 
 ```bash
 git clone --branch webarena-verified-generic-v2 --single-branch \
   https://github.com/token2everything/cua-lite.git
 cd cua-lite
 uv sync --locked --extra api --extra sandbox --extra dev
-cp .env.example .env
+if [ ! -e .env ]; then cp .env.example .env; fi
 chmod 600 .env
 ```
 
-仅在本地编辑 `.env`：`BASE` 是沙盒平台地址，`PROJECT` 是项目，
-`OPEN_SANDBOX_ACCESS_KEY` / `OPEN_SANDBOX_SECRET_KEY` 用于沙盒；
-`OPENAI_BASE_URL` 是支持上述模型和原生 tools/thinking 参数的 Chat-compatible
-代理地址，两组模型 key 使用表中的独立变量。不要上传 `.env`、打印 key 或把它们写进命令参数。
-仓库忽略 `.env` 及运行目录，源码冻结 allowlist 不包含凭证或结果。
+在本地编辑 `.env`，填写以下变量；已有 `.env` 不要覆盖：
 
-需要平台支持：实际可用配额（每组 120，双组 240）、sysbox DinD、4 CPU/20 GiB、
-Map 的 fuse、持久共享卷，以及固定镜像拉取权限。`--sandbox-image` 和
-`--asset-subpath` 必须使用本项目实际值，不能把示例占位值提交给平台。
+| 变量 | 含义 |
+| --- | --- |
+| `BASE`、`PROJECT` | 沙盒平台地址和项目 |
+| `OPEN_SANDBOX_ACCESS_KEY`、`OPEN_SANDBOX_SECRET_KEY` | 沙盒访问凭证 |
+| `OPENAI_BASE_URL` | 模型代理的 API 地址 |
+| `QWEN_TEST_API_KEY` | 使用 Qwen 时需要 |
+| `GLM_TEST_API_KEY` | 使用 GLM 时需要 |
 
-还需要独立的 WebArena-Verified 1.2.3 资产包。本代码分支不分发站点数据、
-浏览器归档或私有 registry 凭证；从有授权的资产维护者处取得与锁相符的包。
-离线执行环境固定 BrowserGym 0.14.3、WebArena-Verified 1.2.3、
-Playwright 1.44 / Chromium revision 1117，以及 OSWorld
-`b138d348256078fa634fc3b73567a7337c793e6b`。只装控制机 uv extras 不会产生这些资产。
+**通过条件：** 依赖安装成功；所选模型和平台的必需变量已填写，密钥不进入日志或 Git。
+凭证是否有效、平台配额和远端镜像是否可用，还要在已授权的远端阶段验证。
+**失败处理：** 缺哪项就列出哪项，找对应维护者补齐；不要改用其他模型或浏览器绕过。
 
-资产根目录必须能在控制机读取，也能由平台共享卷映射为 worker 内的
-`/mnt/webarena-verified`。最低结构如下；`desktop-v2` 是可配置的相对目录示例：
+### 交给 Codex：无需先安装 skill
+
+在该仓库中打开 Codex，直接发送：
 
 ```text
-<asset-root>/
-  tools/
-    python312-playwright144-chromium1117.tar.gz
-    webarena-verified-venv.tar.gz
-    webarena-api-extra.tar.gz
-    nltk-punkt-tab.tar.gz
-    webarena-eval-base-ubuntu22-playwright144.tar.gz
-    start-eval.sh
-    kiwix-serve-3.3.0-amd64.tar.gz
-  desktop-v2/
-    desktop-python.tar.gz
-    osworld-b138d348.bundle
-  assets-full/
-    map-volumes/{READY,PERMISSIONS_READY,nominatim-flatnode/}
-    map-volumes-webdav/{tile-db/,nominatim-db/,routing-car/,routing-bike/,routing-foot/}
-    data/wikipedia_en_all_maxi_2022-05.zim
-    homepage-src/environment_docker/webarena-homepage/app.py
+请读取 skills/webarena-verified-eval/SKILL.md，并按快速上手指南检查准备条件。
+我想复现 Qwen 组。先确认本机实际资产路径、平台卷子路径和所需文件，
+检查凭证变量是否填写，但不要输出变量值。给出缺项、配置和下一步计划。
+不要申请沙盒，不要调用模型，不要修改或搬迁共享资产。
 ```
 
-三个 routing 目录各需 `us-northeast-latest.osrm.mldgr` 及完整对应路由数据；
-地图数据库不能只有空目录。initializer 核对显式文件并流式计算 SHA，目录检查
-仅覆盖存在性/软链接边界，不证明整棵数据库内容一致。使用已经准备好、不可变的资产包。
-大 Wikipedia 文件的首次哈希有 I/O 成本，不能把这段时间归为模型推理。
+要用 GLM，只将这段话里的“Qwen”改成“GLM”。如果你已安装完整 skill 目录，
+也可用 `$webarena-verified-eval` 调用；目录中的 `references/` 和 `agents/`
+必须一起保留。skill 搜索目录取决于客户端配置，不依赖作者的 `/root` 路径。
 
-`campaign/image-lock.example.env` 是原实验的 7 个 digest pin 加离线归档绑定的
-Kiwix tag；可复制后按实际 registry 可访问性处理，保持相同镜像内容。
-`QWENRUNNER_RUNTIME_IMAGE` 只是历史镜像变量名，两个通用模型组都使用它。
-initializer 的 ASSET_MANIFEST 记录文件哈希；prepare 再核对轻量桌面资产，
-不会每 worker 重算大型数据库内容。不要承诺它能够自动下载或修复缺失数据。
+## 3. 选模型，生成本轮运行目录（离线）
 
-官方 catalog 的 SHA256 必须是：
-`d65275660814663375028e9017e1f929e3c38321041b125795e2713b52243d30`。
-若已安装官方 1.2.3 包，文件位于
-`webarena_verified/assets/dataset/webarena-verified.json`；也可使用资产维护者
-提供的该文件。initializer 拒绝其他内容，即使名称相同。
+**做什么：** 检查本地输入，保存配置、任务计划和源码包。初始化不读取 `.env`，
+不申请沙盒、不调用模型；它会写入新的运行目录，并读取大资产计算文件哈希。
 
-### 已上传的镜像仓库地址
+两个模型共用同一套评测设置，选择方式如下：
 
-以下是本次 V2 真正使用的镜像引用，与 `campaign/image-lock.example.env` 一致。
-这些是镜像地址，不是公开下载授权；先确认本项目可以拉取该 registry。
-不要把 digest 改为 `latest`。Map 原站点镜像和实际 bindfs runtime 是两个用途。
+| 模型 | `--model` | thinking | `.env` 中的 key |
+| --- | --- | --- | --- |
+| Qwen | `qwen3.8-max` | `xhigh` | `QWEN_TEST_API_KEY` |
+| GLM | `glm-5.3-flash` | `max` | `GLM_TEST_API_KEY` |
 
-| 用途 | 完整镜像引用 |
-| --- | --- |
-| Shopping | `registry-v2.h.pjlab.org.cn/ailab-llmagent/webarena-verified-shopping@sha256:3e8cb9b945ea9b1c94ab26dba53e8d12dd0406abbf4bf686fd3bb2b6a5908feb` |
-| Shopping Admin | `registry-v2.h.pjlab.org.cn/ailab-llmagent/webarena-verified-shopping-admin@sha256:d0531dd27ed98d0c459ff9e88118bf2ed8b660b0ed99c38837db46c065a5be13` |
-| Reddit | `registry-v2.h.pjlab.org.cn/ailab-llmagent/webarena-verified-reddit@sha256:0594908059a03e5f610005689440a95c05e776e734006197c7b1eba12734cb46` |
-| GitLab | `registry-v2.h.pjlab.org.cn/ailab-llmagent/webarena-verified-gitlab@sha256:673ba94d757c5b3f4bb55751ad8b745a33bad2b987349322403cbc41035a92e0` |
-| Map 原站点 | `registry-v2.h.pjlab.org.cn/ailab-llmagent/webarena-verified-map@sha256:c769aa312c979d68e696dace7049d58eeeb016ce608f0f8779a181bf3714206f` |
-| Map bindfs runtime | `registry-v2.h.pjlab.org.cn/ailab-llmagent/webarena-map-bindfs@sha256:07a91e1954238fac62d88430c6170c98f7961b8a23cbcd869a2f9781c5d139d8` |
-| 原生通用模型 runtime | `registry-v2.h.pjlab.org.cn/ailab-llmagent/webarena-qwenrunner-runtime@sha256:b9d5ab79e01d490a3a0d6a46d5b69225bbd2b94585a0828df057f3754f22407f` |
-| Wikipedia/Kiwix | `ghcr.io/kiwix/kiwix-serve:wav-1.2.3`，由 `tools/kiwix-serve-3.3.0-amd64.tar.gz` 离线 load，归档 SHA 写入 ASSET_MANIFEST |
-| 外层 DinD 沙盒 | `registry2-cloud.d.pjlab.org.cn/ccr-sandbox/sandbox-dind:dind-202608311205`，原 V2 使用的 tag，没有已记录 digest，不冒称 digest 固定 |
+812 题、每题最多 150 次模型决策；保留全部文字历史，含当前图最多 20 张图片，
+超限删去最老 10 张。完整数值以
+[配置模板](/devs/exps/eval/browsergym.webarena_verified/EXPERIMENT_CONFIG.generic-desktop-dual-v2.json)
+为准，不手动复制修改模板来切换模型。
 
-外层 DinD 地址用于 `--sandbox-image`，不是站点容器镜像。平台项目可选自己的
-等价 sysbox DinD 镜像，但若要严格复现应使用上述已记录镜像；更换必须记录为环境差异。
-`tools/webarena-eval-base-ubuntu22-playwright144.tar.gz` 也是离线资产，
-通用链路设置 SKIP_EVAL_IMAGE，不用它替代实际模型 runtime。
-
-## 4. 离线初始化：不会申请沙盒、不会调用模型
-
-从仓库根目录执行。先为以下输入填写本机的真实绝对路径/平台值；示例不会自动替换。
-冻结之前确认 `git status --short` 无待发布源码改动。新 run ID 和 name prefix 需唯一。
-不要复用已经有内容的运行目录，也不要把运行目录放进待发布源码树。
+先填写下列变量。`/absolute/path/...` 和 `your/...` 是待替换项，不是可执行默认值。
+资产必须先通过第 1 步检查；新 run ID、名称前缀和运行目录必须唯一。
+先看 `git status --short`，确认没有待发布的执行代码改动，不自行提交他人修改。
 
 ```bash
 EVAL_DIR=devs/exps/eval/browsergym.webarena_verified
+WAV_ASSETS=/absolute/path/to/verified-asset-root
 WAV_CATALOG=/absolute/path/to/webarena-verified.json
-WAV_ASSETS=/absolute/path/to/asset-root
-WAV_DESKTOP_REL=desktop-v2
+WAV_DESKTOP_REL=results/wav-qwenrunner-calibration-20260928-5b5f1a5f
+WAV_ASSET_SUBPATH=your/platform/verified-volume-subpath
 WAV_SANDBOX_IMAGE=registry2-cloud.d.pjlab.org.cn/ccr-sandbox/sandbox-dind:dind-202608311205
-WAV_ASSET_SUBPATH=your/project/webarena-verified
 WAV_DOCKERD_NO_PROXY=registry-v2.h.pjlab.org.cn,10.102.254.2,.pjlab.org.cn
-WAV_QROOT=/absolute/path/to/runs/qwen-v2
-WAV_GROOT=/absolute/path/to/runs/glm-v2
+WAV_RUN=/absolute/path/to/new-runs/qwen-onboarding-v1
+WAV_MODEL=qwen3.8-max
+WAV_RUN_ID=wav-generic-qwen-full120-20261008-v1
+WAV_NAME_PREFIX=wav-qwen-onboarding-20261008-v1
 ```
+
+`WAV_DESKTOP_REL` 是相对于资产根目录的路径：复用旧资产时使用上面的目录，
+如果维护者提供了新打包目录则填写实际相对路径。
+`WAV_DOCKERD_NO_PROXY` 是旧项目的绕代理设置，平台负责人必须确认仍适用。
+切换 GLM 时改 `WAV_MODEL=glm-5.3-flash`，并为 GLM 单独填写运行目录、run ID 和
+名称前缀，例如 `wav-generic-glm-full120-20261008-v1`；其他参数不变。
+日期和版本号是命名示例，每次新实验都要选未使用的值。
 
 ```bash
 uv run python "$EVAL_DIR/campaign/initialize.py" \
-  --root "$WAV_QROOT" --model qwen3.8-max \
-  --run-id wav-generic-qwen-full120-20261008-v2 --name-prefix wav-qwen-20261008-v2 \
+  --root "$WAV_RUN" --model "$WAV_MODEL" \
+  --run-id "$WAV_RUN_ID" --name-prefix "$WAV_NAME_PREFIX" \
   --catalog "$WAV_CATALOG" --image-lock "$EVAL_DIR/campaign/image-lock.example.env" \
   --asset-root "$WAV_ASSETS" --desktop-assets-relative "$WAV_DESKTOP_REL" \
   --sandbox-image "$WAV_SANDBOX_IMAGE" --asset-subpath "$WAV_ASSET_SUBPATH" \
   --dockerd-no-proxy "$WAV_DOCKERD_NO_PROXY" \
   --timing "$EVAL_DIR/campaign/scheduling-v17.jsonl"
-
-uv run python "$EVAL_DIR/campaign/initialize.py" \
-  --root "$WAV_GROOT" --model glm-5.3-flash \
-  --run-id wav-generic-glm-full120-20261008-v2 --name-prefix wav-glm-20261008-v2 \
-  --catalog "$WAV_CATALOG" --image-lock "$EVAL_DIR/campaign/image-lock.example.env" \
-  --asset-root "$WAV_ASSETS" --desktop-assets-relative "$WAV_DESKTOP_REL" \
-  --sandbox-image "$WAV_SANDBOX_IMAGE" --asset-subpath "$WAV_ASSET_SUBPATH" \
-  --dockerd-no-proxy "$WAV_DOCKERD_NO_PROXY" \
-  --timing "$EVAL_DIR/campaign/scheduling-v17.jsonl"
 ```
 
-检查每组 `EXPERIMENT_CONFIG.json`、`worker-plan.json`（812 题/120 worker）、
-`PLAN_MANIFEST.sha256`、`VERSION_MANIFEST.json`、`ASSET_MANIFEST.json`。
-source_artifacts 和源码 TAR SHA 是真实执行字节权威；source_git_commit 只是 HEAD
-来源记录，若冻结未提交改动，两者可能不同。初始化不读取 `.env`。
-上述 NO_PROXY 是原项目 Docker daemon 的绕代理配置；其他项目需由平台管理员
-确认实际 registry/网段策略，并记录差异。未传此参数时默认仅 localhost/回环地址，
-不是原实验的内部镜像连通性配置。
+**通过条件：** 命令成功，输出所选模型、120 个 worker 和 812 题；运行目录生成
+`EXPERIMENT_CONFIG.json`、`worker-plan.json`、`PLAN_MANIFEST.sha256`、
+`VERSION_MANIFEST.json`、`ASSET_MANIFEST.json` 和源码包。
+Codex 应核对实际配置和哈希，再报告“离线初始化通过，远端尚未验证”。
+**失败处理：** 原样记录错误和缺失路径；目录非空就选择一个新的运行目录。
+不覆盖已有档案、不伪造资产、不就地修改冻结后的 config 或脚本。
 
-## 5. 已获得运行授权后：先单 worker 冒烟，再放行全量
+## 4. 只验证一个沙盒（需要运行授权）
 
-以下阶段会创建资源或发生模型费用。每组使用独立 root、nonce、沙盒和 key。
-先在 Qwen root 演示；GLM 把 `WAV_RUN` 换成 `WAV_GROOT`，不要改其他配置。
-`--worker 01` 限制本阶段资源范围，不会把总计划缩成 1 题。
+**做什么：** 验证镜像、数据、浏览器、模型调用、鼠标动作和归档链路能连接起来。
+这叫冒烟测试：先小范围验证，而不是直接申请整组资源。会占用沙盒并产生模型费用。
+
+可以交给 Codex：
+
+```text
+允许为刚才初始化的运行目录创建并验证 worker 01，执行单沙盒冒烟。
+保持冻结的实验配置。完成后报告准备、模型调用、动作执行、评分和归档情况，
+不要启动剩余沙盒或全量，也不要删除资源。
+```
 
 ```bash
-WAV_RUN="$WAV_QROOT"
 uv run python "$EVAL_DIR/campaign/orchestrate.py" --root "$WAV_RUN" --env .env --worker 01 create
 uv run python "$EVAL_DIR/campaign/orchestrate.py" --root "$WAV_RUN" --env .env --worker 01 wait-ready
 uv run python "$EVAL_DIR/campaign/orchestrate.py" --root "$WAV_RUN" --env .env --worker 01 stage
@@ -232,13 +165,31 @@ uv run python "$EVAL_DIR/campaign/orchestrate.py" --root "$WAV_RUN" --env .env -
 uv run python "$EVAL_DIR/campaign/orchestrate.py" --root "$WAV_RUN" --env .env --worker 01 startup
 ```
 
-startup 跑计划内正式题，沿用 150 轮/相同 thinking/图片历史，结果计入 812，
-不是另加的 best-of 样本。门禁是执行与归档契约正确，不要求这个题必须得 1。
-worker 01 是 Map：环境准备需复制约 73GB 私有数据库，应检查容量与 I/O，
-别把耗时误判成模型请求卡住。检查其准备日志、完成 receipt、TAR hash，
-原生工具调用、坐标和截图，评分失败则说明是真实失败还是 NULL/Infra。
+这五个阶段分别是：创建沙盒、等待可连接、上传冻结包、准备环境、跑首个正式任务。
+worker 01 属于地图组，准备时要复制约 73GB 私有数据库；耗时与共享存储性能有关。
+长阶段应放入可追踪的后台会话，保留会话和远端命令 ID，不要把网页断连当成任务停止。
 
-通过后，允许全量才执行其余 fleet：
+**通过条件：** 准备和 startup 检查通过，首题证据完整、评分状态可解释。
+检查图片、实际工具动作、完成记录和归档哈希；官方分数为 0 也可能是正常模型失败。
+startup 的首题计入正式 812 题，不是额外抽样，也不要求必须得 1。
+**失败处理：** 先查看对应阶段日志和记录；说明是连接、资产、调用、执行还是评分问题。
+只有一个 worker 通过，还不具备全量放行条件。
+
+## 5. 启动完整评测（需要全量授权）
+
+**做什么：** 扩展到所选模型的 120 个沙盒，先验证每个 worker，再运行剩余任务。
+双模型应使用独立运行目录、key 和沙盒，总共需要 240 个沙盒。
+
+可以交给 Codex：
+
+```text
+单沙盒检查通过后，允许该运行目录扩展至 120 个沙盒并完成 812 题评测。
+先检查全部 worker 的准备和 startup 状态，通过后再启动 full。
+地图准备并发按 1→2→4 稳定提升。记录阶段进度、异常和资源身份；
+不要重抽正常失败题、额外增加重试次数或自动删除沙盒。
+```
+
+先创建其余沙盒并上传冻结包：
 
 ```bash
 uv run python "$EVAL_DIR/campaign/orchestrate.py" --root "$WAV_RUN" --env .env create
@@ -246,26 +197,32 @@ uv run python "$EVAL_DIR/campaign/orchestrate.py" --root "$WAV_RUN" --env .env w
 uv run python "$EVAL_DIR/campaign/orchestrate.py" --root "$WAV_RUN" --env .env stage
 uv run python "$EVAL_DIR/campaign/orchestrate.py" --root "$WAV_RUN" --env .env \
   --worker 02 --worker 03 --map-prepare-concurrency 2 prepare
+```
+
+先确认这两个地图 worker 的复制稳定，再准备全组：
+
+```bash
 uv run python "$EVAL_DIR/campaign/orchestrate.py" --root "$WAV_RUN" --env .env \
   --map-prepare-concurrency 4 prepare
 uv run python "$EVAL_DIR/campaign/orchestrate.py" --root "$WAV_RUN" --env .env startup
+```
+
+**放行条件：** 全部 120 个 worker 的 startup 检查有效。不要跳过检查直接运行 full。
+
+```bash
 uv run python "$EVAL_DIR/campaign/orchestrate.py" --root "$WAV_RUN" --env .env full
 ```
 
-Map 复制并发按已验证的 1→2→4 提升；每组总准备并发上限 8。
-若 2 个并发时存储不稳定，停在该阶段检查，不继续提到 4。
-同一 root 不要同时运行两个调度 owner。长阶段用持久后台/session runner，
-不要用未记录身份的裸 nohup，控制机断连后先核对既有远端 command，再接管。
-full 必须有全部 120 worker 的有效 startup gate；不能把冒烟的 partial gate 当作全量放行。
+**完成条件：** 已核对完成与未完成任务、所有尝试和异常账本，再进入归档分析。
+**失败处理：** 某题默认最多 3 次基础设施尝试，耗尽后隔离该题、继续其他题。
+存在耗尽题时最终退出码为 2，并生成 `EXHAUSTED_TASKS.json`；不等于模型得了 0。
+不要清空账本或反复运行 full 来获得额外次数。
+同一运行目录只保留一个调度进程；中断后先查已知远端命令，再接管，不能盲目重发。
 
-`full` 遇某题 Infra 第 3 次耗尽会写 `EXHAUSTED_TASKS.json`，继续其他任务，
-最终有耗尽题则退出码 2。这不是模型得到 0，也不代表应自动重复 full 或清账本。
-控制机中断后按 ledger 查询已知 command；不知道 create/模型调用是否成功时先查证，
-不要直接重发有副作用的请求。重试和单题补测需要保留版本与用户授权边界。
+## 6. 查看进度，保存完整结果
 
-## 6. 查看状态、完整落盘与分析
-
-status/sync 使用平台凭证，但不会发起新模型任务：
+**做什么：** 查询已有任务并把远端证据同步到本地；不发起新模型任务。
+新会话应从记录中恢复 `WAV_RUN` 和仓库根目录，不重新初始化或猜测旧变量。
 
 ```bash
 uv run python "$EVAL_DIR/campaign/orchestrate.py" --root "$WAV_RUN" --env .env status
@@ -274,67 +231,39 @@ uv run python scripts/webarena_verified_analyze.py \
   --run-root "$WAV_RUN" --output-dir "$WAV_RUN/analysis-final"
 ```
 
-分析输出目录必须是新目录，不覆盖已有报告；默认 catalog 是本 run 的
-`webarena-verified.json`，不依赖作者机器的旧数据路径。若有人工核对的问题账本，
-可以额外传 `--issues-path /absolute/path/to/issues.jsonl`；不编造根因。
+分析目录必须是新目录，已有报告不要覆盖。Codex 的进度报告至少区分：
+执行到正常终点的题、有官方分数的题、得分为 1 的题、评分异常、基础设施耗尽和仍未完成的题。
 
-原始证据在 `archives/task-NNNN.tar.gz`，索引在 `index/task-NNNN/`，
-所有尝试在 `attempts/`，未完成/替换历史在 `incomplete/`。
-逐个 TAR 读取释放内存，避免把全量图片或轨迹一次载入内存。
-报告需同时检查 official scoring、网络证据、GUI 轨迹、原生协议错误、
-API 延迟/usage 和轮数；缺失 API usage 不是零费用，记录 token 不等于账单总额。
+**通过条件：** 本地归档和索引已核对，分析输出存在，缺失证据或分数已单列。
+**失败处理：** 缺证据先同步和检查具体任务，不能把未知分数补成 0。
+评分异常记为 `NULL`（未评分）；有缺失分数时只报告“已评分子集成功率”，
+不能把它称为完整 812 题的官方准确率。例子与轨迹位置见技术参考。
 
-执行覆盖、canonical 完成数和官方分数覆盖必须分别写。原 Qwen 有 7 个 NULL，
-GLM 有 10 个 evaluator NULL 加 1 个 Infra NULL，所以 67.58% / 64.54%
-只能标为已评分子集成功率。评分异常与正常业务失败应单列。
+## 7. 清理本轮资源（需要删除授权）
 
-## 7. 收尾清理与回退
+**做什么：** 先确认远端任务已结束、结果已保存，再释放本轮实际创建的沙盒。
+本地结果保留；别人的资源不在清理范围。
 
-清理前停止提交新任务，温和等待自己启动的评测命令结束，执行 sync，
-核对每个本地 TAR/attempt receipt 与 ledger；不能删除其他 owner 的资源。
-cleanup 默认仅做归属/证据/命令终止预检。通过后再显式删除，输出目录每次新建：
+先只检查，不删除：
 
 ```bash
 uv run python "$EVAL_DIR/campaign/cleanup.py" --root "$WAV_RUN" --env .env \
   --output-dir "$WAV_RUN/cleanup-preflight"
+```
+
+**通过条件：** 归属、终止状态和本地证据都通过检查。
+用户同意删除后，才执行：
+
+```bash
 uv run python "$EVAL_DIR/campaign/cleanup.py" --root "$WAV_RUN" --env .env \
   --output-dir "$WAV_RUN/cleanup-delete" --delete
 ```
 
-只清理由本 root 实际创建且与 project/run/worker/nonce/model/plan 对上的 cluster
-成员；单 worker 冒烟可按同样规则清理其已创建子集。缺少证据、活跃命令或归属不明
-都会拒绝删除。DELETE 后须 GET 确认为 404；未知结果不盲目重发。清理不删本地档案。
+**失败处理：** 有活跃命令、证据不足或归属不明就停下来，不扩大删除范围。
+输出目录每次选新名称，删除后核对远端已不存在；不要盲目重发未知结果的请求。
 
-版本基线 `54b4bdb35419004c0b5e5a2252c50ff269f84f2b` 保存已验证 V2 原生链路，
-后续提交只整理管理入口、路径/资产契约和指南。原生关键 SHA：
+## 最后，你应该拿到什么
 
-| 文件/边界 | SHA256 |
-| --- | --- |
-| 通用 runner | `d2c6a8c8b5ac390822bf20bb3bba965cd47957c4fd06e97043f3bfbddfc96441` |
-| 桌面/评分 helper | `57be071e1379c40ce3af53b16767953e6ca1bd081de9cd1537f1f95fef85cc6c` |
-| ChatGatewayAgent | `c71e1db7c52e088129f03cf8f33c3b8462d33bf13dd986c33abe5d2a219ac265` |
-| 原生 agent loop | `e4953a240bfa25e3a902599814385ba3a27615dc1d40f2b99f40470739a10622` |
-| 官方 evaluator | `35c3385b1db4b3378657589f95f50defd4234bd36e5b93d44733fd561b01db4e` |
-
-新版本发现问题时保留现有 run 的 config/manifest/证据，在另一个 checkout 使用
-选定提交初始化新 root；不 reset 原实验目录，不混用新旧源码包。
-基线提交并不含新的可移植 initializer，回到它仅用于代码/行为对照，
-不是无需原资产环境即可一键重跑的承诺。
-
-本次整理已通过 2660 项发布范围回归（7 项跳过），另有 28 项环境配置测试
-通过（5 项跳过）；独立离线演练核对两组各 120 worker / 812 题、全部计划与
-源码成员 SHA，并确认重复初始化拒绝覆盖。演练使用假资产，不证明 live 环境已重跑。
-整仓库测试尚非全绿：当前控制机缺部分其他模型和 WebArena/VisualWebArena
-测试依赖；基线漏列的四条 Verified 配置仅修正测试集合，不改模型运行时。
-不要把专项通过解读成所有模型、环境或真实远端资源已经重新验证。
-
-## 8. 如何使用这个 skill
-
-技能目录是仓库中的 `skills/webarena-verified-eval`，保持目录内的
-`SKILL.md`、`references/reproduction.md` 与 `agents/openai.yaml` 一起安装。
-可将完整目录安装到客户端的 skill 搜索目录，或让 agent 显式读取本目录。
-调用示例：`使用 $webarena-verified-eval，先检查准备条件并给出 Qwen 全量计划，
-未经确认不要申请沙盒或调用模型。`
-
-如果只需要看状态或分析历史轨迹，说明 run root 与只读范围；skill 不应自行重跑。
-代码内入口 `--help` 是参数合同，配置模板是数值合同，manifest 是执行字节合同。
+Codex 应交付：运行目录和 run ID、模型与实际配置、版本与哈希记录、
+准备/startup 检查结果、执行与评分覆盖、成功率口径、异常清单、轨迹和分析路径，
+以及沙盒已释放还是仍保留。需要更新飞书时另行明确要求，不自动发布实验结果。

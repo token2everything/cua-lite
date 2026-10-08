@@ -4,6 +4,8 @@ import hashlib
 import importlib.util
 import io
 import json
+import shlex
+import sys
 import tarfile
 from pathlib import Path
 
@@ -21,12 +23,22 @@ SPEC.loader.exec_module(orchestrator)
 RUN_ID = "wav-generic-qwen38max-full120-20261007-v2"
 
 
+@pytest.fixture(autouse=True)
+def no_external_requests(monkeypatch):
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Campaign regressions must not call a remote service")
+
+    monkeypatch.setattr(orchestrator.requests, "get", forbidden)
+    monkeypatch.setattr(orchestrator.requests, "post", forbidden)
+    monkeypatch.setattr(orchestrator.requests, "delete", forbidden)
+
+
 @pytest.fixture
 def campaign(tmp_path):
     benchmark = tmp_path / "benchmark"
-    dataset = benchmark / "dataset"
-    dataset.mkdir(parents=True)
-    (dataset / "webarena-verified.json").write_text(
+    root = benchmark / "results" / "run"
+    root.mkdir(parents=True)
+    (root / "webarena-verified.json").write_text(
         json.dumps(
             [
                 {"task_id": 0, "sites": ["shopping_admin"]},
@@ -34,36 +46,40 @@ def campaign(tmp_path):
             ]
         )
     )
-    root = benchmark / "results" / "run"
-    root.mkdir(parents=True)
     runner = b"# pinned runner\n"
     receipt = b"# receipt validator\n"
     runner_sha = hashlib.sha256(runner).hexdigest()
+    artifacts = {
+        "scripts/webarena_verified_generic.py": runner,
+        "scripts/webarena_verified_case_receipt.py": receipt,
+        "devs/exps/eval/browsergym.webarena_verified/sandbox_stack.sh": b"#!/usr/bin/env bash\n",
+        **{
+            "devs/exps/eval/browsergym.webarena_verified/campaign/" + name: b"#!/usr/bin/env bash\n"
+            for name in ("prepare-worker.sh", "run-case.sh", "run-worker.sh")
+        },
+    }
     with tarfile.open(root / "cua-lite-source.tar.gz", "w:gz") as archive:
-        for name, content in (
-            ("./scripts/webarena_verified_generic.py", runner),
-            ("./scripts/webarena_verified_case_receipt.py", receipt),
-        ):
-            member = tarfile.TarInfo(name)
+        for name, content in artifacts.items():
+            member = tarfile.TarInfo("./" + name)
             member.size = len(content)
             archive.addfile(member, io.BytesIO(content))
-    (root / "VERSION_MANIFEST.json").write_text(
-        json.dumps(
-            {
-                "source_sha256": hashlib.sha256(
-                    (root / "cua-lite-source.tar.gz").read_bytes()
-                ).hexdigest(),
-                "source_artifacts": {"scripts/webarena_verified_generic.py": runner_sha},
-                "osworld_commit": "b138d348256078fa634fc3b73567a7337c793e6b",
-            }
-        )
-    )
     (root / "campaign.env").write_text(
         f"RUN_ID={RUN_ID}\nRUNNER_SHA256={runner_sha}\nNAME_PREFIX=wav-test\n"
     )
     (root / "image-lock.env").write_text("QWENRUNNER_RUNTIME_IMAGE=pinned\n")
-    for name in ("prepare-worker.sh", "run-case.sh", "run-worker.sh"):
+    for name in ("prepare-worker.sh", "run-case.sh", "run-worker.sh", "sandbox_stack.sh"):
         (root / name).write_text("#!/usr/bin/env bash\n")
+    (root / "ASSET_MANIFEST.json").write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "assets_mount": "/mnt/webarena-verified",
+                "desktop_assets_relative": "desktop-assets",
+                "files": {},
+                "directories": [],
+            }
+        )
+    )
     (root / "EXPERIMENT_CONFIG.json").write_text(
         json.dumps(
             {
@@ -72,6 +88,18 @@ def campaign(tmp_path):
                 "task_count": 2,
                 "api_key_env": "QWEN_TEST_API_KEY",
                 "entrypoint": "scripts/webarena_verified_generic.py",
+                "benchmark": {
+                    "dataset_sha256": hashlib.sha256(
+                        (root / "webarena-verified.json").read_bytes()
+                    ).hexdigest(),
+                },
+                "sandbox": {
+                    "image": "sandbox.example.test/dind:pinned",
+                    "asset_subpath": "benchmark/verified/1.2.3",
+                    "owner": "cua-lite-webarena",
+                    "dockerd_no_proxy": "localhost,127.0.0.1,::1",
+                },
+                "assets": {"desktop_assets_relative": "desktop-assets"},
             }
         )
     )
@@ -106,6 +134,29 @@ def campaign(tmp_path):
         )
         + "\n"
     )
+    (root / "VERSION_MANIFEST.json").write_text(
+        json.dumps(
+            {
+                "source_artifacts": {
+                    name: hashlib.sha256(content).hexdigest() for name, content in artifacts.items()
+                },
+                "runner_sha256": runner_sha,
+                "osworld_commit": "b138d348256078fa634fc3b73567a7337c793e6b",
+                **{
+                    field: hashlib.sha256((root / filename).read_bytes()).hexdigest()
+                    for filename, field in (
+                        ("EXPERIMENT_CONFIG.json", "config_sha256"),
+                        ("PLAN_MANIFEST.sha256", "plan_sha256"),
+                        ("image-lock.env", "image_lock_sha256"),
+                        ("cua-lite-source.tar.gz", "source_sha256"),
+                        ("webarena-verified.json", "dataset_sha256"),
+                        ("ASSET_MANIFEST.json", "asset_manifest_sha256"),
+                        ("sandbox_stack.sh", "sandbox_stack_sha256"),
+                    )
+                },
+            }
+        )
+    )
     env = tmp_path / ".env"
     env.write_text(
         "BASE=https://sandbox.example.test\nPROJECT=test\n"
@@ -132,6 +183,13 @@ def test_run_id_accepts_positive_worker_count(campaign, worker_count):
         )
         + "\n"
     )
+    version_path = campaign.root / "VERSION_MANIFEST.json"
+    version = json.loads(version_path.read_text())
+    version.update(
+        config_sha256=hashlib.sha256(config.read_bytes()).hexdigest(),
+        plan_sha256=hashlib.sha256(manifest.read_bytes()).hexdigest(),
+    )
+    version_path.write_text(json.dumps(version))
 
     reloaded = orchestrator.Campaign(campaign.root, campaign.root.parents[2] / ".env")
 
@@ -161,7 +219,12 @@ class FakeClient:
 
     def create(self, payload):
         self.create_calls += 1
-        item = {"id": f"owned-{self.create_calls}", "state": "running", **payload}
+        item = {
+            "id": f"owned-{self.create_calls}",
+            "state": "running",
+            "projectID": self.project,
+            **payload,
+        }
         self.items.append(item)
         return item
 
@@ -173,6 +236,233 @@ class FakeClient:
         return f"command-{len(self.command_calls)}"
 
 
+class PreparationClient(FakeClient):
+    """Observe fake in-flight copies and publish only their local markers."""
+
+    def __init__(self, campaign):
+        super().__init__()
+        self.campaign = campaign
+        self.jobs = {}
+        self.running = set()
+        self.prepared = set()
+        self.snapshots = []
+        self.observed = []
+
+    def command(self, sandbox_id, command, *, background):
+        command_id = super().command(sandbox_id, command, background=background)
+        self.jobs[command_id] = shlex.split(command)[2]
+        self.running.add(command_id)
+        self.snapshots.append(tuple(self.jobs[job] for job in sorted(self.running)))
+        return command_id
+
+    def command_status(self, sandbox_id, command_id):
+        worker = self.jobs[command_id]
+        assert self.campaign._cluster()[worker]["id"] == sandbox_id
+        self.observed.append(command_id)
+        return {"running": command_id in self.running, "exit_code": 0}
+
+    def download(self, sandbox_id, path):
+        worker = next(
+            worker
+            for worker, record in self.campaign._cluster().items()
+            if record["id"] == sandbox_id
+        )
+        assert path == f"/mnt/results/workers/{worker}/prepared.json"
+        if worker not in self.prepared:
+            return None
+        return json.dumps(
+            {
+                "run_id": self.campaign.run_id,
+                "worker": worker,
+                "sandbox_id": sandbox_id,
+                "capabilities": ",".join(self.campaign.plan["workers"][worker]["capabilities"]),
+                "source_sha256": self.campaign.version["source_sha256"],
+                "image_lock_sha256": self.campaign.image_sha,
+                "asset_manifest_sha256": self.campaign.version["asset_manifest_sha256"],
+                "sandbox_stack_sha256": self.campaign.version["sandbox_stack_sha256"],
+            }
+        ).encode()
+
+    def finish_active(self, seconds):
+        assert seconds == 15
+        self.prepared.update(self.jobs[job] for job in self.running)
+        self.running.clear()
+
+
+@pytest.fixture
+def preparation(campaign, monkeypatch):
+    capabilities = [["map"], ["map", "wikipedia"], ["map", "shopping_admin"]] * 2
+    capabilities += [["shopping_admin"]] * 10
+    campaign.plan["workers"] = {
+        f"{index:02d}": {"capabilities": sites, "startup_task": 0, "tasks": 1}
+        for index, sites in enumerate(capabilities, 1)
+    }
+    workers = list(campaign.plan["workers"])
+    client = PreparationClient(campaign)
+    campaign.client = client
+    campaign.create(workers)
+    for worker in workers:
+        orchestrator._atomic_json(
+            campaign.root / "worker-intents" / f"{worker}-stage.json", {"staged": True}
+        )
+    monkeypatch.setattr(orchestrator.time, "sleep", client.finish_active)
+    return campaign, client, workers
+
+
+@pytest.mark.parametrize("map_parallelism", [1, 2, 4])
+def test_prepare_caps_map_multisite_and_total_inflight(preparation, map_parallelism):
+    campaign, client, workers = preparation
+    campaign.prepare(workers, map_parallelism=map_parallelism)
+    map_counts = [
+        sum("map" in campaign.plan["workers"][worker]["capabilities"] for worker in active)
+        for active in client.snapshots
+    ]
+    assert max(map_counts) == map_parallelism
+    assert max(map(len, client.snapshots)) == 8
+    assert client.prepared == set(workers)
+    assert len(client.command_calls) == len(workers)
+
+
+def test_prepare_adopts_running_commands_without_duplicate_post(preparation):
+    campaign, client, workers = preparation
+    selected = workers[:2] + workers[6:12]
+    for worker in selected:
+        sandbox_id = campaign._cluster()[worker]["id"]
+        command_id = client.command(
+            sandbox_id,
+            f"bash /mnt/results/prepare-worker.sh {worker} ignored {sandbox_id}",
+            background=True,
+        )
+        orchestrator._atomic_json(
+            campaign.root / "worker-intents" / f"{worker}-prepare.json",
+            {"sandbox_id": sandbox_id, "command_id": command_id},
+        )
+    records = {
+        worker: (campaign.root / "worker-intents" / f"{worker}-prepare.json").read_bytes()
+        for worker in selected
+    }
+    client.command_calls.clear()
+    campaign.prepare(selected, map_parallelism=2)
+    assert client.command_calls == []
+    assert client.prepared == set(selected)
+    assert all(
+        (campaign.root / "worker-intents" / f"{worker}-prepare.json").read_bytes() == record
+        for worker, record in records.items()
+    )
+
+
+def test_prepare_rechecks_marker_after_finished_status_race(preparation, monkeypatch):
+    campaign, client, workers = preparation
+    worker = workers[0]
+    sandbox_id = campaign._cluster()[worker]["id"]
+    command_id = client.command(
+        sandbox_id,
+        f"bash /mnt/results/prepare-worker.sh {worker} ignored {sandbox_id}",
+        background=True,
+    )
+    path = campaign.root / "worker-intents" / f"{worker}-prepare.json"
+    orchestrator._atomic_json(path, {"sandbox_id": sandbox_id, "command_id": command_id})
+    record = path.read_bytes()
+    client.command_calls.clear()
+    markers = []
+    download, observe = client.download, client.command_status
+
+    def read_marker(sandbox_id, path):
+        marker = download(sandbox_id, path)
+        markers.append(marker is not None)
+        return marker
+
+    def finish_before_status(sandbox_id, command_id):
+        client.finish_active(15)
+        return observe(sandbox_id, command_id)
+
+    monkeypatch.setattr(client, "download", read_marker)
+    monkeypatch.setattr(client, "command_status", finish_before_status)
+    campaign.prepare([worker], map_parallelism=2)
+    assert markers == [False, True]
+    assert client.command_calls == []
+    assert path.read_bytes() == record
+
+
+@pytest.mark.parametrize("map_parallelism", [1, 2])
+def test_prepare_reduced_map_limit_drains_existing_copies(preparation, map_parallelism):
+    campaign, client, workers = preparation
+    existing = workers[:4]
+    for worker in existing:
+        sandbox_id = campaign._cluster()[worker]["id"]
+        command_id = client.command(
+            sandbox_id,
+            f"bash /mnt/results/prepare-worker.sh {worker} ignored {sandbox_id}",
+            background=True,
+        )
+        orchestrator._atomic_json(
+            campaign.root / "worker-intents" / f"{worker}-prepare.json",
+            {"sandbox_id": sandbox_id, "command_id": command_id},
+        )
+    client.snapshots.clear()
+    campaign.prepare(workers, map_parallelism=map_parallelism)
+    assert client.prepared == set(workers)
+    assert len(client.command_calls) == len(workers)
+    for active in client.snapshots:
+        maps = {
+            worker for worker in active if "map" in campaign.plan["workers"][worker]["capabilities"]
+        }
+        if maps & set(existing):
+            assert maps == set(existing)
+        else:
+            assert len(maps) <= map_parallelism
+
+
+@pytest.mark.parametrize("map_parallelism", [1, 2, 4])
+def test_prepare_cli_forwards_map_concurrency(campaign, monkeypatch, map_parallelism):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "orchestrate.py",
+            "--root",
+            str(campaign.root),
+            "--map-prepare-concurrency",
+            str(map_parallelism),
+            "prepare",
+        ],
+    )
+    monkeypatch.setattr(orchestrator, "Campaign", lambda root, env: campaign)
+    calls = []
+    campaign.ensure_dockerd = lambda workers: calls.append(("dockerd", workers))
+    campaign.prepare = lambda workers, *, map_parallelism: calls.append(
+        ("prepare", workers, map_parallelism)
+    )
+    orchestrator.main()
+    assert calls == [("dockerd", ["01", "02"]), ("prepare", ["01", "02"], map_parallelism)]
+
+
+def test_cli_defaults_are_checkout_relative_and_serial_map(campaign, monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["orchestrate.py", "--root", str(campaign.root), "prepare"])
+    args = orchestrator._parse_args()
+    assert args.map_prepare_concurrency == 1
+    assert args.env == SCRIPT.resolve().parents[5] / ".env"
+
+
+@pytest.mark.parametrize("invalid", ["0", "3", "8", "-1", "not-an-integer"])
+def test_prepare_cli_rejects_unapproved_map_concurrency(campaign, monkeypatch, invalid):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "orchestrate.py",
+            "--root",
+            str(campaign.root),
+            "--map-prepare-concurrency",
+            invalid,
+            "prepare",
+        ],
+    )
+    with pytest.raises(SystemExit) as error:
+        orchestrator._parse_args()
+    assert error.value.code == 2
+
+
 def test_create_is_owned_and_idempotent(campaign):
     client = FakeClient()
     campaign.client = client
@@ -182,6 +472,9 @@ def test_create_is_owned_and_idempotent(campaign):
     detail = campaign._owned_detail("01")
     assert detail["metadata"]["run_id"] == RUN_ID
     assert detail["metadata"]["plan_sha256"] == campaign.plan_sha
+    assert detail["metadata"]["owner"] == "cua-lite-webarena"
+    assert detail["image"]["uri"] == campaign.config["sandbox"]["image"]
+    assert detail["volumes"][0]["subPath"] == campaign.config["sandbox"]["asset_subpath"]
 
 
 def test_stage_bundle_is_stable_across_retries(campaign):
@@ -192,6 +485,69 @@ def test_stage_bundle_is_stable_across_retries(campaign):
     assert first[4:8] == b"\0" * 4
     with tarfile.open(fileobj=io.BytesIO(first), mode="r:gz") as bundle:
         assert bundle.extractfile("EXPERIMENT_CONFIG.json") is not None
+        for name in ("webarena-verified.json", "ASSET_MANIFEST.json", "sandbox_stack.sh"):
+            assert bundle.extractfile(name).read() == (campaign.root / name).read_bytes()
+
+
+@pytest.mark.parametrize(
+    "filename",
+    [
+        "EXPERIMENT_CONFIG.json",
+        "PLAN_MANIFEST.sha256",
+        "image-lock.env",
+        "cua-lite-source.tar.gz",
+        "webarena-verified.json",
+        "ASSET_MANIFEST.json",
+        "sandbox_stack.sh",
+        "prepare-worker.sh",
+        "run-case.sh",
+        "run-worker.sh",
+    ],
+)
+def test_campaign_rejects_changed_published_artifact(campaign, filename):
+    path = campaign.root / filename
+    path.write_bytes(path.read_bytes() + b"\n")
+    with pytest.raises(ValueError, match=filename):
+        orchestrator.Campaign(campaign.root, campaign.root.parents[2] / ".env")
+
+
+@pytest.mark.parametrize(
+    "field", ["run_id", "worker", "plan_sha256", "session_nonce", "owner", "model"]
+)
+def test_each_foreign_ownership_label_refuses_worker_access(campaign, field):
+    campaign.client = FakeClient()
+    campaign.create(["01"])
+    campaign.client.items[0]["metadata"][field] = "foreign"
+    with pytest.raises(RuntimeError, match="ownership mismatch"):
+        campaign._owned_detail("01")
+
+
+def test_foreign_project_refuses_worker_access(campaign):
+    campaign.client = FakeClient()
+    campaign.create(["01"])
+    campaign.client.items[0]["projectID"] = "foreign"
+    with pytest.raises(RuntimeError, match="ownership mismatch"):
+        campaign._owned_detail("01")
+
+
+def test_dockerd_uses_configured_proxy_policy_and_adopts_its_owned_handle(campaign):
+    class DockerdClient(FakeClient):
+        def command_status(self, sandbox_id, command_id):
+            assert sandbox_id == "owned-1" and command_id == "command-1"
+            return {"running": True}
+
+        def checked_command(self, sandbox_id, command, *, timeout_ms=30_000):
+            assert sandbox_id == "owned-1"
+
+    campaign.config["sandbox"]["dockerd_no_proxy"] = "registry.example.test,localhost"
+    campaign.client = DockerdClient()
+    campaign.create(["01"])
+    campaign.ensure_dockerd(["01"])
+    campaign.ensure_dockerd(["01"])
+    assert len(campaign.client.command_calls) == 1
+    command = campaign.client.command_calls[0][1]
+    assert command.startswith("export NO_PROXY=registry.example.test,localhost; ")
+    assert 'export no_proxy="$NO_PROXY"' in command
 
 
 def test_large_upload_assembles_verified_chunks(monkeypatch):

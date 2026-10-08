@@ -4,10 +4,12 @@
 Usage: uv run python devs/exps/eval/browsergym.webarena_verified/campaign/orchestrate.py
     --root /path/to/results/<run> create
 
-The result root must contain a generated plan, campaign.env, pinned source
-archive, image lock, and the three worker scripts. Credentials come only from
-the local .env and are uploaded directly to owned sandboxes, never to the
-result root. Run `create -> wait-ready -> stage -> prepare -> startup -> full`.
+Initialize the result root with the sibling initialize.py first. Its catalog,
+asset manifest, stack script, plan and source bundle bind one immutable run.
+Credentials come only from the private --env file and go directly to owned
+sandboxes, never to the result root. Run `create -> wait-ready -> stage ->
+prepare -> startup -> full -> sync`. Full exits 2 when Infra-exhausted cases
+remain unscored; analysis still consumes the retained partial evidence.
 """
 
 from __future__ import annotations
@@ -30,14 +32,15 @@ from typing import Any
 
 import requests
 
-IMAGE = "registry2-cloud.d.pjlab.org.cn/ccr-sandbox/sandbox-dind:dind-202608311205"
-ASSET_SUBPATH = "eval/benchmark/webarena-verified/1.2.3"
 BUNDLE_FILES = (
     "EXPERIMENT_CONFIG.json",
     "VERSION_MANIFEST.json",
     "campaign.env",
     "PLAN_MANIFEST.sha256",
     "worker-plan.json",
+    "webarena-verified.json",
+    "ASSET_MANIFEST.json",
+    "sandbox_stack.sh",
     "image-lock.env",
     "cua-lite-source.tar.gz",
     "prepare-worker.sh",
@@ -62,8 +65,15 @@ INDEX_FILES = (
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True, help="campaign result root")
-    parser.add_argument("--env", type=Path, default=Path("/root/cua-lite/.env"))
+    parser.add_argument("--env", type=Path, default=Path(__file__).resolve().parents[5] / ".env")
     parser.add_argument("--worker", action="append", help="limit phase to a planned worker ID")
+    parser.add_argument(
+        "--map-prepare-concurrency",
+        type=int,
+        choices=(1, 2, 4),
+        default=1,
+        help="Map database copies in flight; total preparation stays capped at eight",
+    )
     parser.add_argument(
         "phase",
         choices=("create", "wait-ready", "stage", "prepare", "startup", "full", "sync", "status"),
@@ -335,16 +345,34 @@ class Campaign:
         config = json.loads((self.root / "EXPERIMENT_CONFIG.json").read_text())
         self.config = config
         self.version = json.loads((self.root / "VERSION_MANIFEST.json").read_text())
-        if self.version["source_sha256"] != _sha(self.root / "cua-lite-source.tar.gz"):
-            raise ValueError("source archive differs from version manifest")
+        for filename, field in (
+            ("EXPERIMENT_CONFIG.json", "config_sha256"),
+            ("PLAN_MANIFEST.sha256", "plan_sha256"),
+            ("image-lock.env", "image_lock_sha256"),
+            ("cua-lite-source.tar.gz", "source_sha256"),
+            ("webarena-verified.json", "dataset_sha256"),
+            ("ASSET_MANIFEST.json", "asset_manifest_sha256"),
+            ("sandbox_stack.sh", "sandbox_stack_sha256"),
+        ):
+            if self.version[field] != _sha(self.root / filename):
+                raise ValueError(f"{filename} differs from version manifest")
+        if self.version["runner_sha256"] != self.runner_sha:
+            raise ValueError("runner differs from campaign.env")
+        if self.version["dataset_sha256"] != config["benchmark"]["dataset_sha256"]:
+            raise ValueError("catalog differs from configured official dataset")
+        asset_manifest = json.loads((self.root / "ASSET_MANIFEST.json").read_text())
+        if (
+            asset_manifest["assets_mount"] != "/mnt/webarena-verified"
+            or asset_manifest["desktop_assets_relative"]
+            != config["assets"]["desktop_assets_relative"]
+        ):
+            raise ValueError("asset manifest differs from configured worker assets")
         if config["run_id"] != self.run_id:
             raise ValueError("experiment config differs from campaign.env")
         if config["entrypoint"] != "scripts/webarena_verified_generic.py":
             raise ValueError("native campaign entrypoint differs from approved contract")
         self.client = SandboxClient(_read_env(env_path), api_key_env=config["api_key_env"])
-        self.plan = self.load_plan(
-            self.root, self.root.parents[1] / "dataset/webarena-verified.json", config
-        )
+        self.plan = self.load_plan(self.root, self.root / "webarena-verified.json", config)
         self._initial_workers = {
             int(line.split("\t", 1)[0]): worker
             for worker in self.plan["workers"]
@@ -360,6 +388,13 @@ class Campaign:
                 raise ValueError("source archive runner SHA mismatch")
             if source.extractfile("./scripts/webarena_verified_case_receipt.py") is None:
                 raise ValueError("source archive lacks case receipt validator")
+        for filename in ("prepare-worker.sh", "run-case.sh", "run-worker.sh"):
+            relative = "devs/exps/eval/browsergym.webarena_verified/campaign/" + filename
+            if _sha(self.root / filename) != self.version["source_artifacts"][relative]:
+                raise ValueError(f"{filename} differs from frozen source")
+        stack_relative = "devs/exps/eval/browsergym.webarena_verified/sandbox_stack.sh"
+        if self.version["sandbox_stack_sha256"] != self.version["source_artifacts"][stack_relative]:
+            raise ValueError("worker stack differs from frozen source")
 
     @staticmethod
     def load_plan(root: Path, catalog_path: Path, config: dict[str, Any]) -> dict[str, Any]:
@@ -448,8 +483,12 @@ class Campaign:
             "worker": worker,
             "plan_sha256": self.plan_sha,
             "session_nonce": record["nonce"],
+            "owner": self.config["sandbox"]["owner"],
+            "model": self.config["model"],
         }
-        if any(metadata.get(name) != value for name, value in expected.items()):
+        if detail["projectID"] != self.client.project or any(
+            metadata.get(name) != value for name, value in expected.items()
+        ):
             raise RuntimeError(f"sandbox ownership mismatch: {record['id']}")
         return detail
 
@@ -478,14 +517,14 @@ class Campaign:
                     "nonce": nonce,
                     "post_attempted": False,
                     "payload": {
-                        "image": {"uri": IMAGE},
+                        "image": {"uri": self.config["sandbox"]["image"]},
                         "entrypoint": ["sleep", "inf"],
                         "timeout": 259200,
                         "resourceRequests": {"cpu": "4", "memory": "20Gi"},
                         "volumes": [
                             {
                                 "mountPath": "/mnt/webarena-verified",
-                                "subPath": ASSET_SUBPATH,
+                                "subPath": self.config["sandbox"]["asset_subpath"],
                                 "readOnly": True,
                             }
                         ],
@@ -497,7 +536,7 @@ class Campaign:
                             "task_count": str(self.plan["workers"][worker]["tasks"]),
                             "model": self.config["model"],
                             "benchmark_version": "1.2.3",
-                            "owner": "codex-session",
+                            "owner": self.config["sandbox"]["owner"],
                             "purpose": "native-generic-full-evaluation",
                             "session_nonce": nonce,
                         },
@@ -624,7 +663,7 @@ class Campaign:
                     self.client.checked_command(detail["id"], "docker info >/dev/null 2>&1")
                     continue
             command = (
-                "export NO_PROXY=registry-v2.h.pjlab.org.cn,10.102.254.2,.pjlab.org.cn; "
+                f"export NO_PROXY={shlex.quote(self.config['sandbox']['dockerd_no_proxy'])}; "
                 'export no_proxy="$NO_PROXY"; '
                 "exec dockerd >/tmp/wav-generic-dockerd.log 2>&1"
             )
@@ -653,12 +692,14 @@ class Campaign:
             "capabilities": ",".join(self.plan["workers"][worker]["capabilities"]),
             "source_sha256": _sha(self.root / "cua-lite-source.tar.gz"),
             "image_lock_sha256": self.image_sha,
+            "asset_manifest_sha256": self.version["asset_manifest_sha256"],
+            "sandbox_stack_sha256": self.version["sandbox_stack_sha256"],
         }
         if any(marker.get(name) != value for name, value in expected.items()):
             raise RuntimeError(f"worker {worker} prepared marker differs from campaign")
         return True
 
-    def prepare(self, workers: list[str]) -> None:
+    def prepare(self, workers: list[str], *, map_parallelism: int) -> None:
         pending = []
         active: dict[str, dict[str, str]] = {}
         for worker in workers:
@@ -678,6 +719,10 @@ class Campaign:
                 if status.get("running"):
                     active[worker] = record
                     continue
+                # The marker can appear between its read and the status GET.
+                if status.get("exit_code") == 0 and self._prepared(worker, detail["id"]):
+                    print(f"{worker}: prepared during reconciliation", flush=True)
+                    continue
                 raise RuntimeError(
                     f"worker {worker} prepare stopped without a marker: {status.get('exit_code')}"
                 )
@@ -696,14 +741,18 @@ class Campaign:
                 del active[worker]
                 print(f"{worker}: prepared", flush=True)
 
-            # Keep map copies serial and image pulls bounded on the shared
-            # cluster. They remain fully parallel for case execution later.
+            # Map copies have an explicit management limit; all preparation
+            # work still shares the total eight-worker cap.
             for worker in list(pending):
                 if len(active) >= 8:
                     break
                 capabilities = self.plan["workers"][worker]["capabilities"]
-                if "map" in capabilities and any(
-                    "map" in self.plan["workers"][current]["capabilities"] for current in active
+                if (
+                    "map" in capabilities
+                    and sum(
+                        "map" in self.plan["workers"][current]["capabilities"] for current in active
+                    )
+                    >= map_parallelism
                 ):
                     continue
                 detail = self._owned_detail(worker)
@@ -1127,11 +1176,19 @@ class Campaign:
             if receipt["archive_sha256"] != archive_sha:
                 raise RuntimeError(f"worker {worker} startup archive changed")
 
-    def full(self, workers: list[str]) -> None:
+    def full(self, workers: list[str]) -> list[int]:
+        """Adopt live handles and defer exhausted cases without scoring or replay."""
         self._verify_startup_gate()
         if set(workers) != set(self.plan["workers"]):
             raise ValueError("dynamic full dispatch requires the complete qualified fleet")
         remaining = set(map(int, self.plan["tasks"]))
+        exhausted: set[int] = set()
+        exhausted_path = self.root / "EXHAUSTED_TASKS.json"
+        if exhausted_path.exists():
+            record = json.loads(exhausted_path.read_text())
+            if record["run_id"] != self.run_id or record["plan_sha256"] != self.plan_sha:
+                raise RuntimeError("exhausted-case journal belongs to another campaign")
+            exhausted = set(record["task_ids"])
         deadline = time.monotonic() + 86_400
         while remaining:
             busy: set[str] = set()
@@ -1141,6 +1198,7 @@ class Campaign:
                 if self._local_receipt(worker, sandbox_id, task_id):
                     last = json.loads(path.read_text())["attempts"][-1] if path.exists() else None
                     if last is None or "exit_code" in last:
+                        exhausted.discard(task_id)
                         remaining.remove(task_id)
                         continue
                 if not path.exists():
@@ -1159,9 +1217,24 @@ class Campaign:
                             f"task {task_id} lacks retained attempt evidence; inspect before retry"
                         )
                     if outcome != "pending":
+                        exhausted.discard(task_id)
                         remaining.remove(task_id)
                     elif len(intent["attempts"]) >= 3:
-                        raise RuntimeError(f"task {task_id} exhausted infrastructure attempts")
+                        exhausted.add(task_id)
+                        remaining.remove(task_id)
+                        _atomic_json(
+                            exhausted_path,
+                            {
+                                "run_id": self.run_id,
+                                "plan_sha256": self.plan_sha,
+                                "task_ids": sorted(exhausted),
+                                "retry_limit": 3,
+                                "disposition": "deferred, unscored; no extra retry authorized",
+                            },
+                        )
+                        print(
+                            f"task {task_id}: three Infra attempts retained; deferred", flush=True
+                        )
                     continue
                 busy.add(worker)
                 if "command_id" not in attempt:
@@ -1193,9 +1266,22 @@ class Campaign:
                         "inspect before retry"
                     )
                 if outcome != "pending":
+                    exhausted.discard(task_id)
                     remaining.remove(task_id)
                 elif len(intent["attempts"]) >= 3:
-                    raise RuntimeError(f"task {task_id} exhausted infrastructure attempts")
+                    exhausted.add(task_id)
+                    remaining.remove(task_id)
+                    _atomic_json(
+                        exhausted_path,
+                        {
+                            "run_id": self.run_id,
+                            "plan_sha256": self.plan_sha,
+                            "task_ids": sorted(exhausted),
+                            "retry_limit": 3,
+                            "disposition": "deferred, unscored; no extra retry authorized",
+                        },
+                    )
+                    print(f"task {task_id}: three Infra attempts retained; deferred", flush=True)
                 busy.remove(worker)
                 print(f"task {task_id}: command exited {code}, archive {outcome}", flush=True)
 
@@ -1234,6 +1320,16 @@ class Campaign:
                     )
                 time.sleep(15)
 
+        _atomic_json(
+            exhausted_path,
+            {
+                "run_id": self.run_id,
+                "plan_sha256": self.plan_sha,
+                "task_ids": sorted(exhausted),
+                "retry_limit": 3,
+                "disposition": "deferred, unscored; no extra retry authorized",
+            },
+        )
         # Official evaluator errors remain terminal but unscored. Never present
         # an 812-denominator accuracy unless all 812 official scores exist.
         if set(workers) == set(self.plan["workers"]):
@@ -1248,7 +1344,10 @@ class Campaign:
                 "terminal": len(receipts),
                 "scored": len(scored),
                 "evaluator_errors": len(receipts) - len(scored),
+                "pending": self.plan["task_count"] - len(receipts),
+                "unscored": len(receipts) - len(scored),
                 "successes": sum(item["score"] == 1 for item in scored),
+                "exhausted_task_ids": sorted(exhausted),
                 "official_accuracy": (
                     sum(item["score"] == 1 for item in scored) / len(receipts)
                     if len(scored) == len(receipts) == self.plan["task_count"]
@@ -1257,6 +1356,7 @@ class Campaign:
             }
             _atomic_json(self.root / "campaign-summary.json", summary)
             print(json.dumps(summary, indent=2), flush=True)
+        return sorted(exhausted)
 
     def status(self, workers: list[str]) -> None:
         counts: dict[str, int] = {}
@@ -1302,7 +1402,7 @@ def main() -> None:
         campaign.stage(workers)
     elif args.phase == "prepare":
         campaign.ensure_dockerd(workers)
-        campaign.prepare(workers)
+        campaign.prepare(workers, map_parallelism=args.map_prepare_concurrency)
     elif args.phase == "status":
         campaign.status(workers)
     elif args.phase == "sync":
@@ -1312,7 +1412,9 @@ def main() -> None:
     elif args.phase == "full":
         with (campaign.root / "full-dispatch-owner.lock").open("a") as owner:
             fcntl.flock(owner, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            campaign.full(workers)
+            exhausted = campaign.full(workers)
+            if exhausted:
+                raise SystemExit(2)
     else:
         raise AssertionError("unreachable")
 

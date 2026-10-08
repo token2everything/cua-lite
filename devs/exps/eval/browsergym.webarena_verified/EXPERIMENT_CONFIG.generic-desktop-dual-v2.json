@@ -176,6 +176,15 @@
     "inventory_before_delete": true,
     "readback_after_delete": true
   },
+  "sandbox": {
+    "image": null,
+    "asset_subpath": null,
+    "owner": "cua-lite-webarena",
+    "dockerd_no_proxy": "localhost,127.0.0.1,::1"
+  },
+  "assets": {
+    "desktop_assets_relative": null
+  },
   "entrypoint": "scripts/webarena_verified_generic.py",
   "task_count": 812,
   "experiments": [

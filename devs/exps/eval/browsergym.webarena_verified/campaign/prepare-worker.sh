@@ -18,7 +18,6 @@ source /mnt/results/campaign.env
 [[ "$RUN_ID" =~ ^wav-generic-[a-z0-9]+-full[1-9][0-9]*-[0-9]{8}-v[0-9]+$ ]] || exit 2
 [[ "$RUNNER_SHA256" =~ ^[0-9a-f]{64}$ ]] || exit 2
 [[ "$NAME_PREFIX" =~ ^[a-z0-9][a-z0-9-]{1,40}$ ]] || exit 2
-CAL_ROOT=/mnt/webarena-verified/results/wav-qwenrunner-calibration-20260928-5b5f1a5f
 IMAGE_LOCK=/mnt/results/image-lock.env
 WORKER_DIR="/mnt/results/workers/$WORKER"
 mkdir -p "$WORKER_DIR"
@@ -27,8 +26,9 @@ exec > >(tee -a "$WORKER_DIR/prepare.log") 2>&1
 test -f /var/lib/wav-qwen/private/model.env
 test -f /mnt/results/cua-lite-source.tar.gz
 test -f "$IMAGE_LOCK"
-test -f "$CAL_ROOT/desktop-python.tar.gz"
-test -f "$CAL_ROOT/osworld-b138d348.bundle"
+test -f /mnt/results/EXPERIMENT_CONFIG.json
+test -f /mnt/results/ASSET_MANIFEST.json
+test -f /mnt/results/sandbox_stack.sh
 printf '%s\n' "$CAPABILITIES" > "$WORKER_DIR/capabilities.txt"
 
 # The coordinator owns dockerd as a persistent execd command. A daemon started
@@ -48,7 +48,44 @@ source "$IMAGE_LOCK"
 set +a
 export WEBARENA_VERIFIED_IMAGE_LOCK="$IMAGE_LOCK"
 export WEBARENA_VERIFIED_SKIP_EVAL_IMAGE=1
-bash /mnt/webarena-verified/tools/sandbox_stack.sh prepare
+bash /mnt/results/sandbox_stack.sh prepare
+docker pull "$QWENRUNNER_RUNTIME_IMAGE"
+
+# Desktop dependencies come from the initialized asset contract, not a prior
+# experiment directory. Verify their bytes before unpacking or cloning them.
+DESKTOP_ASSETS_RELATIVE=$(docker run --rm -i --network none \
+    --label "com.cua-lite.run-id=$RUN_ID" \
+    -v /var/lib/wav-runtime/venv:/opt/venv:ro \
+    -v /var/lib/wav-runtime/python:/root/.local/share/uv/python:ro \
+    -v /mnt/results:/mnt/results:ro \
+    -v /mnt/webarena-verified:/mnt/webarena-verified:ro \
+    "$QWENRUNNER_RUNTIME_IMAGE" /opt/venv/bin/python - <<'PY'
+import hashlib
+import json
+from pathlib import Path
+
+root = Path("/mnt/webarena-verified")
+config = json.loads(Path("/mnt/results/EXPERIMENT_CONFIG.json").read_text())
+manifest = json.loads(Path("/mnt/results/ASSET_MANIFEST.json").read_text())
+relative = config["assets"]["desktop_assets_relative"]
+if manifest["assets_mount"] != str(root) or manifest["desktop_assets_relative"] != relative:
+    raise ValueError("asset manifest differs from campaign configuration")
+for name in ("desktop-python.tar.gz", "osworld-b138d348.bundle"):
+    asset = str(Path(relative) / name)
+    path = root / asset
+    expected = manifest["files"][asset]
+    if path.stat().st_size != expected["size"]:
+        raise ValueError(f"desktop asset size differs from manifest: {asset}")
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    if digest.hexdigest() != expected["sha256"]:
+        raise ValueError(f"desktop asset differs from manifest: {asset}")
+print(relative)
+PY
+)
+DESKTOP_ASSETS="/mnt/webarena-verified/$DESKTOP_ASSETS_RELATIVE"
 
 IFS=, read -r -a sites <<< "$CAPABILITIES"
 for site in "${sites[@]}"; do
@@ -62,20 +99,18 @@ for site in "${sites[@]}"; do
                 docker load -i /mnt/webarena-verified/tools/kiwix-serve-3.3.0-amd64.tar.gz
             fi
             ;;
-        map) bash /mnt/webarena-verified/tools/sandbox_stack.sh prepare-map ;;
+        map) bash /mnt/results/sandbox_stack.sh prepare-map ;;
         *) echo "Unsupported capability: $site" >&2; exit 2 ;;
     esac
 done
-
-docker pull "$QWENRUNNER_RUNTIME_IMAGE"
 
 mkdir -p /var/lib/wav-qwen/source /var/lib/wav-qwen/OSWorld
 if [ ! -f /var/lib/wav-qwen/source/.full-source-ready ]; then
     tar -xzf /mnt/results/cua-lite-source.tar.gz -C /var/lib/wav-qwen/source
     touch /var/lib/wav-qwen/source/.full-source-ready
 fi
-# Source-refresh runs keep the heavy prepared assets but replace both campaign
-# scripts before the prepared marker is republished.
+# Preparation retries retain heavy assets and re-extract the pinned entrypoints
+# before validating the runner and publishing the prepared marker.
 tar -xzf /mnt/results/cua-lite-source.tar.gz -C /var/lib/wav-qwen/source \
     ./scripts/webarena_verified_generic.py \
     ./scripts/webarena_verified_case_receipt.py
@@ -84,11 +119,11 @@ printf '%s  %s\n' \
     '/var/lib/wav-qwen/source/scripts/webarena_verified_generic.py' | sha256sum -c -
 
 if [ ! -d /var/lib/wav-qwen/desktop-python ]; then
-    tar -xzf "$CAL_ROOT/desktop-python.tar.gz" -C /var/lib/wav-qwen
+    tar -xzf "$DESKTOP_ASSETS/desktop-python.tar.gz" -C /var/lib/wav-qwen
 fi
 if [ ! -d /var/lib/wav-qwen/OSWorld/.git ]; then
     rm -rf /var/lib/wav-qwen/OSWorld
-    git clone "$CAL_ROOT/osworld-b138d348.bundle" /var/lib/wav-qwen/OSWorld
+    git clone "$DESKTOP_ASSETS/osworld-b138d348.bundle" /var/lib/wav-qwen/OSWorld
 fi
 test "$(git -C /var/lib/wav-qwen/OSWorld rev-parse HEAD)" = \
     b138d348256078fa634fc3b73567a7337c793e6b
@@ -98,6 +133,8 @@ mkdir -p /var/lib/wav-qwen/locks /var/lib/wav-qwen/results \
     /mnt/results/incomplete
 SOURCE_SHA=$(sha256sum /mnt/results/cua-lite-source.tar.gz | awk '{print $1}')
 IMAGE_LOCK_SHA=$(sha256sum "$IMAGE_LOCK" | awk '{print $1}')
+ASSET_MANIFEST_SHA=$(sha256sum /mnt/results/ASSET_MANIFEST.json | awk '{print $1}')
+SANDBOX_STACK_SHA=$(sha256sum /mnt/results/sandbox_stack.sh | awk '{print $1}')
 PREPARED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 IMAGES_JSON={}
 IMAGE_IDS_JSON={}
@@ -129,12 +166,14 @@ for site in "${sites[@]}"; do
     esac
 done
 export RUN_ID WORKER SANDBOX_ID CAPABILITIES SOURCE_SHA IMAGE_LOCK_SHA PREPARED_AT
+export ASSET_MANIFEST_SHA SANDBOX_STACK_SHA
 export IMAGES_JSON IMAGE_IDS_JSON
 docker run --rm -i --network none \
     -v /var/lib/wav-runtime/venv:/opt/venv:ro \
     -v /var/lib/wav-runtime/python:/root/.local/share/uv/python:ro \
     -e RUN_ID -e WORKER -e SANDBOX_ID -e CAPABILITIES \
     -e SOURCE_SHA -e IMAGE_LOCK_SHA -e PREPARED_AT \
+    -e ASSET_MANIFEST_SHA -e SANDBOX_STACK_SHA \
     -e IMAGES_JSON -e IMAGE_IDS_JSON \
     "$QWENRUNNER_RUNTIME_IMAGE" /opt/venv/bin/python - <<'PY' \
     > "$WORKER_DIR/.prepared.json.tmp"
@@ -150,6 +189,8 @@ json.dump(
         "capabilities": os.environ["CAPABILITIES"],
         "source_sha256": os.environ["SOURCE_SHA"],
         "image_lock_sha256": os.environ["IMAGE_LOCK_SHA"],
+        "asset_manifest_sha256": os.environ["ASSET_MANIFEST_SHA"],
+        "sandbox_stack_sha256": os.environ["SANDBOX_STACK_SHA"],
         "images": json.loads(os.environ["IMAGES_JSON"]),
         "image_ids": json.loads(os.environ["IMAGE_IDS_JSON"]),
         "prepared_at": os.environ["PREPARED_AT"],

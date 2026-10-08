@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.resources
 import importlib.util
 import json
 import sys
-from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -19,7 +19,8 @@ plan_module = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(plan_module)
 
 
-def test_full_plan_matches_approved_120_layout_and_binds_config(tmp_path, monkeypatch):
+@pytest.mark.parametrize("use_timing", [False, True])
+def test_full_plan_matches_approved_120_layout_and_binds_config(tmp_path, monkeypatch, use_timing):
     pytest.importorskip("webarena_verified")
     dataset = Path(
         str(
@@ -33,24 +34,13 @@ def test_full_plan_matches_approved_120_layout_and_binds_config(tmp_path, monkey
     )
     config.update(run_id="wav-generic-qwen38max-full120-20261007-v2", task_count=812)
     (tmp_path / "EXPERIMENT_CONFIG.json").write_text(json.dumps(config))
-    baseline = datetime(2026, 10, 6, tzinfo=UTC)
-    rows = []
-    for task in range(812):
-        index = tmp_path / "history" / "index" / f"task-{task:04d}"
-        index.mkdir(parents=True)
-        (index / "baseline_receipt.json").write_text(
-            json.dumps({"created_at": baseline.isoformat()})
+    timing = tmp_path / "timing.jsonl"
+    timing.write_text(
+        "".join(
+            json.dumps({"task_id": task, "estimated_seconds": task + 1}) + "\n"
+            for task in range(812)
         )
-        (index / "completed.json").write_text(
-            json.dumps(
-                {
-                    "completed_at": (baseline + timedelta(seconds=task + 1)).isoformat(),
-                }
-            )
-        )
-        rows.append(json.dumps({"task_id": task, "origin_result_root": str(tmp_path / "history")}))
-    history = tmp_path / "timing.jsonl"
-    history.write_text("\n".join(rows) + "\n")
+    )
     monkeypatch.setattr(
         sys,
         "argv",
@@ -60,16 +50,20 @@ def test_full_plan_matches_approved_120_layout_and_binds_config(tmp_path, monkey
             str(tmp_path),
             "--config",
             str(tmp_path / "EXPERIMENT_CONFIG.json"),
-            "--historical-timing",
-            str(history),
-            "--dataset",
+            "--catalog",
             str(dataset),
+            *(["--timing", str(timing)] if use_timing else []),
         ],
     )
     plan_module.main()
     plan = json.loads((tmp_path / "worker-plan.json").read_text())
     assert len(plan["workers"]) == 120
     assert plan["task_count"] == 812
+    assert plan["timing_source"]["mode"] == ("provided_estimates" if use_timing else "uniform_cost")
+    assert plan["timing_source"]["sha256"] == (
+        hashlib.sha256(timing.read_bytes()).hexdigest() if use_timing else None
+    )
+    assert plan["tasks"]["811"]["estimated_seconds"] == (812.0 if use_timing else 1.0)
     assert sum("map" in row["capabilities"] for row in plan["workers"].values()) == 45
     counts = {}
     for row in plan["workers"].values():
@@ -106,3 +100,45 @@ def test_lpt_assignment_preserves_long_first_after_short_qualification():
     durations = {0: 1, 1: 2, 2: 90, 3: 80, 4: 70, 5: 60}
     assignments = plan_module.assign_full(catalog, profiles, durations)
     assert assignments == {"01": [0, 2, 5], "02": [1, 3, 4]}
+
+
+@pytest.mark.parametrize(
+    "row",
+    [
+        {"task_id": 0, "estimated_seconds": 0},
+        {"task_id": 0, "estimated_seconds": float("inf")},
+        {"task_id": 0, "estimated_seconds": True},
+        {"task_id": True, "estimated_seconds": 1},
+        {"task_id": 812, "estimated_seconds": 1},
+        {"task_id": 0, "origin_result_root": "/private/prior/result"},
+        {"task_id": 0, "estimated_seconds": 1, "answer": "private"},
+    ],
+)
+def test_timing_contract_rejects_invalid_or_private_rows(tmp_path, row):
+    catalog = tmp_path / "catalog.json"
+    payload = json.dumps([{"task_id": task, "sites": ["map"]} for task in range(812)])
+    catalog.write_text(payload)
+    config = tmp_path / "EXPERIMENT_CONFIG.json"
+    config.write_text(
+        json.dumps(
+            {
+                "task_count": 812,
+                "benchmark": {"dataset_sha256": hashlib.sha256(payload.encode()).hexdigest()},
+            }
+        )
+    )
+    timing = tmp_path / "timing.jsonl"
+    timing.write_text(json.dumps(row) + "\n")
+    with pytest.raises(ValueError):
+        plan_module.generate_plan(tmp_path, config, catalog, timing)
+    assert not (tmp_path / "workers").exists()
+
+
+def test_plan_rejects_catalog_checksum_mismatch_before_writing(tmp_path):
+    config = tmp_path / "EXPERIMENT_CONFIG.json"
+    config.write_text(json.dumps({"benchmark": {"dataset_sha256": "0" * 64}}))
+    catalog = tmp_path / "catalog.json"
+    catalog.write_text("[]")
+    with pytest.raises(ValueError, match="catalog differs"):
+        plan_module.generate_plan(tmp_path, config, catalog)
+    assert not (tmp_path / "worker-plan.json").exists()

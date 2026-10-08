@@ -364,6 +364,8 @@ _KNOWN_ACTION_NAMED_EXTRA_TOOL_ROWS = {
     "qwen3_5/default/browsergym.visualwebarena/som.yaml",
     "qwen3_5/default/browsergym.webarena/som.yaml",
     "qwen3_5/default/browsergym.webarena/text_only.yaml",
+    "qwen3_5/default/browsergym.webarena_verified/som.yaml",
+    "qwen3_5/default/browsergym.webarena_verified/text_only.yaml",
     "qwen3_5/default/webharbor.webvoyager/som.yaml",
     "qwen3_8/default/browsergym.miniwob/text_only.yaml",
     "qwen3_8/default/browsergym.visualwebarena/mixed.yaml",
@@ -376,6 +378,8 @@ _KNOWN_ACTION_NAMED_EXTRA_TOOL_ROWS = {
     "qwen3_vl/default/browsergym.visualwebarena/som.yaml",
     "qwen3_vl/default/browsergym.webarena/som.yaml",
     "qwen3_vl/default/browsergym.webarena/text_only.yaml",
+    "qwen3_vl/default/browsergym.webarena_verified/som.yaml",
+    "qwen3_vl/default/browsergym.webarena_verified/text_only.yaml",
     "qwen3_vl/default/webharbor.webvoyager/som.yaml",
 }
 
@@ -654,7 +658,9 @@ def test_goal_images_are_additive_to_the_protocol_image_budget() -> None:
 
 
 def _teacher_metadata() -> LiteCUAMetadata:
-    return LiteCUAMetadata(dims=("desktop", "use"), extra_tool_schemas=[
+    return LiteCUAMetadata(
+        dims=("desktop", "use"),
+        extra_tool_schemas=[
             make_tool_schema(
                 "response",
                 description="finish",
@@ -664,7 +670,8 @@ def _teacher_metadata() -> LiteCUAMetadata:
                     "required": ["text"],
                 },
             )
-        ])
+        ],
+    )
 
 
 def _teacher_agent():

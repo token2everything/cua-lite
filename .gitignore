@@ -110,6 +110,8 @@ celerybeat.pid
 
 # Environments
 .env
+.env.*
+!.env.example
 .venv
 venv/
 ENV/
@@ -157,6 +159,12 @@ assets/README/teaser/_frames/
 /docker-auth
 /hf-auth
 /feishu-webhook.json
+
+# WebArena-Verified campaign roots contain private model requests and cookies.
+/results/
+/runs/
+/webarena-verified-assets/
+/devs/exps/eval/browsergym.webarena_verified/campaign/.runs/
 
 # session scratch / runtime artifacts (never commit)
 # root-level *.md is scratch — only the whitelist below is tracked

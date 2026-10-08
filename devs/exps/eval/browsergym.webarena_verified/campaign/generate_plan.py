@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""Generate a config-bound compatible-worker plan using historical durations.
+"""Generate a config-bound compatible-worker plan without private prior results.
 
 Usage: uv run python devs/exps/eval/browsergym.webarena_verified/campaign/generate_plan.py
     --root /path/to/results/<run> --config /path/to/results/<run>/EXPERIMENT_CONFIG.json
-    --historical-timing /path/to/V17/qa-analysis-v17-20261007/case-timing.jsonl
+    --catalog /path/to/results/<run>/webarena-verified.json
+    [--timing /path/to/task-duration-estimates.jsonl]
 
-Historical timings determine scheduling only; neither scores nor private task
-answers are supplied to the agent. Full execution dynamically assigns pending
-cases to idle workers whose prepared site capabilities cover the case.
+Optional timing rows contain exactly task_id and estimated_seconds. Otherwise
+every task receives the explicit scheduling cost of one second. Estimates
+determine scheduling only, never model inputs or scores. Execution dynamically
+assigns pending cases to workers whose prepared sites cover the case.
 """
 
 from __future__ import annotations
@@ -15,18 +17,16 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from datetime import datetime
+import math
 from pathlib import Path
-
-DATASET = Path(__file__).resolve().parents[1] / "dataset/webarena-verified.json"
 
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--config", type=Path, required=True)
-    parser.add_argument("--historical-timing", type=Path, required=True)
-    parser.add_argument("--dataset", type=Path, default=DATASET)
+    parser.add_argument("--catalog", type=Path, required=True)
+    parser.add_argument("--timing", type=Path)
     return parser.parse_args()
 
 
@@ -64,38 +64,54 @@ def assign_full(
     return assignments
 
 
-def main() -> None:
-    args = _parse_args()
-    root = args.root.resolve()
-    if args.config.resolve() != root / "EXPERIMENT_CONFIG.json":
+def generate_plan(
+    root: Path, config_path: Path, catalog_path: Path, timing_path: Path | None = None
+) -> dict[str, object]:
+    """Publish one immutable full plan from the official catalog and public estimates."""
+    root = root.resolve()
+    if config_path.resolve() != root / "EXPERIMENT_CONFIG.json":
         raise ValueError("config must be the campaign's EXPERIMENT_CONFIG.json")
     if (root / "PLAN_MANIFEST.sha256").exists():
         raise ValueError("refusing to replace an already-published campaign plan")
-    config = json.loads(args.config.read_text())
-    catalog = {
-        int(row["task_id"]): set(row["sites"]) for row in json.loads(args.dataset.read_text())
-    }
+    if (root / "worker-plan.json").exists() or (root / "workers").exists():
+        raise ValueError("refusing to overwrite existing worker plan artifacts")
+    config = json.loads(config_path.read_text())
+    payload = catalog_path.read_bytes()
+    if hashlib.sha256(payload).hexdigest() != config["benchmark"]["dataset_sha256"]:
+        raise ValueError("catalog differs from the configured official dataset")
+    records = json.loads(payload)
+    if not isinstance(records, list) or [row["task_id"] for row in records] != list(range(812)):
+        raise ValueError("full dataset must contain exactly ordered task IDs 0..811")
+    catalog = {row["task_id"]: set(row["sites"]) for row in records}
     if set(catalog) != set(range(config["task_count"])) or config["task_count"] != 812:
         raise ValueError("full dataset must contain exactly task IDs 0..811")
-    durations: dict[int, float] = {}
-    with args.historical_timing.open() as source:
-        for line in source:
+    durations = dict.fromkeys(catalog, 1.0)
+    timing_source = {"mode": "uniform_cost", "estimated_seconds": 1.0, "sha256": None}
+    if timing_path is not None:
+        durations = {}
+        timing_payload = timing_path.read_bytes()
+        for line in timing_payload.splitlines():
             row = json.loads(line)
-            task = int(row["task_id"])
-            if task in durations:
-                raise ValueError(f"duplicate historical timing for task {task}")
-            index = Path(row["origin_result_root"]) / "index" / f"task-{task:04d}"
-            baseline = json.loads((index / "baseline_receipt.json").read_text())
-            completed = json.loads((index / "completed.json").read_text())
-            duration = (
-                datetime.fromisoformat(completed["completed_at"].replace("Z", "+00:00"))
-                - datetime.fromisoformat(baseline["created_at"].replace("Z", "+00:00"))
-            ).total_seconds()
-            if not 0 < duration < float("inf"):
-                raise ValueError(f"invalid historical timing for task {task}")
-            durations[task] = duration
-    if set(durations) != set(catalog):
-        raise ValueError("historical timings must cover all 812 tasks exactly")
+            if not isinstance(row, dict) or set(row) != {"task_id", "estimated_seconds"}:
+                raise ValueError("timing rows must contain exactly task_id and estimated_seconds")
+            task, duration = row["task_id"], row["estimated_seconds"]
+            if type(task) is not int or task not in catalog or task in durations:
+                raise ValueError(f"duplicate or unknown timing task ID: {task}")
+            if (
+                isinstance(duration, bool)
+                or not isinstance(duration, (int, float))
+                or not math.isfinite(duration)
+                or duration <= 0
+            ):
+                raise ValueError(f"invalid estimated_seconds for task {task}")
+            durations[task] = float(duration)
+        if set(durations) != set(catalog):
+            raise ValueError("timing estimates must cover all 812 tasks exactly")
+        timing_source = {
+            "mode": "provided_estimates",
+            "estimated_seconds": None,
+            "sha256": hashlib.sha256(timing_payload).hexdigest(),
+        }
     profiles: dict[str, dict[str, object]] = {}
     for pool in config["scheduling"]["pool_allocation"]:
         for _ in range(pool["workers"]):
@@ -126,11 +142,11 @@ def main() -> None:
     plan = {
         "selection": "full",
         "strategy": (
-            "historical LPT with shortest exact-profile qualification; "
+            "estimated-cost LPT with shortest exact-profile qualification; "
             "dynamic compatible dispatch"
         ),
         "task_count": len(catalog),
-        "historical_timing_sha256": hashlib.sha256(args.historical_timing.read_bytes()).hexdigest(),
+        "timing_source": timing_source,
         "startup_tasks": {worker: tasks[0] for worker, tasks in assignments.items()},
         "tasks": {
             str(task): {
@@ -156,7 +172,13 @@ def main() -> None:
             for path in paths
         )
     )
-    print(json.dumps({"run_id": config["run_id"], "workers": len(workers), "tasks": len(catalog)}))
+    return plan
+
+
+def main() -> None:
+    args = _parse_args()
+    plan = generate_plan(args.root, args.config, args.catalog, args.timing)
+    print(json.dumps({"workers": len(plan["workers"]), "tasks": plan["task_count"]}))
 
 
 if __name__ == "__main__":

@@ -839,7 +839,7 @@ def render_markdown(report: dict[str, Any]) -> str:
 def main() -> int:
     args = _parse_args()
     root = args.run_root.resolve()
-    catalog = args.catalog or root.parents[1] / "dataset/webarena-verified.json"
+    catalog = args.catalog or root / "webarena-verified.json"
     report = analyze(root, catalog, args.issues_path)
     if args.output_dir:
         args.output_dir.mkdir(parents=True, exist_ok=False)

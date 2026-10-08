@@ -1,4 +1,4 @@
 interface:
   display_name: "WebArena-Verified 通用 Agent 评测"
-  short_description: "复现 CUA-Lite 原生通用 Agent 的 WebArena-Verified 全量评测"
-  default_prompt: "使用 $webarena-verified-eval 检查评测准备条件，并输出 Qwen 或 GLM 的可复现实验计划。"
+  short_description: "使用 CUA-Lite 通用 Agent 开展 WebArena-Verified 评测与结果分析"
+  default_prompt: "使用 $webarena-verified-eval 确认本轮模型和配置，检查准备条件与接入支持，并以已有实验为参考提出评测计划。"

@@ -1,12 +1,14 @@
 ---
 name: webarena-verified-eval
-description: "Prepare, reproduce, monitor, and analyze WebArena-Verified 1.2.3 evaluations using CUA-Lite's native generic agent, including the verified Qwen and GLM desktop configurations. Use for this evaluation workflow, not arbitrary BrowserGym or model-specific runners."
+description: "Prepare, run, monitor, and analyze WebArena-Verified 1.2.3 evaluations using CUA-Lite's native generic agent. Treat prior Qwen and GLM experiments as configuration references and assess support for the user's chosen model and settings. Use for this evaluation workflow, not arbitrary BrowserGym or model-specific runners."
 ---
 
 # WebArena-Verified：Codex 执行说明
 
 使用 CUA-Lite 原生通用 agent，帮助用户检查准备条件、运行已授权的评测、
 恢复已有任务或分析轨迹。主线是复用现有平台与资产，不是自动从零部署站点。
+目标是支持用户本轮的 WebArena-Verified 评测，不是默认复现历史实验。
+Qwen/GLM 已验证配置供参考；只有用户明确要求复现时，才以对应历史配置为目标。
 
 ## 先判断用户要做什么
 
@@ -21,20 +23,38 @@ description: "Prepare, reproduce, monitor, and analyze WebArena-Verified 1.2.3 e
 
 定位包含 `pyproject.toml` 与 `scripts/webarena_verified_generic.py` 的实际 checkout。
 引用路径以本 skill 所在目录和实际仓库根目录解析，不假定作者的 `/root` 或共享盘存在。
-普通参数以入口 `--help` 为准，数值以仓库
+普通参数与当前支持范围以入口 `--help` 和实现为准。仓库
 `devs/exps/eval/browsergym.webarena_verified/EXPERIMENT_CONFIG.generic-desktop-dual-v2.json`
-为准，本轮实际版本以运行目录的 config 和 manifest 为准。
+保存已验证预设，不替代用户对新评测的配置选择；本轮实际版本以用户确认后
+生成的 config 和 manifest 为准。当前 initializer 只支持 `qwen3.8-max` 和
+`glm-5.3-flash` 预设。其他模型或配置要求先评估接入差距，不偷偷套用旧 profile，
+也不通过改冻结文件绕过限制。需要改代码或模板时，先提出版本化适配与回归计划，
+取得相应实施授权，再初始化新的运行目录。
 
 ## 新建评测的阶段检查
 
-1. **检查准备条件。** 确认所选模型、本地资产根目录、官方 catalog、桌面依赖相对路径、
-   平台卷子路径、镜像和配额要求。只报告凭证变量是否填写，不输出值。
-   本地文件检查不证明远端权限或配额有效；未经授权不通过模型请求来试 key。
+1. **检查准备条件。** 先确认本轮模型、API 接入、thinking、预算、历史策略和资源要求；
+   区分用户选择、参考配置建议和当前入口限制。再确认本地资产根目录、官方 catalog、桌面依赖相对路径、
+   平台卷子路径、镜像和配额要求。按指南第 2 节给出实际配置位置：私有 `.env` 的
+   必填变量、依赖安装命令、initializer 参数、image lock 和平台侧权限配置；
+   不只说“缺凭证/资产”，要说明填哪里、缺哪一项、由谁提供。
+   自主执行请求范围内的本地及远端只读检查，按指南的权限预检方法报告结果和证据；
+   不把镜像/资产权限检查全部转交用户，也不把本地文件存在当成远端可用。
+   部分缺项不妨碍其他独立的只读检查，逐项推进可做项，再汇总缺项。
+   凭证只报告是否有效填写，不能输出值；未经授权不通过模型推理请求来试 key。
+   需要申请沙盒、拉取大镜像或准备大数据才能确认的执行能力，说明检查成本和所需授权；
+   若已有相应授权，直接在本 run 自建且归属核验通过的沙盒验证，不重复询问。
    对照 initializer 的文件/目录清单，区分本地路径与平台挂载。
    历史资产路径不是已验收的新输入；缺项就报告准确路径和负责人，不创建标记或搬迁数据。
-2. **报告计划。** 给出模型、预算、历史策略、资源数量、运行目录与 run ID、
-   当前已确认/尚未确认的条件，以及将产生费用的阶段。用户未选模型就询问，
-   不因上手示例使用 Qwen 而擅自选择后端。
+2. **展示参考配置并报告计划。** 读取技术参考第 2 节和配置模板，直接输出已验证
+   Qwen/GLM 实验的参考配置简表，不只发文件链接。覆盖模型与 thinking、原生通用 agent、
+   GUI/桌面与坐标、任务数、决策预算与收尾/修复、文字/图片历史、输出参数、
+   HTTP/Infra 重试和沙盒数量/资源；凭证只列变量名。注明来源版本与“参考，不是本轮默认”。
+   再给出本轮建议配置与参考配置的差异、运行目录与 run ID、准备检查结果、
+   配置位置和补齐方法、待验证能力、需要适配的地方，以及将产生费用的阶段。
+   用户未选模型时，先展示参考配置再询问，其他独立检查继续；未指定的参数可根据
+   参考配置提出建议，说明理由并等待确认，
+   不因上手示例使用 Qwen 而擅自选择后端或把历史配置当作本轮已授权配置。
 3. **离线初始化。** 使用新目录运行 `campaign/initialize.py`；核对模型、任务数、
    worker 计划和各 manifest。这只验证本地输入和冻结包，不宣称远端已可用。
    冻结后不就地改 config、plan 或源码包，不覆盖旧结果。

@@ -2,9 +2,17 @@
 
 第一次接手请先看[快速上手指南](/skills/webarena-verified-eval/references/reproduction.md)。
 这里用于核对配置、资产、执行链路、异常和历史结果，不是一组需要从头全部执行的命令。
-配置数值的维护入口是
+当前已验证预设的维护入口是
 [配置模板](/devs/exps/eval/browsergym.webarena_verified/EXPERIMENT_CONFIG.generic-desktop-dual-v2.json)；
-表格解释已验证版本，不替代模板或本轮生成的配置。
+表格解释历史验证版本，供本轮方案参考，不替代用户的模型/配置选择或本轮实际配置。
+
+仓库用于支持 WebArena-Verified 评测，历史实验不是所有新任务的目标。
+当前 initializer 仅接受 `qwen3.8-max`、`glm-5.3-flash`，从模板选择 profile 并
+生成 120-worker 计划；runner 当前也只有 `qwen`、`glm53flash` 两个 profile，
+thinking 与部分预算/历史策略沿用已实现配置。通用 agent 不等于任意后端已完成接入。
+新模型或配置要求先核对 initializer、配置模板、计划生成、worker 启动参数和
+runner/provider 的真实支持；若需改动，另行授权版本化适配、针对性回归和冒烟验证。
+不改旧 run 的冻结包，不把未验证接入描述成现成功能。
 
 ## 1. 实际链路与几个术语
 
@@ -19,7 +27,7 @@
 OSWorld 固定提交只提供桌面/光标捕获工具，不参与 agent 推理。
 
 官方来源：[WebArena-Verified](https://github.com/ServiceNow/webarena-verified)、
-[BrowserGym](https://github.com/ServiceNow/BrowserGym)。本实验固定 1.2.3，
+[BrowserGym](https://github.com/ServiceNow/BrowserGym)。当前评测链路使用 1.2.3，
 不要把官方仓库当前最新版的部署命令当成这个版本的环境锁。
 
 | 术语 | 普通话解释 |
@@ -31,9 +39,12 @@ OSWorld 固定提交只提供桌面/光标捕获工具，不参与 agent 推理�
 | canonical terminal | 被本轮档案接受的正常任务终点；与“已经有官方分数”不是同一个数量 |
 | manifest | 文件版本清单，用哈希记录本轮实际采用的源码、配置、计划、镜像和资产输入 |
 
-## 2. 已验证的实验配置
+## 2. 已验证的参考实验配置
 
-| 共同配置 | 固定值与含义 |
+以下数值来自已验证的 Qwen/GLM 实验，也是当前预设采用的设置。
+它们供新评测做选择和比较，不是仓库要求所有模型必须使用的配置。
+
+| 共同配置 | 参考值与含义 |
 | --- | --- |
 | 动作协议 | 原生 function tools；没有 XML/文本工具调用修复 |
 | 预算 | 150 次模型决策，不是 GUI 子动作数量 |
@@ -51,7 +62,7 @@ OSWorld 固定提交只提供桌面/光标捕获工具，不参与 agent 推理�
 | Infra 重试 | 每题默认最多 3 次，保留每次档案；耗尽隔离，继续其余题；不重抽正常业务失败 |
 | 沙盒资源 | 每个 4 CPU、20 GiB；sysbox Docker-in-Docker；Map worker 需要 fuse |
 
-120 个 worker 的分配：Map 36、Map+Wikipedia 8、Shopping Admin 24、Shopping 18、
+已验证预设的 120 个 worker 分配：Map 36、Map+Wikipedia 8、Shopping Admin 24、Shopping 18、
 GitLab 20、Reddit 6、GitLab+Reddit 4、GitLab+Wikipedia 1、Reddit+Shopping 2、
 Map+Shopping Admin 1。每 worker 同时只跑一题；共 45 个包含 Map 的 worker。
 公开 `campaign/scheduling-v17.jsonl` 只有任务 ID 与耗时估计，复用两组原计划的
@@ -67,6 +78,9 @@ initializer 根据 `--model` 从模板选择 model profile，不手工改冻结�
 ## 3. 资产与挂载
 
 完整资产与镜像权限由维护者提供，Git 不分发大数据或凭证。
+配置位置、私有 `.env` 填写示例和 agent 自主只读权限预检方法见快速上手指南第 2 节。
+请求准备检查时应实际检查可访问的资产与 registry，并报告证据和能力范围；
+不能只让同事“找管理员”，也不能将控制机检查成功冒称为沙盒的全量执行权限。
 控制机路径供 initializer 读取；平台卷子路径供沙盒服务挂载；沙盒内路径供执行程序使用。
 三者要对应同一套资产，不能仅根据字符串相似推断一致。
 现有路径、旧平台参数和本次发现的控制机视图缺项见快速上手指南第 1 节。
@@ -124,7 +138,7 @@ initializer 的 ASSET_MANIFEST 记录文件哈希；prepare 再核对轻量桌�
 ### 换平台时要额外确认什么
 
 由平台负责人确认 sysbox DinD、每沙盒 4 CPU/20 GiB、Map 的 fuse、足够的临时磁盘、
-持久共享卷、镜像拉取权限和网络绕代理规则。单模型全量需要 120 个沙盒，双模型需要
+持久共享卷、镜像拉取权限和网络绕代理规则。当前预设单模型全量需要 120 个沙盒，双模型需要
 240 个独立沙盒；仅完成单沙盒冒烟不证明全量配额可用。
 
 按上面的结构交付不可变资产包，配置真实的 `--asset-root`、`--asset-subpath`、
@@ -135,7 +149,7 @@ initializer 的 ASSET_MANIFEST 记录文件哈希；prepare 再核对轻量桌�
 ## 4. 已上传的完整镜像地址
 
 以下是本次 V2 真正使用的镜像引用，与 `campaign/image-lock.example.env` 一致。
-这些是镜像地址，不是公开下载授权；先确认本项目可以拉取该 registry。
+这些地址是现有环境的部署参考，不是公开下载授权；先确认本项目可以拉取该 registry。
 不要把 digest 改为 `latest`。Map 原站点镜像和实际 bindfs runtime 是两个用途。
 
 | 用途 | 完整镜像引用 |

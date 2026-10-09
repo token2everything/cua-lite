@@ -83,7 +83,7 @@ initializer 根据 `--model` 从模板选择 model profile，不手工改冻结�
 不能只让同事“找管理员”，也不能将控制机检查成功冒称为沙盒的全量执行权限。
 控制机路径供 initializer 读取；平台卷子路径供沙盒服务挂载；沙盒内路径供执行程序使用。
 三者要对应同一套资产，不能仅根据字符串相似推断一致。
-现有路径、旧平台参数和本次发现的控制机视图缺项见快速上手指南第 1 节。
+现有路径与旧平台显式地图路径投影见快速上手指南第 1 节。
 
 还需要独立的 WebArena-Verified 1.2.3 资产包。本代码分支不分发站点数据、
 浏览器归档或私有 registry 凭证；从有授权的资产维护者处取得与锁相符的包。
@@ -108,21 +108,34 @@ Playwright 1.44 / Chromium revision 1117，以及 OSWorld
     desktop-python.tar.gz
     osworld-b138d348.bundle
   assets-full/
-    map-volumes/{READY,PERMISSIONS_READY,nominatim-flatnode/}
-    map-volumes-webdav/{tile-db/,nominatim-db/,routing-car/,routing-bike/,routing-foot/}
+    map-volumes/
+      tile-db/postgres/{PG_VERSION,global/pg_control,...}
+      nominatim-db/{PG_VERSION,global/pg_control,...}
+      nominatim-flatnode/flatnode.file
+      routing-car/
+      routing-bike/
+      routing-foot/
     data/wikipedia_en_all_maxi_2022-05.zim
     homepage-src/environment_docker/webarena-homepage/app.py
 ```
 
-三个 routing 目录各需 `us-northeast-latest.osrm.mldgr` 及完整对应路由数据；
-地图数据库不能只有空目录。initializer 核对显式文件并流式计算 SHA，目录检查
-仅覆盖存在性/软链接边界，不证明整棵数据库内容一致。使用已经准备好、不可变的资产包。
+三个 routing 目录各需 `us-northeast-latest.osrm.mldgr`、`.fileIndex` 及完整对应路由数据。
+地图数据库不能只有空目录：显式核对 `PG_VERSION`、`global/pg_control`。
+本资产的 tile PostgreSQL 为 15、Nominatim PostgreSQL 为 14，不能把两者改成同一版本。
+initializer 对显式归档、数据库控制文件和 mldgr 流式计算 SHA；对巨大的 flatnode 和
+fileIndex 记录大小及前 4096 字节 SHA，并实际只读打开。目录检查仅覆盖存在性/软链接边界，
+这些检查不等于整棵数据库或大型文件的完整内容校验，最终还须地图启动验证。
+不要求任何共享资产 READY/PERMISSIONS_READY 标记。
 大 Wikipedia 文件的首次哈希有 I/O 成本，不能把这段时间归为模型推理。
 
 `campaign/image-lock.example.env` 是原实验的 7 个 digest pin 加离线归档绑定的
 Kiwix tag；可复制后按实际 registry 可访问性处理，保持相同镜像内容。
 `QWENRUNNER_RUNTIME_IMAGE` 只是历史镜像变量名，两个通用模型组都使用它。
-initializer 的 ASSET_MANIFEST 记录文件哈希；prepare 再核对轻量桌面资产，
+initializer 的 ASSET_MANIFEST 记录本地文件身份与派生的 `sandbox_relative`。
+配置的 `assets.sandbox_map_data_relative` 是沙盒数据库/路线目录的唯一来源，
+默认 `assets-full/map-volumes`；旧平台显式填写 `assets-full/map-volumes-webdav`。
+flatnode 仍在 `assets-full/map-volumes/nominatim-flatnode/`。
+prepare 核对轻量桌面资产、远端数据库控制文件及大型文件读取探针后才复制数据库，
 不会每 worker 重算大型数据库内容。不要承诺它能够自动下载或修复缺失数据。
 
 官方 catalog 的 SHA256 必须是：
@@ -131,9 +144,9 @@ initializer 的 ASSET_MANIFEST 记录文件哈希；prepare 再核对轻量桌�
 `webarena_verified/assets/dataset/webarena-verified.json`；也可使用资产维护者
 提供的该文件。initializer 拒绝其他内容，即使名称相同。
 
-`PERMISSIONS_READY` 表示维护者已完成必要的权限准备，不是可以随手补的空检查项。
-若目录缺失、权限不足或有不允许的软链接，先解决资产交付/挂载问题；
-本轮文档改写不授权修改共享卷。不要通过改 initializer 或换浏览器让缺项通过。
+旧脚本曾依赖 `PERMISSIONS_READY` 和 WebDAV 分目录。现在使用真实文件和沙盒读取检查，
+不需要创建这些标记或向控制机复制一份 WebDAV 目录。若真实文件缺失、权限不足或有
+不允许的软链接，先解决资产交付/挂载问题；不自行 chmod 共享资产或换浏览器绕过。
 
 ### 换平台时要额外确认什么
 
@@ -210,7 +223,7 @@ initializer 的 ASSET_MANIFEST 记录文件哈希；prepare 再核对轻量桌�
 ## 7. 版本记录与回退
 
 版本基线 `54b4bdb35419004c0b5e5a2252c50ff269f84f2b` 保存已验证 V2 原生链路，
-后续提交只整理管理入口、路径/资产契约和指南。原生关键 SHA：
+后续提交维护管理入口、路径/资产契约和指南，不改变下列原生关键文件。原生关键 SHA：
 
 | 文件/边界 | SHA256 |
 | --- | --- |
@@ -235,7 +248,7 @@ initializer 的 ASSET_MANIFEST 记录文件哈希；prepare 再核对轻量桌�
 `test_qwen3_5_packing.py` 与 `test_raw_response_e2e.py`。
 从远端新 checkout 的专项回归为 223 passed；离线包核对使用假资产且禁止 HTTP，
 不证明新跑了一次真实全量。所有环境/GPU 测试没有在此宣称通过。
-本次说明重组只改文档，不能把此前测试数字写成这次新执行的验收结果。
+这些是此前验收结果，不是本次资产路径修正的新执行结果。
 
 ## 8. 历史 V2 结果（不是你即将运行的结果）
 

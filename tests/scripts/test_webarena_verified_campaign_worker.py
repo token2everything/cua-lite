@@ -88,7 +88,12 @@ def test_desktop_asset_gate_verifies_manifest_before_unpacking(tmp_path, conditi
             "size": len(payload),
             "sha256": hashlib.sha256(payload).hexdigest(),
         }
-    config = {"assets": {"desktop_assets_relative": relative}}
+    config = {
+        "assets": {
+            "desktop_assets_relative": relative,
+            "sandbox_map_data_relative": "assets-full/map-volumes",
+        }
+    }
     if condition == "changed_bytes":
         (desktop / "desktop-python.tar.gz").write_bytes(b"changed desktop payload!!")
     elif condition == "wrong_size":
@@ -99,7 +104,7 @@ def test_desktop_asset_gate_verifies_manifest_before_unpacking(tmp_path, conditi
     config_path.write_text(json.dumps(config))
     manifest_path.write_text(json.dumps(manifest))
     source = SCRIPT.with_name("prepare-worker.sh").read_text()
-    start = source.index("import hashlib\nimport json\nfrom pathlib import Path\n")
+    start = source.index("import hashlib\nimport json\nimport sys\nfrom pathlib import Path\n")
     code = source[start : source.index("\nPY\n)", start)]
     code = code.replace('Path("/mnt/webarena-verified")', f"Path({str(assets)!r})")
     code = code.replace(
@@ -107,13 +112,94 @@ def test_desktop_asset_gate_verifies_manifest_before_unpacking(tmp_path, conditi
     )
     code = code.replace('Path("/mnt/results/ASSET_MANIFEST.json")', f"Path({str(manifest_path)!r})")
     result = subprocess.run(
-        [sys.executable, "-B", "-c", code],
+        [sys.executable, "-B", "-c", code, "shopping"],
         capture_output=True,
         text=True,
     )
     if condition == "intact":
         assert result.returncode == 0, result.stderr
-        assert result.stdout == relative + "\n"
+        assert result.stdout == relative + "\tassets-full/map-volumes\n"
     else:
         assert result.returncode != 0
         assert "differs from" in result.stderr
+
+
+@pytest.mark.parametrize(
+    "condition", ["intact", "changed_control", "changed_prefix", "wrong_size", "missing"]
+)
+def test_map_asset_gate_reads_explicit_sandbox_view_before_copy(tmp_path, condition):
+    assets = tmp_path / "assets"
+    desktop_relative = "desktop"
+    map_relative = "assets-full/readable-map"
+    manifest = {
+        "assets_mount": str(assets),
+        "desktop_assets_relative": desktop_relative,
+        "files": {},
+        "read_probes": {},
+    }
+    for name in ("desktop-python.tar.gz", "osworld-b138d348.bundle"):
+        path = assets / desktop_relative / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"desktop")
+        manifest["files"][desktop_relative + "/" + name] = {
+            "size": 7,
+            "sha256": hashlib.sha256(b"desktop").hexdigest(),
+        }
+    control_relative = "assets-full/map-volumes/tile-db/postgres/global/pg_control"
+    remote_control = map_relative + "/tile-db/postgres/global/pg_control"
+    control = assets / remote_control
+    control.parent.mkdir(parents=True)
+    control.write_bytes(b"database identity")
+    manifest["files"][control_relative] = {
+        "sandbox_relative": remote_control,
+        "size": control.stat().st_size,
+        "sha256": hashlib.sha256(control.read_bytes()).hexdigest(),
+    }
+    probe_relative = "assets-full/map-volumes/routing-car/us-northeast-latest.osrm.fileIndex"
+    remote_probe = map_relative + "/routing-car/us-northeast-latest.osrm.fileIndex"
+    probe = assets / remote_probe
+    probe.parent.mkdir(parents=True)
+    probe.write_bytes(b"a" * 5000)
+    manifest["read_probes"][probe_relative] = {
+        "sandbox_relative": remote_probe,
+        "size": 5000,
+        "prefix_sha256": hashlib.sha256(b"a" * 4096).hexdigest(),
+    }
+    if condition == "changed_control":
+        control.write_bytes(b"changed DB state!")
+    elif condition == "changed_prefix":
+        probe.write_bytes(b"b" * 5000)
+    elif condition == "wrong_size":
+        probe.write_bytes(b"a" * 5001)
+    elif condition == "missing":
+        probe.unlink()
+    config_path, manifest_path = tmp_path / "config.json", tmp_path / "manifest.json"
+    config_path.write_text(
+        json.dumps(
+            {
+                "assets": {
+                    "desktop_assets_relative": desktop_relative,
+                    "sandbox_map_data_relative": map_relative,
+                }
+            }
+        )
+    )
+    manifest_path.write_text(json.dumps(manifest))
+    source = SCRIPT.with_name("prepare-worker.sh").read_text()
+    start = source.index("import hashlib\nimport json\nimport sys\nfrom pathlib import Path\n")
+    code = source[start : source.index("\nPY\n)", start)]
+    code = code.replace('Path("/mnt/webarena-verified")', f"Path({str(assets)!r})")
+    code = code.replace(
+        'Path("/mnt/results/EXPERIMENT_CONFIG.json")', f"Path({str(config_path)!r})"
+    )
+    code = code.replace('Path("/mnt/results/ASSET_MANIFEST.json")', f"Path({str(manifest_path)!r})")
+    result = subprocess.run(
+        [sys.executable, "-B", "-c", code, "map"], capture_output=True, text=True
+    )
+    if condition == "intact":
+        assert result.returncode == 0, result.stderr
+        assert result.stdout == desktop_relative + "\t" + map_relative + "\n"
+        assert not (assets / "assets-full/map-volumes").exists()
+    else:
+        assert result.returncode != 0
+        assert "differs from" in result.stderr or "FileNotFoundError" in result.stderr

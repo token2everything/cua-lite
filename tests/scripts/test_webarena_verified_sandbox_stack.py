@@ -46,21 +46,21 @@ def assets(tmp_path):
     (tools / "start-eval.sh").write_text("#!/bin/bash\nexit 0\n")
     map_source = asset_root / "assets-full/map-volumes"
     map_source.mkdir(parents=True)
-    for name in ("READY", "PERMISSIONS_READY"):
-        (map_source / name).touch()
     flatnode = map_source / "nominatim-flatnode"
     flatnode.mkdir()
     (flatnode / "flatnode.file").write_text("shared read-only flatnode\n")
-    webdav = asset_root / "assets-full/map-volumes-webdav"
     for database in ("tile-db/postgres", "nominatim-db"):
-        directory = webdav / database
+        directory = map_source / database
         directory.mkdir(parents=True)
-        (directory / "PG_VERSION").write_text("14\n")
+        (directory / "PG_VERSION").write_text("15\n" if database.startswith("tile-db") else "14\n")
+        (directory / "global").mkdir()
+        (directory / "global/pg_control").write_bytes(b"control")
         (directory / "postmaster.pid").write_text("stale pid\n")
     for profile in ("car", "bike", "foot"):
-        directory = webdav / f"routing-{profile}"
+        directory = map_source / f"routing-{profile}"
         directory.mkdir()
         (directory / "us-northeast-latest.osrm.mldgr").write_text(profile)
+        (directory / "us-northeast-latest.osrm.fileIndex").write_text(profile)
     return asset_root
 
 
@@ -174,12 +174,14 @@ def test_prepare_map_copies_only_writable_databases_and_builds_bindfs_wrapper(tm
     assert result.returncode == 0, result.stderr
     runtime = tmp_path / "runtime"
     map_root = runtime / "map-volumes"
-    webdav = assets / "assets-full/map-volumes-webdav"
+    map_source = assets / "assets-full/map-volumes"
     for database in ("tile-db/postgres", "nominatim-db"):
         copied = map_root / database
-        assert (copied / "PG_VERSION").read_text() == "14\n"
+        assert (copied / "PG_VERSION").read_text() == (
+            map_source / database / "PG_VERSION"
+        ).read_text()
         assert not (copied / "postmaster.pid").exists()
-        assert (webdav / database / "postmaster.pid").is_file()
+        assert (map_source / database / "postmaster.pid").is_file()
         assert (copied / "pg_wal/archive_status").is_dir()
         assert (copied / "pg_logical/snapshots").is_dir()
         assert copied.stat().st_mode & 0o777 == 0o700
@@ -188,7 +190,7 @@ def test_prepare_map_copies_only_writable_databases_and_builds_bindfs_wrapper(tm
         assert (map_root / f".{name}.ready").is_file()
     assert not (map_root / "routing").exists()
     assert not (map_root / "nominatim-flatnode").exists()
-    assert not any(str(webdav) in command for command in commands)
+    assert not any(str(map_source) in command for command in commands)
     entrypoint = (map_root / "entrypoint.sh").read_text()
     assert "chown -R nominatim" not in entrypoint
     assert ": # read-only shared flatnode" in entrypoint
@@ -206,7 +208,7 @@ def test_prepare_map_copies_only_writable_databases_and_builds_bindfs_wrapper(tm
 
 @pytest.mark.parametrize("profile", ["car", "bike", "foot"])
 def test_prepare_map_requires_all_three_shared_routing_profiles(tmp_path, assets, profile):
-    missing = assets / f"assets-full/map-volumes-webdav/routing-{profile}"
+    missing = assets / f"assets-full/map-volumes/routing-{profile}"
     missing /= "us-northeast-latest.osrm.mldgr"
     missing.unlink()
     result, _ = run_stack(tmp_path, assets, "prepare-map", image_present=True)
@@ -214,13 +216,31 @@ def test_prepare_map_requires_all_three_shared_routing_profiles(tmp_path, assets
     assert f"missing required asset: {missing}" in result.stderr
 
 
-@pytest.mark.parametrize("marker", ["READY", "PERMISSIONS_READY"])
-def test_prepare_map_requires_operator_prepared_baseline_markers(tmp_path, assets, marker):
-    missing = assets / "assets-full/map-volumes" / marker
+@pytest.mark.parametrize(
+    "relative",
+    [
+        "tile-db/postgres/PG_VERSION",
+        "tile-db/postgres/global/pg_control",
+        "nominatim-db/global/pg_control",
+        "nominatim-flatnode/flatnode.file",
+        "routing-car/us-northeast-latest.osrm.fileIndex",
+    ],
+)
+def test_prepare_map_requires_real_baseline_files(tmp_path, assets, relative):
+    missing = assets / "assets-full/map-volumes" / relative
     missing.unlink()
     result, _ = run_stack(tmp_path, assets, "prepare-map", image_present=True)
     assert result.returncode == 1
     assert f"missing required asset: {missing}" in result.stderr
+
+
+def test_prepare_map_rejects_empty_database_control_before_copy(tmp_path, assets):
+    path = assets / "assets-full/map-volumes/tile-db/postgres/global/pg_control"
+    path.write_bytes(b"")
+    result, commands = run_stack(tmp_path, assets, "prepare-map", image_present=True)
+    assert result.returncode == 1
+    assert f"empty required map asset: {path}" in result.stderr
+    assert not (tmp_path / "runtime/map-volumes/tile-db").exists()
 
 
 @pytest.mark.parametrize("pinned", [True, False])

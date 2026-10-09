@@ -285,6 +285,7 @@ def test_real_checkout_initialization_is_consumed_without_remote_calls(tmp_path,
     desktop = "portable-desktop"
     for relative in (
         *initializer.ASSET_FILES,
+        *initializer.ASSET_PROBES,
         desktop + "/desktop-python.tar.gz",
         desktop + "/osworld-b138d348.bundle",
     ):

@@ -53,15 +53,16 @@ docker pull "$QWENRUNNER_RUNTIME_IMAGE"
 
 # Desktop dependencies come from the initialized asset contract, not a prior
 # experiment directory. Verify their bytes before unpacking or cloning them.
-DESKTOP_ASSETS_RELATIVE=$(docker run --rm -i --network none \
+ASSET_PATHS=$(docker run --rm -i --network none \
     --label "com.cua-lite.run-id=$RUN_ID" \
     -v /var/lib/wav-runtime/venv:/opt/venv:ro \
     -v /var/lib/wav-runtime/python:/root/.local/share/uv/python:ro \
     -v /mnt/results:/mnt/results:ro \
     -v /mnt/webarena-verified:/mnt/webarena-verified:ro \
-    "$QWENRUNNER_RUNTIME_IMAGE" /opt/venv/bin/python - <<'PY'
+    "$QWENRUNNER_RUNTIME_IMAGE" /opt/venv/bin/python - "$CAPABILITIES" <<'PY'
 import hashlib
 import json
+import sys
 from pathlib import Path
 
 root = Path("/mnt/webarena-verified")
@@ -82,9 +83,25 @@ for name in ("desktop-python.tar.gz", "osworld-b138d348.bundle"):
             digest.update(chunk)
     if digest.hexdigest() != expected["sha256"]:
         raise ValueError(f"desktop asset differs from manifest: {asset}")
-print(relative)
+if "map" in sys.argv[1].split(","):
+    # Verify the platform mount against the controller's real map inputs before
+    # expensive private DB copies. Huge files have explicitly sampled identities.
+    for asset, expected in manifest["files"].items():
+        if asset.endswith(("/PG_VERSION", "/global/pg_control")):
+            payload = (root / expected["sandbox_relative"]).read_bytes()
+            if len(payload) != expected["size"] or hashlib.sha256(payload).hexdigest() != expected["sha256"]:
+                raise ValueError(f"map database identity differs from manifest: {asset}")
+    for asset, expected in manifest["read_probes"].items():
+        path = root / expected["sandbox_relative"]
+        with path.open("rb") as source:
+            sample = source.read(4096)
+        if path.stat().st_size != expected["size"] or hashlib.sha256(sample).hexdigest() != expected["prefix_sha256"]:
+            raise ValueError(f"map read probe differs from manifest: {asset}")
+print(relative + "\t" + config["assets"]["sandbox_map_data_relative"])
 PY
 )
+IFS=$'\t' read -r DESKTOP_ASSETS_RELATIVE MAP_DATA_RELATIVE <<< "$ASSET_PATHS"
+export WEBARENA_VERIFIED_MAP_DATA_RELATIVE="$MAP_DATA_RELATIVE"
 DESKTOP_ASSETS="/mnt/webarena-verified/$DESKTOP_ASSETS_RELATIVE"
 
 IFS=, read -r -a sites <<< "$CAPABILITIES"

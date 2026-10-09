@@ -58,7 +58,7 @@ runtime_python() {
 
 # The immutable campaign config owns model and agent parameters. Project only
 # the fields needed by the entrypoint; credentials remain in its private env.
-IFS=$'\t' read -r MODEL_ID MODEL_PROFILE REASONING_EFFORT MAX_STEPS FINAL_RESERVE < <(
+IFS=$'\t' read -r MODEL_ID MODEL_PROFILE REASONING_EFFORT MAX_STEPS FINAL_RESERVE MAP_DATA_RELATIVE < <(
     runtime_python - /mnt/results/EXPERIMENT_CONFIG.json <<'PY'
 import json
 import sys
@@ -66,6 +66,7 @@ config = json.load(open(sys.argv[1]))
 print("\t".join(str(value) for value in (
     config["model"], config["model_profile"], config["reasoning_effort"],
     config["environment"]["max_steps"], config["environment"]["final_response_reserve_steps"],
+    config["assets"]["sandbox_map_data_relative"],
 )))
 PY
 )
@@ -299,9 +300,9 @@ for site in "${sites[@]}"; do
                 -v "$MAP_ROOT/tile-db:/data/database"
                 -v "$MAP_ROOT/nominatim-db:/data/nominatim/postgres"
                 -v /mnt/webarena-verified/assets-full/map-volumes/nominatim-flatnode:/mnt/map-source/nominatim-flatnode:ro
-                -v /mnt/webarena-verified/assets-full/map-volumes-webdav/routing-car:/mnt/map-source/routing-car:ro
-                -v /mnt/webarena-verified/assets-full/map-volumes-webdav/routing-bike:/mnt/map-source/routing-bike:ro
-                -v /mnt/webarena-verified/assets-full/map-volumes-webdav/routing-foot:/mnt/map-source/routing-foot:ro
+                -v "/mnt/webarena-verified/$MAP_DATA_RELATIVE/routing-car:/mnt/map-source/routing-car:ro"
+                -v "/mnt/webarena-verified/$MAP_DATA_RELATIVE/routing-bike:/mnt/map-source/routing-bike:ro"
+                -v "/mnt/webarena-verified/$MAP_DATA_RELATIVE/routing-foot:/mnt/map-source/routing-foot:ro"
                 -v "$MAP_ROOT/website-db:/var/lib/postgresql/14/main"
                 -v "$MAP_ROOT/tiles:/data/tiles"
                 -v "$MAP_ROOT/style:/data/style"

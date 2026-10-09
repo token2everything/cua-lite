@@ -45,22 +45,31 @@ ASSET_FILES = (
     "tools/webarena-eval-base-ubuntu22-playwright144.tar.gz",
     "tools/start-eval.sh",
     "tools/kiwix-serve-3.3.0-amd64.tar.gz",
-    "assets-full/map-volumes/READY",
-    "assets-full/map-volumes/PERMISSIONS_READY",
-    "assets-full/map-volumes-webdav/routing-car/us-northeast-latest.osrm.mldgr",
-    "assets-full/map-volumes-webdav/routing-bike/us-northeast-latest.osrm.mldgr",
-    "assets-full/map-volumes-webdav/routing-foot/us-northeast-latest.osrm.mldgr",
+    "assets-full/map-volumes/tile-db/postgres/PG_VERSION",
+    "assets-full/map-volumes/tile-db/postgres/global/pg_control",
+    "assets-full/map-volumes/nominatim-db/PG_VERSION",
+    "assets-full/map-volumes/nominatim-db/global/pg_control",
+    "assets-full/map-volumes/routing-car/us-northeast-latest.osrm.mldgr",
+    "assets-full/map-volumes/routing-bike/us-northeast-latest.osrm.mldgr",
+    "assets-full/map-volumes/routing-foot/us-northeast-latest.osrm.mldgr",
     "assets-full/data/wikipedia_en_all_maxi_2022-05.zim",
     "assets-full/homepage-src/environment_docker/webarena-homepage/app.py",
 )
 ASSET_DIRECTORIES = (
-    "assets-full/map-volumes-webdav/tile-db",
-    "assets-full/map-volumes-webdav/nominatim-db",
-    "assets-full/map-volumes-webdav/routing-car",
-    "assets-full/map-volumes-webdav/routing-bike",
-    "assets-full/map-volumes-webdav/routing-foot",
+    "assets-full/map-volumes/tile-db",
+    "assets-full/map-volumes/nominatim-db",
+    "assets-full/map-volumes/routing-car",
+    "assets-full/map-volumes/routing-bike",
+    "assets-full/map-volumes/routing-foot",
     "assets-full/map-volumes/nominatim-flatnode",
     "assets-full/homepage-src/environment_docker/webarena-homepage",
+)
+ASSET_PROBES = (
+    "assets-full/map-volumes/nominatim-flatnode/flatnode.file",
+    *(
+        f"assets-full/map-volumes/routing-{profile}/us-northeast-latest.osrm.fileIndex"
+        for profile in ("car", "bike", "foot")
+    ),
 )
 
 
@@ -85,6 +94,11 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--sandbox-image", required=True, help="operator-supplied DinD image URI")
     parser.add_argument("--asset-subpath", required=True, help="platform shared-volume subpath")
+    parser.add_argument(
+        "--sandbox-map-data-relative",
+        default="assets-full/map-volumes",
+        help="sandbox database/routing directory; local inputs remain assets-full/map-volumes",
+    )
     parser.add_argument("--dockerd-no-proxy", default="localhost,127.0.0.1,::1")
     parser.add_argument(
         "--timing",
@@ -154,6 +168,7 @@ def initialize(args: argparse.Namespace) -> dict[str, Any]:
         raise ValueError("invalid dockerd no_proxy list")
     desktop_relative = _relative(args.desktop_assets_relative)
     asset_subpath = _relative(args.asset_subpath)
+    sandbox_map_data_relative = _relative(args.sandbox_map_data_relative)
     asset_root = _checked_path(args.asset_root, directory=True)
     catalog = _checked_path(args.catalog)
     catalog_payload = catalog.read_bytes()
@@ -203,15 +218,48 @@ def initialize(args: argparse.Namespace) -> dict[str, Any]:
             for name in (*directories, *files):
                 if (Path(current) / name).is_symlink():
                     raise ValueError(f"symlink within asset directory: {relative}")
+    # Huge mmap inputs are sampled, not claimed as fully content-hashed assets.
+    # The owned sandbox repeats these probes before copying any databases.
+    probes = {}
+    for relative in ASSET_PROBES:
+        path = _checked_path(asset_root / relative, root=asset_root)
+        with path.open("rb") as source:
+            sample = source.read(4096)
+        if not sample:
+            raise ValueError(f"empty required map asset: {relative}")
+        probes[relative] = {
+            "size": path.stat().st_size,
+            "prefix_sha256": hashlib.sha256(sample).hexdigest(),
+        }
+    for relative, path in asset_files.items():
+        if relative.startswith("assets-full/map-volumes/") and path.stat().st_size == 0:
+            raise ValueError(f"empty required map asset: {relative}")
+    sandbox_paths = {
+        relative: (
+            f"{sandbox_map_data_relative}/{relative.removeprefix('assets-full/map-volumes/')}"
+            if relative.startswith("assets-full/map-volumes/")
+            and "/nominatim-flatnode/" not in relative
+            else relative
+        )
+        for relative in (*asset_files, *probes)
+    }
+    for relative, probe in probes.items():
+        probe["sandbox_relative"] = sandbox_paths[relative]
     assets = {
         "schema_version": 1,
         "assets_mount": "/mnt/webarena-verified",
         "desktop_assets_relative": desktop_relative,
         "files": {
-            relative: {"sha256": _sha(path), "size": path.stat().st_size}
+            relative: {
+                "sha256": _sha(path),
+                "size": path.stat().st_size,
+                "sandbox_relative": sandbox_paths[relative],
+            }
             for relative, path in asset_files.items()
         },
         "directories": list(ASSET_DIRECTORIES),
+        "read_probes": probes,
+        "read_probe_verification": "size_and_sha256_of_first_4096_bytes_not_full_content_hash",
         "offline_image_archives": {
             "WIKIPEDIA_RUNTIME_IMAGE": "tools/kiwix-serve-3.3.0-amd64.tar.gz"
         },
@@ -231,7 +279,10 @@ def initialize(args: argparse.Namespace) -> dict[str, Any]:
         "owner": "cua-lite-webarena",
         "dockerd_no_proxy": args.dockerd_no_proxy,
     }
-    config["assets"] = {"desktop_assets_relative": desktop_relative}
+    config["assets"] = {
+        "desktop_assets_relative": desktop_relative,
+        "sandbox_map_data_relative": sandbox_map_data_relative,
+    }
     if config["benchmark"]["dataset_sha256"] != DATASET_SHA256:
         raise ValueError("preset dataset checksum differs from the pinned benchmark")
 

@@ -37,6 +37,7 @@ def inputs(tmp_path, monkeypatch):
     relative_desktop = "desktop-runtime"
     for relative in (
         *initializer.ASSET_FILES,
+        *initializer.ASSET_PROBES,
         f"{relative_desktop}/desktop-python.tar.gz",
         f"{relative_desktop}/osworld-b138d348.bundle",
     ):
@@ -146,7 +147,10 @@ def test_empty_root_initializes_bound_120_worker_bundle_without_secrets(
         "owner": "cua-lite-webarena",
         "dockerd_no_proxy": "localhost,127.0.0.1,::1",
     }
-    assert config["assets"] == {"desktop_assets_relative": "desktop-runtime"}
+    assert config["assets"] == {
+        "desktop_assets_relative": "desktop-runtime",
+        "sandbox_map_data_relative": "assets-full/map-volumes",
+    }
     assert config["environment"]["max_steps"] == 150
     assert config["agent"]["history_turns"] == 19
     assert config["agent"]["image_fold_size"] == 10
@@ -183,10 +187,25 @@ def test_empty_root_initializes_bound_120_worker_bundle_without_secrets(
             assert hashlib.sha256(content).hexdigest() == manifest["source_artifacts"][name]
     assets = json.loads((root / "ASSET_MANIFEST.json").read_text())
     assert assets["directories"] == list(initializer.ASSET_DIRECTORIES)
+    assert set(assets["read_probes"]) == set(initializer.ASSET_PROBES)
+    for relative, identity in assets["read_probes"].items():
+        content = (args.asset_root / relative).read_bytes()
+        assert identity == {
+            "size": len(content),
+            "prefix_sha256": hashlib.sha256(content[:4096]).hexdigest(),
+            "sandbox_relative": relative,
+        }
+    assert not (args.asset_root / "assets-full/map-volumes-webdav").exists()
+    assert not (args.asset_root / "assets-full/map-volumes/READY").exists()
+    assert not (args.asset_root / "assets-full/map-volumes/PERMISSIONS_READY").exists()
     assert "not_content_hash" in assets["directory_verification"]
     for relative, identity in assets["files"].items():
         content = (args.asset_root / relative).read_bytes()
-        assert identity == {"sha256": hashlib.sha256(content).hexdigest(), "size": len(content)}
+        assert identity == {
+            "sha256": hashlib.sha256(content).hexdigest(),
+            "size": len(content),
+            "sandbox_relative": relative,
+        }
     assert (root / "sandbox_stack.sh").read_bytes() == (
         source / initializer.EVAL_RELATIVE / "sandbox_stack.sh"
     ).read_bytes()
@@ -254,6 +273,8 @@ def test_public_timing_input_requires_no_previous_result_tree(inputs):
         ("desktop_assets_relative", "../outside"),
         ("desktop_assets_relative", "/absolute"),
         ("asset_subpath", "../outside"),
+        ("sandbox_map_data_relative", "../outside"),
+        ("sandbox_map_data_relative", "/absolute"),
         ("sandbox_image", "image; command"),
         ("dockerd_no_proxy", "localhost\nKEY=secret"),
     ],
@@ -274,6 +295,33 @@ def test_missing_asset_fails_without_creating_run(inputs):
     assert not args.root.exists()
 
 
+def test_explicit_sandbox_layout_projects_identities_not_local_requirements(inputs):
+    args, _, _ = inputs
+    args.sandbox_map_data_relative = "assets-full/map-volumes-webdav"
+    initializer.initialize(args)
+    manifest = json.loads((args.root / "ASSET_MANIFEST.json").read_text())
+    control = "assets-full/map-volumes/tile-db/postgres/global/pg_control"
+    assert (
+        manifest["files"][control]["sandbox_relative"]
+        == "assets-full/map-volumes-webdav/tile-db/postgres/global/pg_control"
+    )
+    flatnode = "assets-full/map-volumes/nominatim-flatnode/flatnode.file"
+    assert manifest["read_probes"][flatnode]["sandbox_relative"] == flatnode
+    assert not (args.asset_root / "assets-full/map-volumes-webdav").exists()
+
+
+@pytest.mark.parametrize(
+    "relative",
+    ["assets-full/map-volumes/tile-db/postgres/global/pg_control", *initializer.ASSET_PROBES],
+)
+def test_empty_map_inputs_fail_without_publishing_bundle(inputs, relative):
+    args, _, _ = inputs
+    (args.asset_root / relative).write_bytes(b"")
+    with pytest.raises(ValueError, match="empty required map asset"):
+        initializer.initialize(args)
+    assert not args.root.exists()
+
+
 @pytest.mark.parametrize("target", ["file", "directory", "run_root", "source"])
 def test_symlink_sources_and_assets_are_rejected(inputs, target):
     args, source, _ = inputs
@@ -282,7 +330,7 @@ def test_symlink_sources_and_assets_are_rejected(inputs, target):
         path.unlink()
         path.symlink_to(args.image_lock)
     elif target == "directory":
-        path = args.asset_root / "assets-full/map-volumes-webdav/tile-db/escape"
+        path = args.asset_root / "assets-full/map-volumes/tile-db/escape"
         path.symlink_to(args.asset_root.parent, target_is_directory=True)
     elif target == "run_root":
         args.root.symlink_to(args.asset_root, target_is_directory=True)

@@ -43,12 +43,25 @@
 两种参数，不能互相替换；平台负责人要确认它们实际对应同一套文件。
 换机器后，本地路径可能不同，不要假定克隆代码就能看到这个目录。
 
-截至 2026-10-08，本控制机上述目录里看不到初始化所需的
-`assets-full/map-volumes-webdav/` 和 `assets-full/map-volumes/PERMISSIONS_READY`。
-这是需要确认的控制机/平台资产视图差异，不代表已查明旧平台卷也缺失。
-先让维护者提供符合清单的可读资产目录，并核对平台挂载；不要直接把此历史路径
-当作已经通过准备检查的输入，也不要创建空目录或标记文件冒充完整资产。
-所需结构见技术参考的“资产与挂载”。本指南不会自动迁移大型数据。
+控制机实际地图数据在 `assets-full/map-volumes/`：含 `tile-db/`、`nominatim-db/`、
+`nominatim-flatnode/` 和 `routing-{car,bike,foot}/`。初始化检查这些真实文件；
+**不要求** `assets-full/READY`、`map-volumes/READY`、`PERMISSIONS_READY`，
+也不要求控制机存在 `map-volumes-webdav/`。不要为了通过检查创建空目录或标记。
+
+2026-10-09 新建沙盒实测：旧平台卷的原始 `map-volumes/` 数据库目录拒绝读取，
+但平台另有可读的 `assets-full/map-volumes-webdav/` 数据库与路线数据视图；
+它不在当前控制机这份共享盘下。两个数据库的 `pg_control` 哈希与控制机相同。
+因此本部署使用以下显式映射，不做自动路径回退：
+
+| 数据 | 控制机资产根内的路径 | 旧平台沙盒挂载根内的路径 |
+| --- | --- | --- |
+| 数据库、路线 | `assets-full/map-volumes/` | `assets-full/map-volumes-webdav/` |
+| flatnode | `assets-full/map-volumes/nominatim-flatnode/` | 同左 |
+
+initializer 的 `--sandbox-map-data-relative assets-full/map-volumes-webdav` 记录此映射。
+新平台若两个视图一致，则使用默认值 `assets-full/map-volumes`。
+本地可读不等于沙盒可读：prepare 在本 run 自建沙盒内核对实际文件读取与 manifest，
+随后仍须验证地图服务启动。所需文件见技术参考“资产与挂载”；本指南不迁移大型数据。
 
 ## 2. 克隆代码，配置本地凭证
 
@@ -106,6 +119,7 @@ GLM_TEST_API_KEY=
 | 官方题目文件 | `--catalog`，示例变量 `WAV_CATALOG` | 核对 1.2.3 catalog 的内容哈希；不要用同名文件替代 |
 | 桌面依赖相对目录 | `--desktop-assets-relative`，示例变量 `WAV_DESKTOP_REL` | 检查该目录在资产根目录内，两个桌面归档可读 |
 | 平台共享卷 | 平台项目的共享卷授权与挂载配置；initializer 的 `--asset-subpath`，示例变量 `WAV_ASSET_SUBPATH` | 核对卷子路径与本地资产的对应关系；沙盒内目标固定 `/mnt/webarena-verified`，实际可读性在本 run 的沙盒验证 |
+| 沙盒地图数据视图 | `--sandbox-map-data-relative`，示例变量 `WAV_SANDBOX_MAP_DATA_REL` | 指定沙盒挂载根内数据库/路线目录；本部署使用 `assets-full/map-volumes-webdav`，不要求控制机存在此目录；flatnode 路径不变 |
 | 站点/模型 runtime 镜像引用 | initializer 的 `--image-lock` 指向 `campaign/image-lock.example.env` 或本轮经确认的 lock | 对每个所需 registry 镜像做访问检查，保留固定 digest；Kiwix 来自离线归档，不按在线拉取验证 |
 | 外层 DinD 镜像 | `--sandbox-image`，示例变量 `WAV_SANDBOX_IMAGE` | 核对实际引用与平台镜像拉取权限；控制机能读 manifest 不代表平台可以启动该镜像 |
 | registry 授权 | 现有控制机 Docker 凭证配置或平台项目的镜像拉取授权；沙盒内由该环境的 Docker 授权配置负责 | 不打印 Docker 配置文件或 token；不虚构入口未读取的 registry `.env` 变量，有缺项说明是哪一侧需要管理员授权 |
@@ -218,6 +232,7 @@ WAV_ASSETS=/absolute/path/to/verified-asset-root
 WAV_CATALOG=/absolute/path/to/webarena-verified.json
 WAV_DESKTOP_REL=results/wav-qwenrunner-calibration-20260928-5b5f1a5f
 WAV_ASSET_SUBPATH=your/platform/verified-volume-subpath
+WAV_SANDBOX_MAP_DATA_REL=assets-full/map-volumes-webdav
 WAV_SANDBOX_IMAGE=registry2-cloud.d.pjlab.org.cn/ccr-sandbox/sandbox-dind:dind-202608311205
 WAV_DOCKERD_NO_PROXY=registry-v2.h.pjlab.org.cn,10.102.254.2,.pjlab.org.cn
 WAV_RUN=/absolute/path/to/new-runs/qwen-onboarding-v1
@@ -229,6 +244,8 @@ WAV_NAME_PREFIX=wav-qwen-onboarding-20261008-v1
 `WAV_DESKTOP_REL` 是相对于资产根目录的路径：复用旧资产时使用上面的目录，
 如果维护者提供了新打包目录则填写实际相对路径。
 `WAV_DOCKERD_NO_PROXY` 是旧项目的绕代理设置，平台负责人必须确认仍适用。
+`WAV_SANDBOX_MAP_DATA_REL` 是上述旧平台的已实测路径，不是所有平台的默认；
+使用同布局的新卷时改为 `assets-full/map-volumes`。
 切换 GLM 时改 `WAV_MODEL=glm-5.3-flash`，并为 GLM 单独填写运行目录、run ID 和
 名称前缀，例如 `wav-generic-glm-full120-20261008-v1`；其他参数不变。
 日期和版本号是命名示例，每次新实验都要选未使用的值。
@@ -240,6 +257,7 @@ uv run python "$EVAL_DIR/campaign/initialize.py" \
   --catalog "$WAV_CATALOG" --image-lock "$EVAL_DIR/campaign/image-lock.example.env" \
   --asset-root "$WAV_ASSETS" --desktop-assets-relative "$WAV_DESKTOP_REL" \
   --sandbox-image "$WAV_SANDBOX_IMAGE" --asset-subpath "$WAV_ASSET_SUBPATH" \
+  --sandbox-map-data-relative "$WAV_SANDBOX_MAP_DATA_REL" \
   --dockerd-no-proxy "$WAV_DOCKERD_NO_PROXY" \
   --timing "$EVAL_DIR/campaign/scheduling-v17.jsonl"
 ```

@@ -73,17 +73,28 @@ start_container() {
 }
 
 prepare_map_runtime() {
-    local source_root="$ASSET_ROOT/assets-full/map-volumes"
-    local webdav_root="$ASSET_ROOT/assets-full/map-volumes-webdav"
+    local source_root="$ASSET_ROOT/${WEBARENA_VERIFIED_MAP_DATA_RELATIVE:-assets-full/map-volumes}"
     local map_root="$RUNTIME_ROOT/map-volumes"
-    require_file "$source_root/READY"
-    require_file "$source_root/PERMISSIONS_READY"
+    local relative
+    for relative in tile-db/postgres/PG_VERSION tile-db/postgres/global/pg_control \
+        nominatim-db/PG_VERSION nominatim-db/global/pg_control \
+        routing-{car,bike,foot}/us-northeast-latest.osrm.{mldgr,fileIndex}; do
+        require_file "$source_root/$relative"
+        [ -s "$source_root/$relative" ] || {
+            echo "empty required map asset: $source_root/$relative" >&2; exit 1;
+        }
+        head -c 1 "$source_root/$relative" >/dev/null
+    done
+    local flatnode="$ASSET_ROOT/assets-full/map-volumes/nominatim-flatnode/flatnode.file"
+    require_file "$flatnode"
+    [ -s "$flatnode" ] || { echo "empty required map asset: $flatnode" >&2; exit 1; }
+    head -c 1 "$flatnode" >/dev/null
     mkdir -p "$map_root"
     local name
     for name in tile-db nominatim-db; do
         if [ ! -f "$map_root/.$name.ready" ]; then
             mkdir -p "$map_root/$name"
-            cp -a "$webdav_root/$name/." "$map_root/$name/"
+            cp -a "$source_root/$name/." "$map_root/$name/"
             chown -R 104:106 "$map_root/$name"
             touch "$map_root/.$name.ready"
         fi
@@ -104,10 +115,6 @@ prepare_map_runtime() {
     rm -f \
         "$map_root/tile-db/postgres/postmaster.pid" \
         "$map_root/nominatim-db/postmaster.pid"
-
-    require_file "$webdav_root/routing-car/us-northeast-latest.osrm.mldgr"
-    require_file "$webdav_root/routing-bike/us-northeast-latest.osrm.mldgr"
-    require_file "$webdav_root/routing-foot/us-northeast-latest.osrm.mldgr"
 
     mkdir -p "$map_root/website-db" "$map_root/tiles" "$map_root/style"
     chown -R 104:106 "$map_root/website-db"
@@ -230,7 +237,7 @@ pull_images() {
 start_sites() {
     local map_root="$RUNTIME_ROOT/map-volumes"
     local map_source="$ASSET_ROOT/assets-full/map-volumes"
-    local webdav_root="$ASSET_ROOT/assets-full/map-volumes-webdav"
+    local map_data="$ASSET_ROOT/${WEBARENA_VERIFIED_MAP_DATA_RELATIVE:-assets-full/map-volumes}"
     require_file "$ASSET_ROOT/assets-full/data/wikipedia_en_all_maxi_2022-05.zim"
     prepare_map_runtime
 
@@ -264,9 +271,9 @@ start_sites() {
         -v "$map_root/tile-db:/data/database" \
         -v "$map_root/nominatim-db:/data/nominatim/postgres" \
         -v "$map_source/nominatim-flatnode:/mnt/map-source/nominatim-flatnode:ro" \
-        -v "$webdav_root/routing-car:/mnt/map-source/routing-car:ro" \
-        -v "$webdav_root/routing-bike:/mnt/map-source/routing-bike:ro" \
-        -v "$webdav_root/routing-foot:/mnt/map-source/routing-foot:ro" \
+        -v "$map_data/routing-car:/mnt/map-source/routing-car:ro" \
+        -v "$map_data/routing-bike:/mnt/map-source/routing-bike:ro" \
+        -v "$map_data/routing-foot:/mnt/map-source/routing-foot:ro" \
         -v "$map_root/website-db:/var/lib/postgresql/14/main" \
         -v "$map_root/tiles:/data/tiles" \
         -v "$map_root/style:/data/style" \

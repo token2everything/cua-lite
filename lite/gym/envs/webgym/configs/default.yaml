@@ -1,0 +1,144 @@
+# webgym registration defaults. Read at import by env_config.load(ENV_DIR).
+# Override the WHOLE config at startup: WEBGYM_CONFIG=/path/to/your.yaml
+# (or a bare name -> configs/<name>.yaml). A rollout's env_kwargs still win per run.
+#
+# Ports / master URL / pool size are AUTO-ALLOCATED at startup (conflict-safe, the
+# same allocator as lite.osworld) — you normally set none of them; to change a
+# default, edit it here. The only runtime env-vars are SECRETS / judge routing:
+# WEBGYM_API_KEY, and the eval judge's OPENAI_* / WEBGYM_EVAL_*
+# (see README "Evaluator API").
+env_var_prefix: WEBGYM
+# Env-wide make defaults, applied via
+# registry.set_env_make_kwargs. Per-task register() kwargs and gym.make() kwargs
+# still override (precedence: make-default < make_kwargs < register < gym.make).
+make_kwargs:
+  cursor: true
+  # Per-step wall-clock cap. 300 (was 90) because this ONE cap covers two very
+  # different step kinds and must fit the slower:
+  #   - BROWSER steps are bounded NOT here but by the in-env op caps (controller
+  #     domcontentloaded 10s + best-effort load 3s, http_timeout 20s, execute/blank
+  #     retries) — even fully-wedged sites settle to a graceful fallback in ~50-65s,
+  #     well under 300, so a hung browser step does NOT run to 300 (op caps fire first).
+  #   - The terminal `response` step runs the VLM JUDGE inside env.step (mean ~77s,
+  #     p90 144s, p99 274s). At 90/120 this cap KILLED ~16-29% of judge evals →
+  #     EnvTimeoutError → a successful trajectory's reward silently discarded. 300
+  #     covers p99; pathological >300s judges (~1%) still fail fast.
+  step_timeout: 300.0
+env_kwargs:
+  # Step budgets per difficulty (1-3=easy, 4-6=medium, 7+=hard). These tables ARE
+  # the max_steps knob (canonical first key), split by train/eval.
+  # train = 15/25/35: cua-lite DELIBERATELY allows ~5 more steps/tier than upstream
+  # WebGym's 10/20/30 (do NOT "fix" to match upstream). eval = 30/50/70 (= upstream test).
+  max_steps_train: {1: 15, 2: 15, 3: 15, 4: 25, 5: 25, 6: 25, 7: 35, 8: 35}
+  max_steps_eval:  {1: 30, 2: 30, 3: 30, 4: 50, 5: 50, 6: 50, 7: 70, 8: 70}
+  post_action_delay: 0.0   # webgym renders synchronously → 0 (no settle wait)
+  viewport: [1280, 720]
+  goback_skip_threshold: 2
+  goback_terminate_threshold: 3
+  # VLM judge models. gpt-4.1 (not gpt-4o): at conc-32 the gpt-4o deployment's RPM
+  # is too small — its criteria calls 429 → swallowed → corrupted/timed-out evals
+  # (baseline 11/24 evals completed, 13 ERR, 96·429). gpt-4.1 (drop-in, same call
+  # shape) has the headroom: 24/24 evals completed, 0 ERR, 0 429, 0 timeout with NO
+  # wrappers (see ablation in .logs/rollout/webgym_collect/abl). It's a DIFFERENT
+  # judge model than gpt-4o, so verdict semantics shift — A/B vs gpt-4o is the
+  # standing quality follow-up.
+  eval_config:
+    model: "gpt-4.1"
+    keypoint_detection: {model: "gpt-4.1"}
+    blocking_detection: {model: "gpt-4.1"}
+    evaluation: {model: "gpt-4.1"}
+  # ⚠ advanced — defines the GUI action enum (grounded interaction verbs only;
+  # no nav and no terminal tools). Overriding (e.g. to ["response"]) silently
+  # corrupts Qwen SFT data:
+  # the value is saved into metadata.valid_actions and, replayed through a Qwen SFT
+  # export, collapses the student's computer_use enum to just answer (no
+  # click/type/key/scroll) — a silent, catastrophic data-poisoning bug. See main.py.
+  valid_actions: ["click", "type", "key", "scroll", "wait"]
+  extra_tools: []   # opt-in standalone tools (back/goto/response/terminate)
+server_kwargs:
+  # OmniBoxes master + browser pool. Ports/URL auto-allocated at startup (conflict-safe
+  # via lite/gym/utils/backend/ports.py, same as lite.osworld) — normally set NONE of these.
+  # NOTE: the container flow never consults master_port — `ensure` always publishes
+  # the master from the 7700-7800 band at `docker run`. master_port/master_url here
+  # are only the host-side FALLBACK URL used when WEBGYM_MASTER_URL is unset.
+  master_port: 7000         # host-side fallback master port (NOT the published container port)
+  master_url: ""            # "" = derive http://localhost:{master_port}; set only for a REMOTE master
+  instances: 0              # browser-pool size M; 0 = auto-derive (vcpu/ram), passed to the container as -e WEBGYM_INSTANCES, like mobilegym max_browsers
+  target_concurrency: 0     # 0 = size M from available capacity only; >0 caps auto-sized M at ceil(conc*1.3) so the pool isn't over-provisioned vs how many leases are ever held (e.g. set to your rollout --concurrency)
+  api_key: "default_key"    # placeholder; real key via WEBGYM_API_KEY env-var (secret)
+  hf_repo_id: "microsoft/webgym_tasks"
+  # 60 is the MAX the upstream OmniBoxes master accepts: POST /get?lifetime_mins=120
+  # returns 503 "No available nodes with capacity to create new instance" (verified
+  # 2026-06-16), which makes EVERY get_instance fail. So mid-trajectory reaping (a
+  # trajectory whose wall-time approaches 60min losing its browser) can't be solved
+  # by raising this — it's capped upstream. Leave at 60. (If reaping is observed,
+  # the fix must be on the upstream master's max-lease, not here.)
+  instance_lifetime_mins: 60
+  # http_timeout must stay ABOVE the in-container nav wait. cua-lite controller now
+  # caps that at domcontentloaded 10s + best-effort load 3s = 13s, so 20s leaves a
+  # safe margin while trimming HUNG node ops (screenshot/goto on a wedged page) from
+  # 40->20s. (Measured: healthy execute/screenshot ~0.3s; only hangs benefit — and a
+  # wedged-page screenshot falls back to the previous frame regardless, so failing
+  # faster is zero-quality-cost.) Was 40 (sized for the old 30s wait_for_load_state).
+  http_timeout: 20.0
+  # Retry / backoff. max_retries=2 (was 3): the node's failure modes are either fast
+  # errors (retry helps) or hangs (each wasted attempt = one http_timeout); 2 keeps a
+  # hung execute/screenshot well under the step_timeout (2x20s=40s << 300s) instead of 3x.
+  max_retries: 2
+  retry_backoff_base: 1.0
+  # Navigation outer-retry depth (separate from execute's network retry above).
+  # _navigate_with_retry wraps execute() — which ALREADY retries transient
+  # network/500 errors max_retries times. The outer nav loop only re-tries on a
+  # *logical* status=error (block page, cert error, page-not-found, hung
+  # domcontentloaded) — failure modes that are PERMANENT for that URL, so a retry
+  # just re-pays the full goto timeout (the dominant browser-step tail: measured
+  # p99 ~110s, with search-engine IP-blocks compounding to 400s+). 1 = single
+  # attempt (no futile outer retry); execute's internal retries still cover
+  # genuine transient blips. Raise only if transient nav blips are observed.
+  nav_max_retries: 1
+  sem_allocate: 64
+  sem_execute: 256
+  sem_screenshot: 256
+  sem_navigate: 16
+  # VLM-judge concurrency cap. The terminal evaluate() runs the SYNCHRONOUS webgym
+  # Evaluator OFF the event loop (asyncio.to_thread, so a 60-80s judge can't freeze
+  # peers' browser steps); this semaphore bounds how many run at once across the
+  # server. With the gpt-4.1 judge deployment this isn't load-critical, but it's a
+  # sensible cap on concurrent judge threads. (A corrupted/failed eval never produces
+  # a silent reward — _judge_incomplete_reason raises → trajectory ERR → retry.)
+  # NOTE: this acquire-wait is INSIDE the terminal env.step (under step_timeout), so
+  # too-low a value makes queued judges count their wait toward the 300s cap →
+  # queue-wait timeouts. gpt-4.1 doesn't 429, so a generous value is safe; 16 lets
+  # most concurrent judges run without queueing at conc-32.
+  sem_judge: 16
+  # VLM-judge submission batching (default TRUE). Stock filters submission relevance one
+  # OpenAI call PER frame (a ~N-wide fan-out); the judge's latency is call-COUNT-bound, so
+  # at conc-32 the fan-out brushes the 300s step_timeout. TRUE batches frames into
+  # multi-image calls (the agent's call shape) — chunked at
+  # _JUDGE_SUBMISSION_MAX_IMAGES_PER_CALL so a long (eval ~70-frame) trajectory becomes a
+  # few calls, not one oversized request that 400s. This cut judge p50 ~116s → ~52s at
+  # conc-32 with 0 timeouts. Set false for stock per-image semantics. NOTE: batching judges
+  # frames JOINTLY vs in isolation — a reward-semantics difference; A/B'd vs stock (and the
+  # gpt-4.1 judge verified more accurate than mini). A content-policy 400 on a chunk falls
+  # back to per-image (only the flagged frame excluded). See _batched_judge_submission.
+  judge_batch_submission: true
+  # VLM-judge client retry budget — absorb residual gpt-4.1 429s (Retry-After)
+  # so the eval succeeds instead of ERRing. <0 = SDK default. See _get_judge_evaluator_cls.
+  judge_openai_max_retries: 8
+  # Blank screenshot retry. 2x1.5s (was 3x3s): the node's screenshot endpoint
+  # frequently returns "Internal Server Error" — fall back to the previous frame
+  # faster (3s vs 9s wasted) rather than long-polling a broken endpoint.
+  blank_screenshot_max_retries: 2
+  blank_screenshot_wait: 1.5
+  # L2 dead-pool fail-fast: after this many CONSECUTIVE steps that could only
+  # produce a fallback (stale/blank) screenshot, the pool is treated as
+  # unreachable and the trajectory is truncated loudly (stop burning teacher
+  # budget on a dead pool). A real screenshot resets the
+  # counter, so a transient single-instance blip never trips it. 0 disables.
+  pool_unreachable_fallback_steps: 4
+  min_screenshot_size: 1000
+  wait_for_content_timeout: 5.0
+  wait_for_content_interval: 0.5
+  # `docker rm -f` deadline so a wedged daemon can't block the server thread on
+  # ensure/shutdown/reap (override: CUA_LITE_WEBGYM_RM_TIMEOUT_S).
+  rm_timeout_s: 60.0

@@ -1,0 +1,1538 @@
+{
+  "AudioRecorderRecordAudio": {
+    "app_names": [
+      "audio recorder"
+    ],
+    "complexity": 1.2,
+    "difficulty": "easy",
+    "instruction_template": "Record an audio clip using Audio Recorder app and save it.",
+    "optimal_steps": "6",
+    "tags": [
+      "requires_setup"
+    ]
+  },
+  "AudioRecorderRecordAudioWithFileName": {
+    "app_names": [
+      "audio recorder"
+    ],
+    "complexity": 2,
+    "difficulty": "easy",
+    "instruction_template": "Record an audio clip and save it with name \"{file_name}\" using Audio Recorder app.",
+    "optimal_steps": "10",
+    "tags": [
+      "data_entry",
+      "complex_ui_understanding",
+      "parameterized"
+    ]
+  },
+  "BrowserDraw": {
+    "app_names": [
+      "chrome"
+    ],
+    "complexity": 2,
+    "difficulty": "easy",
+    "instruction_template": "Open the file task.html in Downloads in the file manager; when prompted open it with Chrome. Then create a drawing using the three colors shown at the top and hit submit.",
+    "optimal_steps": "5",
+    "tags": [
+      "game_playing",
+      "parameterized"
+    ]
+  },
+  "BrowserMaze": {
+    "app_names": [
+      "chrome"
+    ],
+    "complexity": 2,
+    "difficulty": "easy",
+    "instruction_template": "Open the file task.html in Downloads in the file manager; when prompted open it with Chrome. Then navigate the X to the bottom-right cell, by using the direction buttons.",
+    "optimal_steps": "9",
+    "tags": [
+      "game_playing",
+      "multi_app",
+      "complex_ui_understanding",
+      "memorization",
+      "parameterized"
+    ]
+  },
+  "BrowserMultiply": {
+    "app_names": [
+      "chrome"
+    ],
+    "complexity": 2.2,
+    "difficulty": "hard",
+    "instruction_template": "Open the file task.html in Downloads in the file manager; when prompted open it with Chrome. Then click the button 5 times, remember the numbers displayed, and enter their product in the form.",
+    "optimal_steps": "11",
+    "tags": [
+      "math_counting",
+      "memorization",
+      "screen_reading"
+    ]
+  },
+  "CameraTakePhoto": {
+    "app_names": [
+      "camera"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Take one photo.",
+    "optimal_steps": "2",
+    "tags": [
+      ""
+    ]
+  },
+  "CameraTakeVideo": {
+    "app_names": [
+      "camera"
+    ],
+    "complexity": 1,
+    "difficulty": "medium",
+    "instruction_template": "Take one video.",
+    "optimal_steps": "3",
+    "tags": [
+      ""
+    ]
+  },
+  "ClockStopWatchPausedVerify": {
+    "app_names": [
+      "clock"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Pause the stopwatch.",
+    "optimal_steps": "1",
+    "tags": [
+      "verification"
+    ]
+  },
+  "ClockStopWatchRunning": {
+    "app_names": [
+      "clock"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Run the stopwatch.",
+    "optimal_steps": "3",
+    "tags": [
+      ""
+    ]
+  },
+  "ClockTimerEntry": {
+    "app_names": [
+      "clock"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Create a timer with {hours} hours, {minutes} minutes, and {seconds} seconds. Do not start the timer.",
+    "optimal_steps": "3",
+    "tags": [
+      "data_entry",
+      "parameterized"
+    ]
+  },
+  "ContactsAddContact": {
+    "app_names": [
+      "contacts"
+    ],
+    "complexity": 1.2,
+    "difficulty": "easy",
+    "instruction_template": "Create a new contact for {name}. Their number is {number}.",
+    "optimal_steps": "5",
+    "tags": [
+      "data_entry",
+      "parameterized"
+    ]
+  },
+  "ContactsNewContactDraft": {
+    "app_names": [
+      "contacts"
+    ],
+    "complexity": 1.2,
+    "difficulty": "easy",
+    "instruction_template": "Go to the new contact screen and enter the following details: First Name: {first}, Last Name: {last}, Phone: {phone}, Phone Label: {phone_label}. Do NOT hit save.",
+    "optimal_steps": "6",
+    "tags": [
+      "screen_reading",
+      "data_entry"
+    ]
+  },
+  "ExpenseAddMultiple": {
+    "app_names": [
+      "pro expense"
+    ],
+    "complexity": 6,
+    "difficulty": "medium",
+    "instruction_template": "Add the following expenses into the arduia pro expense: {expenses}",
+    "optimal_steps": "20",
+    "tags": [
+      "data_entry",
+      "parameterized"
+    ]
+  },
+  "ExpenseAddMultipleFromGallery": {
+    "app_names": [
+      "pro expense",
+      "simple gallery pro"
+    ],
+    "complexity": 6,
+    "difficulty": "hard",
+    "instruction_template": "Add the expenses from expenses.jpg in Simple Gallery Pro to pro expense.",
+    "optimal_steps": "10",
+    "tags": [
+      "multi_app",
+      "screen_reading",
+      "data_entry",
+      "information_retrieval",
+      "parameterized"
+    ]
+  },
+  "ExpenseAddMultipleFromMarkor": {
+    "app_names": [
+      "pro expense",
+      "markor"
+    ],
+    "complexity": 6,
+    "difficulty": "hard",
+    "instruction_template": "Go through the transactions in my_expenses.txt in Markor. Log the reimbursable transactions in the arduia pro expense.",
+    "optimal_steps": "15",
+    "tags": [
+      "transcription",
+      "repetition",
+      "multi_app",
+      "data_entry",
+      "memorization",
+      "parameterized"
+    ]
+  },
+  "ExpenseAddSingle": {
+    "app_names": [
+      "pro expense"
+    ],
+    "complexity": 1.2,
+    "difficulty": "easy",
+    "instruction_template": "Add the following expenses into the arduia pro expense: {expense}",
+    "optimal_steps": "6",
+    "tags": [
+      "parameterized",
+      "data_entry",
+      "search"
+    ]
+  },
+  "ExpenseDeleteDuplicates": {
+    "app_names": [
+      "pro expense"
+    ],
+    "complexity": 1.2,
+    "difficulty": "medium",
+    "instruction_template": "Delete all but one of any expenses in arduia pro expense that are exact duplicates, ensuring at least one instance of each unique expense remains.",
+    "optimal_steps": "6",
+    "tags": [
+      "data_edit",
+      "parameterized"
+    ]
+  },
+  "ExpenseDeleteDuplicates2": {
+    "app_names": [
+      "pro expense"
+    ],
+    "complexity": 1.8,
+    "difficulty": "medium",
+    "instruction_template": "Delete all but one of any expenses in arduia pro expense that are exact duplicates, ensuring at least one instance of each unique expense remains.",
+    "optimal_steps": "9",
+    "tags": [
+      "data_edit",
+      "requires_setup",
+      "parameterized"
+    ]
+  },
+  "ExpenseDeleteMultiple": {
+    "app_names": [
+      "pro expense"
+    ],
+    "complexity": 2,
+    "difficulty": "easy",
+    "instruction_template": "Delete the following expenses from arduia pro expense: {expenses}.",
+    "optimal_steps": "10",
+    "tags": [
+      "data_edit",
+      "parameterized"
+    ]
+  },
+  "ExpenseDeleteMultiple2": {
+    "app_names": [
+      "pro expense"
+    ],
+    "complexity": 3.4,
+    "difficulty": "hard",
+    "instruction_template": "Delete the following expenses from arduia pro expense: {expenses}.",
+    "optimal_steps": "17",
+    "tags": [
+      "screen_reading",
+      "parameterized"
+    ]
+  },
+  "ExpenseDeleteSingle": {
+    "app_names": [
+      "pro expense"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Delete the following expenses from arduia pro expense: {expense}.",
+    "optimal_steps": "3",
+    "tags": [
+      "screen_reading",
+      "parameterized"
+    ]
+  },
+  "FilesDeleteFile": {
+    "app_names": [
+      "files"
+    ],
+    "complexity": 2.2,
+    "difficulty": "medium",
+    "instruction_template": "Delete the file {file_name} from the Android filesystem located in the {subfolder} folder within the sdk_gphone_x86_64 storage area.",
+    "optimal_steps": "4",
+    "tags": [
+      "data_edit",
+      "parameterized"
+    ]
+  },
+  "FilesMoveFile": {
+    "app_names": [
+      "files"
+    ],
+    "complexity": 2,
+    "difficulty": "medium",
+    "instruction_template": "Move the file {file_name} from {source_folder} within the sdk_gphone_x86_64 storage area to the {destination_folder} within the same sdk_gphone_x86_64 storage area in the Android filesystem.",
+    "optimal_steps": "10",
+    "tags": [
+      "search",
+      "screen_reading",
+      "parameterized"
+    ]
+  },
+  "MarkorAddNoteHeader": {
+    "app_names": [
+      "markor"
+    ],
+    "complexity": 1.2,
+    "difficulty": "medium",
+    "instruction_template": "Update the Markor note {file_name} by adding the following text, along with a new blank line before the existing content: \"{header}\".",
+    "optimal_steps": "6",
+    "tags": [
+      "data_entry",
+      "parameterized"
+    ]
+  },
+  "MarkorChangeNoteContent": {
+    "app_names": [
+      "markor"
+    ],
+    "complexity": 1.2,
+    "difficulty": "medium",
+    "instruction_template": "Update the content of {file_name} to \"{updated_content}\" in Markor.",
+    "optimal_steps": "5",
+    "tags": [
+      "data_entry",
+      "requires_setup",
+      "parameterized"
+    ]
+  },
+  "MarkorCreateFolder": {
+    "app_names": [
+      "markor"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Create a new folder in Markor named {folder_name}.",
+    "optimal_steps": "4",
+    "tags": [
+      "data_entry",
+      "parameterized"
+    ]
+  },
+  "MarkorCreateNote": {
+    "app_names": [
+      "markor"
+    ],
+    "complexity": 1.6,
+    "difficulty": "medium",
+    "instruction_template": "Create a new note in Markor named {file_name} with the following text: {text}",
+    "optimal_steps": "8",
+    "tags": [
+      "data_entry",
+      "parameterized"
+    ]
+  },
+  "MarkorCreateNoteAndSms": {
+    "app_names": [
+      "markor",
+      "simple sms messenger"
+    ],
+    "complexity": 1.8,
+    "difficulty": "hard",
+    "instruction_template": "Create a new note in Markor named {file_name} with the following text: {text}. Share the entire content of the note with the phone number {number} via SMS using Simple SMS Messenger",
+    "optimal_steps": "9",
+    "tags": [
+      "multi_app",
+      "data_entry",
+      "parameterized"
+    ]
+  },
+  "MarkorCreateNoteFromClipboard": {
+    "app_names": [
+      "markor",
+      "clipper"
+    ],
+    "complexity": 1.4,
+    "difficulty": "medium",
+    "instruction_template": "Create a note in Markor named {file_name}. Perform a paste operation in the note and save the note.",
+    "optimal_steps": "7",
+    "tags": [
+      "data_entry",
+      "parameterized"
+    ]
+  },
+  "MarkorDeleteAllNotes": {
+    "app_names": [
+      "markor"
+    ],
+    "complexity": 1.4,
+    "difficulty": "easy",
+    "instruction_template": "Delete all my notes in Markor.",
+    "optimal_steps": "7",
+    "tags": [
+      "data_edit",
+      "repetition",
+      "parameterized"
+    ]
+  },
+  "MarkorDeleteNewestNote": {
+    "app_names": [
+      "markor"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Delete the newest note in Markor.",
+    "optimal_steps": "4",
+    "tags": [
+      "data_edit",
+      "parameterized"
+    ]
+  },
+  "MarkorDeleteNote": {
+    "app_names": [
+      "markor"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Delete the note in Markor named {file_name}.",
+    "optimal_steps": "5",
+    "tags": [
+      "data_edit",
+      "requires_setup",
+      "parameterized"
+    ]
+  },
+  "MarkorEditNote": {
+    "app_names": [
+      "markor"
+    ],
+    "complexity": 1.2,
+    "difficulty": "easy",
+    "instruction_template": "Edit {file_name} in Markor. Add to the top of the note {header}",
+    "optimal_steps": "4",
+    "tags": [
+      "data_edit",
+      "transcription",
+      "parameterized"
+    ]
+  },
+  "MarkorMergeNotes": {
+    "app_names": [
+      "markor"
+    ],
+    "complexity": 7.8,
+    "difficulty": "hard",
+    "instruction_template": "Merge the contents of Markor notes {file1_name}, {file2_name} and {file3_name} (in the same order) into a new Markor note named {new_file_name} and save it. Add a new line between the content of each note.",
+    "optimal_steps": "39",
+    "tags": [
+      "data_edit",
+      "data_entry",
+      "parameterized"
+    ]
+  },
+  "MarkorMoveNote": {
+    "app_names": [
+      "markor"
+    ],
+    "complexity": 1.4,
+    "difficulty": "medium",
+    "instruction_template": "In Markor, move the note {file_name} from {source_folder} to {destination_folder}.",
+    "optimal_steps": "7",
+    "tags": [
+      "parameterized",
+      "complex_ui_understanding"
+    ]
+  },
+  "MarkorTranscribeReceipt": {
+    "app_names": [
+      "simple gallery pro",
+      "markor"
+    ],
+    "complexity": 1.8,
+    "difficulty": "medium",
+    "instruction_template": "Create a file in Markor, called receipt.md with the transactions from the receipt.png. Use Simple Gallery to view the receipt. Please enter transactions in csv format including the header \"Date, Item, Amount\".",
+    "optimal_steps": "9",
+    "tags": [
+      "transcription",
+      "data_entry",
+      "multi_app",
+      "screen_reading",
+      "memorization",
+      "parameterized"
+    ]
+  },
+  "MarkorTranscribeVideo": {
+    "app_names": [
+      "markor",
+      "vlc"
+    ],
+    "complexity": 2,
+    "difficulty": "hard",
+    "instruction_template": "Transcribe the contents of video {video_name} by watching it in VLC player (located in Download) and writing the sequence of strings shown on each frame to the text file {file_name} in Markor as a comma separated list. For example, if the first frame shows the text \"edna\" and the second frame shows the text \"pineapple\", then the text file should contains only the following text: \"edna, pineapple\".",
+    "optimal_steps": "10",
+    "tags": [
+      "multi_app",
+      "transcription",
+      "requires_setup",
+      "memorization",
+      "screen_reading",
+      "parameterized"
+    ]
+  },
+  "NotesIsTodo": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "easy",
+    "instruction_template": "Is the note titled '{title}' in the Joplin app marked as a todo item? Respond with either 'True' if it is a todo or 'False' if not.",
+    "optimal_steps": "2",
+    "tags": [
+      "information_retrieval",
+      "parameterized"
+    ]
+  },
+  "NotesMeetingAttendeeCount": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "easy",
+    "instruction_template": "How many attendees were present in the meeting titled '{title}' in the Joplin app? Express your answer as just a single number.",
+    "optimal_steps": "3",
+    "tags": [
+      "search",
+      "parameterized"
+    ]
+  },
+  "NotesRecipeIngredientCount": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "easy",
+    "instruction_template": "What quantity of {ingredient} do I need for the recipe '{title}' in the Joplin app? Express your answer in the format <amount> <unit> without using abbreviations.",
+    "optimal_steps": "2",
+    "tags": [
+      "search",
+      "parameterized"
+    ]
+  },
+  "NotesTodoItemCount": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "medium",
+    "instruction_template": "How many to-dos do I have in the '{folder}' folder in the Joplin app? Express your answer as just a single number.",
+    "optimal_steps": "5",
+    "tags": [
+      "information_retrieval",
+      "math_counting",
+      "parameterized"
+    ]
+  },
+  "OpenAppTaskEval": {
+    "app_names": [
+      "camera",
+      "clock",
+      "contacts",
+      "settings",
+      "dialer"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Open the {app_name} app. Clear any pop-ups that may appear by granting all permissions that are required.",
+    "optimal_steps": "2",
+    "tags": [
+      "parameterized"
+    ]
+  },
+  "OsmAndFavorite": {
+    "app_names": [
+      "osmand"
+    ],
+    "complexity": 1.3,
+    "difficulty": "medium",
+    "instruction_template": "Add a favorite location marker for {location} in the OsmAnd maps app.",
+    "optimal_steps": "6",
+    "tags": [
+      "search",
+      "complex_ui_understanding",
+      "parameterized"
+    ]
+  },
+  "OsmAndMarker": {
+    "app_names": [
+      "osmand"
+    ],
+    "complexity": 2.0,
+    "difficulty": "hard",
+    "instruction_template": "Add a location marker for {location} in the OsmAnd maps app.",
+    "optimal_steps": "10",
+    "tags": [
+      "complex_ui_understanding",
+      "search",
+      "parameterized"
+    ]
+  },
+  "OsmAndTrack": {
+    "app_names": [
+      "osmand"
+    ],
+    "complexity": 12,
+    "difficulty": "hard",
+    "instruction_template": "Save a track with waypoints Ruggell, Liechtenstein, Bendern, Liechtenstein in the OsmAnd maps app in the same order as listed.",
+    "optimal_steps": "60",
+    "tags": [
+      "complex_ui_understanding",
+      "search",
+      "data_entry",
+      "repetition",
+      "parameterized"
+    ]
+  },
+  "RecipeAddMultipleRecipes": {
+    "app_names": [
+      "broccoli app"
+    ],
+    "complexity": 6,
+    "difficulty": "medium",
+    "instruction_template": "Add the following recipes into the Broccoli app: {recipes}",
+    "optimal_steps": "34",
+    "tags": [
+      "data_entry",
+      "parameterized"
+    ]
+  },
+  "RecipeAddMultipleRecipesFromImage": {
+    "app_names": [
+      "broccoli app",
+      "simple gallery pro"
+    ],
+    "complexity": 6,
+    "difficulty": "hard",
+    "instruction_template": "Add the recipes from recipes.jpg in Simple Gallery Pro to the Broccoli recipe app.",
+    "optimal_steps": "13",
+    "tags": [
+      "transcription",
+      "screen_reading",
+      "data_entry",
+      "complex_ui_understanding",
+      "parameterized"
+    ]
+  },
+  "RecipeAddMultipleRecipesFromMarkor": {
+    "app_names": [
+      "broccoli app",
+      "markor"
+    ],
+    "complexity": 6,
+    "difficulty": "hard",
+    "instruction_template": "Add the recipes from recipes.txt in Markor to the Broccoli recipe app.",
+    "optimal_steps": "24",
+    "tags": [
+      "data_entry",
+      "multi_app",
+      "screen_reading",
+      "memorization",
+      "parameterized"
+    ]
+  },
+  "RecipeAddMultipleRecipesFromMarkor2": {
+    "app_names": [
+      "broccoli app",
+      "markor"
+    ],
+    "complexity": 6,
+    "difficulty": "hard",
+    "instruction_template": "Add the recipes from recipes.txt in Markor that take {prep_time} to prepare into the Broccoli recipe app.",
+    "optimal_steps": "26",
+    "tags": [
+      "parameterized",
+      "screen_reading",
+      "complex_ui_understanding",
+      "repetition",
+      "multi_app",
+      "data_entry",
+      "information_retrieval"
+    ]
+  },
+  "RecipeAddSingleRecipe": {
+    "app_names": [
+      "broccoli app"
+    ],
+    "complexity": 2.4,
+    "difficulty": "easy",
+    "instruction_template": "Add the following recipes into the Broccoli app:\n{recipe}",
+    "optimal_steps": "12",
+    "tags": [
+      "data_entry",
+      "parameterized"
+    ]
+  },
+  "RecipeDeleteDuplicateRecipes": {
+    "app_names": [
+      "broccoli app"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Delete all but one of any recipes in the Broccoli app that are exact duplicates, ensuring at least one instance of each unique recipe remains",
+    "optimal_steps": "4",
+    "tags": [
+      "search",
+      "data_edit",
+      "screen_reading",
+      "repetition",
+      "parameterized"
+    ]
+  },
+  "RecipeDeleteDuplicateRecipes2": {
+    "app_names": [
+      "broccoli app"
+    ],
+    "complexity": 2.4,
+    "difficulty": "medium",
+    "instruction_template": "Delete all but one of any recipes in the Broccoli app that are exact duplicates, ensuring at least one instance of each unique recipe remains",
+    "optimal_steps": "11",
+    "tags": [
+      "repetition",
+      "data_edit",
+      "parameterized"
+    ]
+  },
+  "RecipeDeleteDuplicateRecipes3": {
+    "app_names": [
+      "broccoli app"
+    ],
+    "complexity": 3.4,
+    "difficulty": "medium",
+    "instruction_template": "Delete all but one of any recipes in the Broccoli app that are exact duplicates, ensuring at least one instance of each unique recipe remains",
+    "optimal_steps": "16",
+    "tags": [
+      "data_edit",
+      "parameterized"
+    ]
+  },
+  "RecipeDeleteMultipleRecipes": {
+    "app_names": [
+      "broccoli app"
+    ],
+    "complexity": 2.4,
+    "difficulty": "easy",
+    "instruction_template": "Delete the following recipes from Broccoli app: {titles}.",
+    "optimal_steps": "12",
+    "tags": [
+      "data_edit",
+      "parameterized"
+    ]
+  },
+  "RecipeDeleteMultipleRecipesWithConstraint": {
+    "app_names": [
+      "broccoli app"
+    ],
+    "complexity": 4,
+    "difficulty": "hard",
+    "instruction_template": "Delete the recipes from Broccoli app that use {ingredient} in the directions.",
+    "optimal_steps": "20",
+    "tags": [
+      "screen_reading",
+      "repetition",
+      "parameterized"
+    ]
+  },
+  "RecipeDeleteMultipleRecipesWithNoise": {
+    "app_names": [
+      "broccoli app"
+    ],
+    "complexity": 3.4,
+    "difficulty": "medium",
+    "instruction_template": "Delete the following recipes from Broccoli app: {titles}.",
+    "optimal_steps": "17",
+    "tags": [
+      "parameterized",
+      "search",
+      "complex_ui_understanding",
+      "repetition"
+    ]
+  },
+  "RecipeDeleteSingleRecipe": {
+    "app_names": [
+      "broccoli app"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Delete the following recipes from Broccoli app: {titles}.",
+    "optimal_steps": "5",
+    "tags": [
+      "data_edit",
+      "search",
+      "parameterized"
+    ]
+  },
+  "RecipeDeleteSingleWithRecipeWithNoise": {
+    "app_names": [
+      "broccoli app"
+    ],
+    "complexity": 2,
+    "difficulty": "easy",
+    "instruction_template": "Delete the following recipes from Broccoli app: {titles}.",
+    "optimal_steps": "10",
+    "tags": [
+      "search",
+      "screen_reading",
+      "data_edit",
+      "parameterized"
+    ]
+  },
+  "RetroCreatePlaylist": {
+    "app_names": [
+      "retro music"
+    ],
+    "complexity": 2.4,
+    "difficulty": "medium",
+    "instruction_template": "Create a playlist in Retro Music titled \"{playlist_name}\" with the following songs, in order: {names}",
+    "optimal_steps": "12",
+    "tags": [
+      "data_entry",
+      "repetition",
+      "parameterized"
+    ]
+  },
+  "RetroPlayingQueue": {
+    "app_names": [
+      "retro music"
+    ],
+    "complexity": 3.2,
+    "difficulty": "easy",
+    "instruction_template": "Add the following songs, in order, {names} to my playing queue in Retro music.",
+    "optimal_steps": "16",
+    "tags": [
+      "parameterized"
+    ]
+  },
+  "RetroPlaylistDuration": {
+    "app_names": [
+      "retro music"
+    ],
+    "complexity": 3,
+    "difficulty": "medium",
+    "instruction_template": "Create a playlist in Retro Music titled \"{playlist_name}\" with a duration between 45 and 50 minutes using the provided songs.",
+    "optimal_steps": "15",
+    "tags": [
+      "math_counting",
+      "complex_ui_understanding",
+      "repetition",
+      "parameterized"
+    ]
+  },
+  "RetroSavePlaylist": {
+    "app_names": [
+      "retro music"
+    ],
+    "complexity": 5,
+    "difficulty": "hard",
+    "instruction_template": "Create a playlist in Retro Music titled \"{playlist_name}\" with the following songs, in order: {names}. Then export the playlist to the Downloads directory on the device.",
+    "optimal_steps": "25",
+    "tags": [
+      "search",
+      "repetition",
+      "parameterized"
+    ]
+  },
+  "SaveCopyOfReceiptTaskEval": {
+    "app_names": [
+      "simple gallery pro"
+    ],
+    "complexity": 1.6,
+    "difficulty": "hard",
+    "instruction_template": "Copy {file_name} in DCIM and save a copy with the same name in Download",
+    "optimal_steps": "8",
+    "tags": [
+      "parameterized",
+      "complex_ui_understanding"
+    ]
+  },
+  "SimpleCalendarAddOneEvent": {
+    "app_names": [
+      "simple calendar pro"
+    ],
+    "complexity": 3.4,
+    "difficulty": "hard",
+    "instruction_template": "In Simple Calendar Pro, create a calendar event on {year}-{month}-{day} at {hour}h with the title '{event_title}' and the description '{event_description}'. The event should last for {duration_mins} mins.",
+    "optimal_steps": "17",
+    "tags": [
+      "data_entry",
+      "complex_ui_understanding",
+      "parameterized"
+    ]
+  },
+  "SimpleCalendarAddOneEventInTwoWeeks": {
+    "app_names": [
+      "simple calendar pro"
+    ],
+    "complexity": 3.4,
+    "difficulty": "medium",
+    "instruction_template": "In Simple Calendar Pro, create a calendar event in two weeks from today at {hour}h with the title '{event_title}' and the description '{event_description}'. The event should last for {duration_mins} mins.",
+    "optimal_steps": "10",
+    "tags": [
+      "data_entry",
+      "math_counting",
+      "parameterized"
+    ]
+  },
+  "SimpleCalendarAddOneEventRelativeDay": {
+    "app_names": [
+      "simple calendar pro"
+    ],
+    "complexity": 3.4,
+    "difficulty": "easy",
+    "instruction_template": "In Simple Calendar Pro, create a calendar event for this {day_of_week} at {hour}h with the title '{event_title}' and the description '{event_description}'. The event should last for {duration_mins} mins.",
+    "optimal_steps": "17",
+    "tags": [
+      "data_entry",
+      "parameterized"
+    ]
+  },
+  "SimpleCalendarAddOneEventTomorrow": {
+    "app_names": [
+      "simple calendar pro"
+    ],
+    "complexity": 3.4,
+    "difficulty": "easy",
+    "instruction_template": "In Simple Calendar Pro, create a calendar event for tomorrow at {hour}h with the title '{event_title}' and the description '{event_description}'. The event should last for {duration_mins} mins.",
+    "optimal_steps": "13",
+    "tags": [
+      "data_entry",
+      "parameterized"
+    ]
+  },
+  "SimpleCalendarAddRepeatingEvent": {
+    "app_names": [
+      "simple calendar pro"
+    ],
+    "complexity": 3.4,
+    "difficulty": "easy",
+    "instruction_template": "In Simple Calendar Pro, create a recurring calendar event titled '{event_title}' starting on {year}-{month}-{day} at {hour}h. The event recurs {repeat_rule}, forever, and lasts for {duration_mins} minutes each occurrence. The event description should be '{event_description}'.",
+    "optimal_steps": "14",
+    "tags": [
+      "data_entry",
+      "complex_ui_understanding",
+      "parameterized"
+    ]
+  },
+  "SimpleCalendarAnyEventsOnDate": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "easy",
+    "instruction_template": "Do I have any events {date} in Simple Calendar Pro? Answer with the titles only. If there are multiples titles, format your answer in a comma separated list.",
+    "optimal_steps": "4",
+    "tags": [
+      "information_retrieval",
+      "parameterized"
+    ]
+  },
+  "SimpleCalendarDeleteEvents": {
+    "app_names": [
+      "simple calendar pro"
+    ],
+    "complexity": 1.4,
+    "difficulty": "easy",
+    "instruction_template": "In Simple Calendar Pro, delete all the calendar events on {year}-{month}-{day}",
+    "optimal_steps": "7",
+    "tags": [
+      "parameterized",
+      "data_edit"
+    ]
+  },
+  "SimpleCalendarDeleteEventsOnRelativeDay": {
+    "app_names": [
+      "simple calendar pro"
+    ],
+    "complexity": 1.2,
+    "difficulty": "medium",
+    "instruction_template": "In Simple Calendar Pro, delete all events scheduled for this {day_of_week}.",
+    "optimal_steps": "6",
+    "tags": [
+      "data_edit",
+      "parameterized"
+    ]
+  },
+  "SimpleCalendarDeleteOneEvent": {
+    "app_names": [
+      "simple calendar pro"
+    ],
+    "complexity": 1.2,
+    "difficulty": "easy",
+    "instruction_template": "In Simple Calendar Pro, delete the calendar event on {year}-{month}-{day} at {hour}h with the title '{event_title}'",
+    "optimal_steps": "6",
+    "tags": [
+      "data_edit",
+      "complex_ui_understanding",
+      "parameterized"
+    ]
+  },
+  "SimpleCalendarEventOnDateAtTime": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "medium",
+    "instruction_template": "What is on my schedule for {date} at {time} in Simple Calendar Pro? Answer with the titles only. If there are multiples titles, format your answer in a comma separated list.",
+    "optimal_steps": "3",
+    "tags": [
+      "information_retrieval",
+      "parameterized"
+    ]
+  },
+  "SimpleCalendarEventsInNextWeek": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "easy",
+    "instruction_template": "What events do I have in the next week in Simple Calendar Pro? Answer with the titles only. If there are multiples titles, format your answer in a comma separated list.",
+    "optimal_steps": "3",
+    "tags": [
+      "data_entry",
+      "parameterized"
+    ]
+  },
+  "SimpleCalendarEventsInTimeRange": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "easy",
+    "instruction_template": "Do I have any events between {start_time} and 8pm {date} in Simple Calendar Pro? Answer with the titles only. If there are multiples titles, format your answer in a comma separated list.",
+    "optimal_steps": "2",
+    "tags": [
+      "complex_ui_understanding",
+      "screen_reading",
+      "search",
+      "transcription",
+      "information_retrieval",
+      "parameterized"
+    ]
+  },
+  "SimpleCalendarEventsOnDate": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "medium",
+    "instruction_template": "What events do I have {date} in Simple Calendar Pro? Answer with the titles only. If there are multiple titles, format your answer as a comma separated list.",
+    "optimal_steps": "4",
+    "tags": [
+      "information_retrieval",
+      "parameterized"
+    ]
+  },
+  "SimpleCalendarFirstEventAfterStartTime": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "easy",
+    "instruction_template": "What is my first event after {time} {date} in Simple Calendar Pro? Answer with the titles only. If there are multiples titles, format your answer in a comma separated list.",
+    "optimal_steps": "2",
+    "tags": [
+      "parameterized",
+      "screen_reading"
+    ]
+  },
+  "SimpleCalendarLocationOfEvent": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "easy",
+    "instruction_template": "What is the location of my {title} event in Simple Calendar Pro? Answer with the location only.",
+    "optimal_steps": "4",
+    "tags": [
+      "search",
+      "parameterized"
+    ]
+  },
+  "SimpleCalendarNextEvent": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "easy",
+    "instruction_template": "What is my next upcoming event in Simple Calendar Pro? Answer with the title only. If there are multiples titles, format your answer in a comma separated list.",
+    "optimal_steps": "4",
+    "tags": [
+      "complex_ui_understanding",
+      "screen_reading",
+      "information_retrieval",
+      "parameterized"
+    ]
+  },
+  "SimpleCalendarNextMeetingWithPerson": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "medium",
+    "instruction_template": "When is my next meeting with {person} in Simple Calendar Pro? Express your answer in the format <month name> <day> <year> <hour in 24-hour format>:<minutes>.",
+    "optimal_steps": "5",
+    "tags": [
+      "information_retrieval",
+      "parameterized"
+    ]
+  },
+  "SimpleDrawProCreateDrawing": {
+    "app_names": [
+      "simple draw pro"
+    ],
+    "complexity": 1.8,
+    "difficulty": "easy",
+    "instruction_template": "Create a new drawing in Simple Draw Pro. Name it {file_name}. Save it in the Pictures folder within the sdk_gphone_x86_64 storage area.",
+    "optimal_steps": "9",
+    "tags": [
+      "data_entry",
+      "parameterized"
+    ]
+  },
+  "SimpleSmsReply": {
+    "app_names": [
+      "simple sms messenger"
+    ],
+    "complexity": 1.2,
+    "difficulty": "easy",
+    "instruction_template": "Reply to {number} with message: {message} in Simple SMS Messenger",
+    "optimal_steps": "4",
+    "tags": [
+      "search",
+      "data_entry",
+      "parameterized"
+    ]
+  },
+  "SimpleSmsReplyMostRecent": {
+    "app_names": [
+      "simple sms messenger"
+    ],
+    "complexity": 1.2,
+    "difficulty": "medium",
+    "instruction_template": "Reply to the most recent text message using Simple SMS Messenger with message: {message}",
+    "optimal_steps": "5",
+    "tags": [
+      "parameterized"
+    ]
+  },
+  "SimpleSmsResend": {
+    "app_names": [
+      "simple sms messenger"
+    ],
+    "complexity": 1.2,
+    "difficulty": "medium",
+    "instruction_template": "Resend the message I just sent to {name} in Simple SMS Messenger",
+    "optimal_steps": "6",
+    "tags": [
+      "parameterized"
+    ]
+  },
+  "SimpleSmsSend": {
+    "app_names": [
+      "simple sms messenger"
+    ],
+    "complexity": 1.2,
+    "difficulty": "medium",
+    "instruction_template": "Send a text message using Simple SMS Messenger to {number} with message: {message}",
+    "optimal_steps": "6",
+    "tags": [
+      "parameterized"
+    ]
+  },
+  "SimpleSmsSendClipboardContent": {
+    "app_names": [
+      "simple sms messenger",
+      "clipper"
+    ],
+    "complexity": 1.2,
+    "difficulty": "easy",
+    "instruction_template": "Send a message to {number} with the clipboard content in Simple SMS Messenger",
+    "optimal_steps": "6",
+    "tags": [
+      "data_entry",
+      "parameterized"
+    ]
+  },
+  "SimpleSmsSendReceivedAddress": {
+    "app_names": [
+      "simple sms messenger"
+    ],
+    "complexity": 1.8,
+    "difficulty": "medium",
+    "instruction_template": "Text the address of the event to {name1} that {name2} just sent me in Simple SMS Messenger",
+    "optimal_steps": "9",
+    "tags": [
+      "information_retrieval",
+      "parameterized"
+    ]
+  },
+  "SportsTrackerActivitiesCountForWeek": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "easy",
+    "instruction_template": "How many {category} activities did I do this week in the OpenTracks app? Express your answer as a single integer.",
+    "optimal_steps": "3",
+    "tags": [
+      "search",
+      "requires_setup",
+      "parameterized"
+    ]
+  },
+  "SportsTrackerActivitiesOnDate": {
+    "app_names": [],
+    "complexity": 2,
+    "difficulty": "hard",
+    "instruction_template": "What activities did I do {date} in the OpenTracks app? Answer with the category only. If there are multiples categories, format your answer in a comma separated list.",
+    "optimal_steps": "10",
+    "tags": [
+      "search",
+      "complex_ui_understanding",
+      "screen_reading",
+      "information_retrieval",
+      "transcription",
+      "parameterized"
+    ]
+  },
+  "SportsTrackerActivityDuration": {
+    "app_names": [],
+    "complexity": 1.2,
+    "difficulty": "easy",
+    "instruction_template": "How long was my {category} activity {date} in the OpenTracks app? Express your answer in minutes as a single integer.",
+    "optimal_steps": "6",
+    "tags": [
+      "information_retrieval",
+      "parameterized"
+    ]
+  },
+  "SportsTrackerLongestDistanceActivity": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "easy",
+    "instruction_template": "What was the longest distance covered in a {category} activity in the OpenTracks app this week? Express your answer in meters as a single integer.",
+    "optimal_steps": "2",
+    "tags": [
+      "parameterized",
+      "screen_reading",
+      "information_retrieval",
+      "math_counting"
+    ]
+  },
+  "SportsTrackerTotalDistanceForCategoryOverInterval": {
+    "app_names": [],
+    "complexity": 2.2,
+    "difficulty": "hard",
+    "instruction_template": "What was the total distance covered for {category} activities in the OpenTracks app from {start_date} to {end_date}? Express your answer in meters as a single integer.",
+    "optimal_steps": "11",
+    "tags": [
+      "search",
+      "parameterized",
+      "math_counting"
+    ]
+  },
+  "SportsTrackerTotalDurationForCategoryThisWeek": {
+    "app_names": [],
+    "complexity": 1.6,
+    "difficulty": "hard",
+    "instruction_template": "What was the total duration of {category} activities in the OpenTracks app this week? Express your answer in minutes as a single integer.",
+    "optimal_steps": "8",
+    "tags": [
+      "math_counting",
+      "search",
+      "parameterized"
+    ]
+  },
+  "SystemBluetoothTurnOff": {
+    "app_names": [
+      "settings"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Turn bluetooth {on_or_off}.",
+    "optimal_steps": "2",
+    "tags": [
+      ""
+    ]
+  },
+  "SystemBluetoothTurnOffVerify": {
+    "app_names": [
+      "settings"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Turn bluetooth {on_or_off}.",
+    "optimal_steps": "2",
+    "tags": [
+      "verification"
+    ]
+  },
+  "SystemBluetoothTurnOn": {
+    "app_names": [
+      "settings"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Turn bluetooth {on_or_off}.",
+    "optimal_steps": "2",
+    "tags": [
+      "screen_reading"
+    ]
+  },
+  "SystemBluetoothTurnOnVerify": {
+    "app_names": [
+      "settings"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Turn bluetooth {on_or_off}.",
+    "optimal_steps": "2",
+    "tags": [
+      "verification"
+    ]
+  },
+  "SystemBrightnessMax": {
+    "app_names": [
+      "settings"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Turn brightness to the {max_or_min} value.",
+    "optimal_steps": "3",
+    "tags": [
+      ""
+    ]
+  },
+  "SystemBrightnessMaxVerify": {
+    "app_names": [
+      "settings"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Turn brightness to the {max_or_min} value.",
+    "optimal_steps": "2",
+    "tags": [
+      "verification"
+    ]
+  },
+  "SystemBrightnessMin": {
+    "app_names": [
+      "settings"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Turn brightness to the {max_or_min} value.",
+    "optimal_steps": "3",
+    "tags": [
+      ""
+    ]
+  },
+  "SystemBrightnessMinVerify": {
+    "app_names": [
+      "settings"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Turn brightness to the {max_or_min} value.",
+    "optimal_steps": "3",
+    "tags": [
+      "verification"
+    ]
+  },
+  "SystemCopyToClipboard": {
+    "app_names": [
+      "clipper"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Copy the following text to the clipboard: {clipboard_content}",
+    "optimal_steps": "2",
+    "tags": [
+      "data_entry",
+      "parameterized"
+    ]
+  },
+  "SystemWifiTurnOff": {
+    "app_names": [
+      "settings"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Turn wifi {on_or_off}.",
+    "optimal_steps": "3",
+    "tags": [
+      "screen_reading"
+    ]
+  },
+  "SystemWifiTurnOffVerify": {
+    "app_names": [
+      "settings"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Turn wifi {on_or_off}.",
+    "optimal_steps": "3",
+    "tags": [
+      "verification"
+    ]
+  },
+  "SystemWifiTurnOn": {
+    "app_names": [
+      "settings"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Turn wifi {on_or_off}.",
+    "optimal_steps": "3",
+    "tags": [
+      "screen_reading"
+    ]
+  },
+  "SystemWifiTurnOnVerify": {
+    "app_names": [
+      "settings"
+    ],
+    "complexity": 1,
+    "difficulty": "easy",
+    "instruction_template": "Turn wifi {on_or_off}.",
+    "optimal_steps": "3",
+    "tags": [
+      "verification"
+    ]
+  },
+  "TasksCompletedTasksForDate": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "medium",
+    "instruction_template": "Which tasks have I completed for {date} in Tasks app? Answer with the titles only. If there are multiples titles, format your answer in a comma separated list.",
+    "optimal_steps": "5",
+    "tags": [
+      "information_retrieval",
+      "search",
+      "parameterized"
+    ]
+  },
+  "TasksDueNextWeek": {
+    "app_names": [],
+    "complexity": 1.2,
+    "difficulty": "medium",
+    "instruction_template": "How many tasks do I have due next week in Tasks app? Express your answer as a single integer.",
+    "optimal_steps": "6",
+    "tags": [
+      "information_retrieval",
+      "parameterized"
+    ]
+  },
+  "TasksDueOnDate": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "easy",
+    "instruction_template": "What tasks do I have due {date} in Tasks app? Answer with the titles only. If there are multiples titles, format your answer in a comma separated list.",
+    "optimal_steps": "2",
+    "tags": [
+      "search",
+      "parameterized"
+    ]
+  },
+  "TasksHighPriorityTasks": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "medium",
+    "instruction_template": "What are my high priority tasks in Tasks app? Answer with the titles only. If there are multiples titles, format your answer in a comma separated list.",
+    "optimal_steps": "2",
+    "tags": [
+      "complex_ui_understanding",
+      "search",
+      "information_retrieval",
+      "transcription",
+      "parameterized"
+    ]
+  },
+  "TasksHighPriorityTasksDueOnDate": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "medium",
+    "instruction_template": "Which tasks with high priority are due {date} in the Tasks app? Answer with the title only. If there are multiples titles, format your answer in a comma separated list.",
+    "optimal_steps": "5",
+    "tags": [
+      "information_retrieval",
+      "screen_reading",
+      "parameterized"
+    ]
+  },
+  "TasksIncompleteTasksOnDate": {
+    "app_names": [],
+    "complexity": 1.0,
+    "difficulty": "easy",
+    "instruction_template": "What incomplete tasks do I have still have to do by {date} in Tasks app? Answer with the titles only. If there are multiples titles, format your answer in a comma separated list.",
+    "optimal_steps": "2",
+    "tags": [
+      "parameterized",
+      "screen_reading",
+      "information_retrieval"
+    ]
+  },
+  "TurnOffWifiAndTurnOnBluetooth": {
+    "app_names": [
+      "settings"
+    ],
+    "complexity": 2,
+    "difficulty": "medium",
+    "instruction_template": "Turn off WiFi, then enable bluetooth",
+    "optimal_steps": "5",
+    "tags": [
+      ""
+    ]
+  },
+  "TurnOnWifiAndOpenApp": {
+    "app_names": [
+      "settings"
+    ],
+    "complexity": 2,
+    "difficulty": "easy",
+    "instruction_template": "Turn on Wifi, then open the {app_name} app",
+    "optimal_steps": "4",
+    "tags": [
+      "parameterized"
+    ]
+  },
+  "VlcCreatePlaylist": {
+    "app_names": [
+      "vlc"
+    ],
+    "complexity": 2.8,
+    "difficulty": "medium",
+    "instruction_template": "Create a playlist titled \"{playlist_name}\" with the following files in VLC (located in Internal Memory/VLCVideos), in order: {files}",
+    "optimal_steps": "14",
+    "tags": [
+      "data_edit",
+      "repetition",
+      "parameterized"
+    ]
+  },
+  "VlcCreateTwoPlaylists": {
+    "app_names": [
+      "vlc"
+    ],
+    "complexity": 4.8,
+    "difficulty": "medium",
+    "instruction_template": "Create a playlist titled \"{playlist_name1}\" with the following files in VLC, in order: {files1}. And then, Create a playlist titled \"{playlist_name2}\" with the following files in VLC (located in Internal Memory/VLCVideos), in order: {files1}",
+    "optimal_steps": "24",
+    "tags": [
+      "data_entry",
+      "requires_setup",
+      "parameterized"
+    ]
+  }
+}

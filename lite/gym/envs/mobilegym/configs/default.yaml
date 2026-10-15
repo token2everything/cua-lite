@@ -1,0 +1,31 @@
+# mobilegym registration defaults. Read at import by env_config.load(ENV_DIR).
+# Override the WHOLE config at startup: MOBILEGYM_CONFIG=/path/to/your.yaml
+# (or a bare name -> configs/<name>.yaml). A rollout's env_kwargs still win per run.
+
+env_var_prefix: MOBILEGYM
+
+env_kwargs:
+  # null → per-task budget resolved at registration (difficulty table L1 15 / L2 30
+  # / L3 45 / L4 60, or task_cls.max_steps). A concrete int here overrides all tasks.
+  max_steps: null
+  post_action_delay: 0.8
+  eval_mode: text                      # text | grounded (grounded -> +15 steps for AnswerSheet)
+  display_resolution: [1080, 2400]     # browser physical viewport (sent to the container per /reset)
+  dpr: 3.0                             # device pixel ratio (physical px / CSS px) for the viewport
+  seed: null                           # null = unseeded; eval registers a fixed seed
+  valid_actions: null                  # null = no GUI action filter; [] deliberately removes the action-batch tool
+  extra_tools: []                      # opt-in; available: open_app, response, terminate
+  # (no headless knob: the in-container chromium pool always runs headless — there is no display)
+
+# In-container browser pool. Read on the host from this yaml and forwarded to the
+# container via `docker run -e MOBILEGYM_*` (MobileGymContainerServices.ensure), so
+# the in-container pool matches these values.
+server_kwargs:
+  max_browsers: 128         # pinned ceiling: 128*8 = 1024 context capacity, mem cap = 128*1.6 = 205GiB (both demand-driven, idle-reaped; only real limit is CPU). 0 = auto (floor 4/ceiling 32)
+  contexts_per_browser: 8
+  idle_browser_ttl_s: 300.0
+  launch_timeout_s: 60.0
+  rm_timeout_s: 60.0        # `docker rm -f` deadline so a wedged daemon can't block the server thread (override: CUA_LITE_MOBILEGYM_RM_TIMEOUT_S)
+  # (no pool_wait_timeout_s / port / url: the container 503s immediately when the
+  #  pool is full — no host-side pool-wait; the vite port is fixed at the
+  #  container-internal 4173 and only the RPC :8000 is published.)

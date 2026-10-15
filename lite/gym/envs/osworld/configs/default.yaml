@@ -1,0 +1,39 @@
+# osworld registration defaults — the single, visible source of every value that
+# would otherwise be a main.py/container.py literal. Official OSWorld benchmark on
+# a locally-managed VM-in-Docker container (happysixd/osworld-docker; QEMU/KVM
+# booting Ubuntu.qcow2). DEDICATED, non-poolable (one container per trajectory).
+#
+# Read once at env-module import:
+#   from lite.gym.utils import config as env_config
+#   CFG = env_config.load(ENV_DIR)   # CFG.env_kwargs / CFG.server_kwargs / CFG.make_kwargs
+#
+# Override the WHOLE config at startup (no merge — the file IS the config):
+#   export OSWORLD_CONFIG=/abs/path/to/variant.yaml   # absolute path
+#   export OSWORLD_CONFIG=somevariant                 # → configs/somevariant.yaml
+#
+# Precedence (defaults only — a rollout's env_kwargs still override per run):
+#   rollout/grpo yaml env_kwargs  >  OSWORLD_CONFIG override  >  default.yaml
+env_var_prefix: OSWORLD
+
+# Env-wide make defaults, applied via registry.set_env_make_kwargs.
+# Per-task register() kwargs and gym.make() kwargs still override.
+make_kwargs:
+  step_timeout: 180.0        # per-step cap; OSWorld evaluators parse large artifacts (compare_pdfs/compare_table)
+  reset_timeout: 600.0       # slow VM cold boot (framework default; explicit for the ~30-60s+ QEMU boot)
+  loop_detect_terminal_status: success  # loop detection should evaluate state, not submit OSWorld FAIL
+
+env_kwargs:                  # per-instance OSWorldEnv defaults (overridable per rollout)
+  max_steps: 30              # reference gpt config value (scripts/configs/gpt/default/osworld.yaml) — NOT lite.osworld's 15
+  post_action_delay: 2.0     # single per-action delay (OSWorld's internal pause is suppressed with pause=0)
+  extra_tools: []            # opt-in; available: report_infeasible, response, terminate; off by default
+
+server_kwargs:               # per-deployment container/infra config (deploy-time only)
+  image: "cua-lite/osworld:latest"          # DERIVED image (FROM happysixd/osworld-docker + v1 desktop_env + docker/server.py), BUILT by install.sh
+  qcow2_path: ".cache/Ubuntu.qcow2"   # relative to the env dir → <env>/.cache/; provisioned by install.sh (abs also OK)
+  ram_size: "4G"             # -e RAM_SIZE — OSWorld upstream VM spec (provider default), NOT androidworld's 8G
+  cpu_cores: "4"             # -e CPU_CORES
+  disk_size: "32G"           # -e DISK_SIZE (growable data disk)
+  boot_timeout: 300          # guest-server readiness deadline (poll :5000/screenshot), seconds
+  screen_width: 1920         # VM-locked (qcow2 native render size, not resizable) → per-deploy infra, NOT env_kwargs
+  screen_height: 1080
+  max_workers: 256           # osworld-exec ThreadPoolExecutor size (~128 concurrent VMs × 2 blocking calls)

@@ -1,0 +1,9 @@
+{
+  "description": "cua-lite preprocessed version of yiye2023/GUIAct. GUI action data spanning browser single-step grounding.action (raw web-single), browser multi-step use (raw web-multi), and Android multi-step use (smartphone). Coordinates are normalized to [0, 1000]; the upstream test split is honored as the validation split.",
+  "original_urls": [
+    "https://huggingface.co/datasets/yiye2023/GUIAct"
+  ],
+  "license": "See original dataset (yiye2023/GUIAct).",
+  "citation": "See https://huggingface.co/datasets/yiye2023/GUIAct",
+  "extra_notes": ""
+}

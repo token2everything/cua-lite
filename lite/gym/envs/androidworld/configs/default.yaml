@@ -1,0 +1,46 @@
+# androidworld registration defaults — the single, visible source of every
+# value that used to be a main.py/container.py constant or ANDROID_WORLD_* env-var.
+#
+# Read once at env-module import via the shared resolver:
+#   from lite.gym.utils import config as env_config
+#   CFG = env_config.load(ENV_DIR)   # CFG.env_kwargs / CFG.server_kwargs
+#
+# Override the WHOLE config at startup (no merge — the file IS the config):
+#   export ANDROID_WORLD_CONFIG=/abs/path/to/variant.yaml   # absolute path
+#   export ANDROID_WORLD_CONFIG=somevariant                 # → configs/somevariant.yaml
+#
+# Precedence (defaults only — a rollout's env_kwargs still override per run):
+#   rollout/grpo yaml env_kwargs  >  ANDROID_WORLD_CONFIG override  >  default.yaml
+#
+# NOTE: androidworld has NO `computer` dict — `image` is a top-level baked kwarg
+# and the rest of the container shape is immutable on AndroidWorldTaskConfig.
+env_var_prefix: ANDROID_WORLD
+
+# Env-wide make defaults, applied via
+# registry.set_env_make_kwargs. Per-task register() kwargs and gym.make() kwargs
+# still override (precedence: make-default < make_kwargs < register < gym.make).
+make_kwargs:
+  # reset() wall-clock cap. 600 (framework default; explicit for documentation):
+  # the AVD Quick Boot snapshot restore under host load can sit in the 60-180s
+  # range, and contended hosts produce >300s p99 stragglers under multi-source
+  # soak. 600s gives the boot path headroom without masking true hangs.
+  reset_timeout: 600.0
+
+env_kwargs:                       # explicit constructor/bind kwargs
+  max_steps: null                 # DERIVED: null → reset() computes int(10*complexity) per task
+  post_action_delay: 3.0          # gates asyncio.sleep before the post-step screenshot
+  observation_text: none          # none | a11y:pixel | a11y:norm
+  seed: null                      # genuine None (train random); the EVAL split registers seed=42
+  valid_actions: null             # null = no GUI action filter; [] deliberately removes the action-batch tool
+  extra_tools: []                 # explicit default: no extra tools (available: open_app, response, terminate)
+  image: "cua-lite/androidworld:latest"   # explicit spawn image (yaml is the source; override → derived image)
+
+server_kwargs:                    # module-level service config (was ANDROID_WORLD_* env-vars)
+  avd_name: "lite_avd_androidworld"   # which baked emulator instance to attach (override: ANDROID_AVD_NAME)
+  max_workers: 256                # ThreadPoolExecutor size (~128 emulators × 2 threads)
+  max_resets_per_container: 0     # 0 → destroy + cold-spawn every reset (no cross-reset residue)
+  init_max_attempts: 3            # destroy + cold-spawn retries when /init returns 500
+  boot_timeout: 240               # emulator sys.boot_completed deadline (s)
+  api_timeout: 120               # in-container /healthz readiness deadline (s)
+  android_ready_timeout: 120     # PackageManager + AccessibilityManagerService deadline (s)
+  memory_limit: "8g"             # docker run --memory / --memory-swap

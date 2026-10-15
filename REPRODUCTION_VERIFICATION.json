@@ -1,0 +1,100 @@
+{
+  "verified_at": "2026-10-12T06:45:15.872269+00:00",
+  "objective": "portable fixed-asset single-site v0.3 repository and one self-contained Codex skill; independently exercised live",
+  "independent_live_agent": "/root/v03_reproduction_live_independent",
+  "run_id": "repro20261012live2",
+  "live_scope": {
+    "site": "shopping",
+    "task_types": [
+      "RETRIEVE",
+      "NAVIGATE",
+      "MUTATE"
+    ],
+    "tasks": [
+      "wavgen-repro20261012live2-6210001",
+      "wavgen-repro20261012live2-6210002",
+      "wavgen-repro20261012live2-6210003"
+    ]
+  },
+  "teacher": {
+    "model": "qwen3.8-max",
+    "PASS": 3,
+    "FAIL": 0,
+    "HOLD": 0,
+    "steps": [
+      5,
+      4,
+      10
+    ]
+  },
+  "student": {
+    "model": "glm-5.3-flash",
+    "PASS": 3,
+    "FAIL": 0,
+    "HOLD": 0,
+    "steps": [
+      6,
+      6,
+      13
+    ],
+    "effective_denominator": 3,
+    "success_rate": 1.0
+  },
+  "fresh_authentication_only_baselines": 9,
+  "distinct_execution_container_ids": [
+    "e817278dc28f51f11bb6ca525c7e65fb4a24737fb9a5964c36b4f2c955c9e357",
+    "99ebf127f30716c7c41e520a93cd79a7543e36bb0d044500b3707c4bd6229b8c",
+    "690a3b3649d090f09f929d089f9d80e2373e13e224e16a1a3491492e90df657e",
+    "e48db91e92cec047595185997a719f5c6437fe2940d2468831dd057f33922740",
+    "450a8dc02157b074e11ff8fc09cf15377a50ea649ef092e02be300a2582f0fb9",
+    "ab58daba39f9ce74ed8bd4a2738be9b94e5f9d06dd4b6f8321ef33d1939efd1a",
+    "38915f8d3bab15173b09363adc7c762dae0ecc204aabb93dca3b46a2895e9cc9",
+    "cb9e6aef10c6b569b715a21dc609568765e0d1ce7a15558ca7f37f39ae25d9e9",
+    "e55abfbff218a3d2d05079d2dccf20fc39aae3eedab92d99316613b2d7819bce"
+  ],
+  "fixed_cleaning": {
+    "operations": 46,
+    "accepted": 3,
+    "rejected": 0
+  },
+  "exports": {
+    "combined_JSONL_rows": 3,
+    "per_task_JSON": 3,
+    "per_task_JSONL": 3,
+    "JSON_equals_JSONL": true,
+    "checked_image_references": 93,
+    "all_image_paths_absolute_and_existing": true
+  },
+  "dataset_path": "/mnt/shared-storage-user/songdemin/user/laibowen-p/webarena-verified/1.2.3/generated/v0.3/reproduction-repo-20261012/live2",
+  "dataset_SHA256": "b6be67bc821aa7d861c96d6bf90ce32817420e584e04980e03f158b198614201",
+  "raw_author_teacher_student_evidence": "/mnt/shared-storage-user/songdemin/user/laibowen-p/webarena-verified/1.2.3/generated/v0.3/reproduction-repo-20261012/live2/evidence",
+  "source_fidelity": {
+    "live_source_archive_SHA256": "8eb0ee770b8a04f94116ae63a3c4ae460e1337f60d167232bc7fb038956087a5",
+    "current_GUI_source_matches_all_frozen_live_files": true,
+    "runtime_source_files": 632,
+    "helper_SHA256": "57be071e1379c40ce3af53b16767953e6ca1bd081de9cd1537f1f95fef85cc6c"
+  },
+  "unit_and_policy_tests": {
+    "passed": 63,
+    "network_and_model_calls": 0,
+    "log_SHA256": "03c497849f6419c4fab1b56742e469d6dd7481972c07f4e2e577fe1c38cda27c"
+  },
+  "offline_scope": "Six-site official evaluator/applicability tests and cohort selection/rebinding; original GUI renderer lifecycle tests use marked synthetic fixtures",
+  "live_limit": "Three new Shopping tasks; this verification does not measure all-site or 300-task success rates",
+  "resource_release": {
+    "sandbox_id": "cprod2-pepexdvvhfcn76v7w4iz",
+    "HTTP_status": 204,
+    "independent_all_pages_remaining_owned": [],
+    "unrelated_resources_touched": false
+  },
+  "skill_SHA256": "f3bd3d65f90c2722176dddb4a5bcf4a0b69a602ee3bca9e704b917ac7b80a6b3",
+  "review_status": "pending_human_review",
+  "training_promotion": "not_promoted",
+  "failed_first_attempt_preserved": "repro20261012live1 (no sandbox created; dependency/API-probe defects repaired before new run)",
+  "resource_API_evidence": {
+    "exported_creation_intent_and_worker_ownership": true,
+    "exported_preparation_and_release_receipts": true,
+    "complete_original_HTTP_responses_saved": false,
+    "limitation": "Original full sandbox create/delete/list HTTP responses were not persisted; ownership intents, actual IDs and metadata, command handles, business container inspections and release/status summaries are preserved."
+  }
+}

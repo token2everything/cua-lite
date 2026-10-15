@@ -1,0 +1,29 @@
+# androidlab registration defaults. Read at import by env_config.load(ENV_DIR).
+# Override the WHOLE config at startup: ANDROID_LAB_CONFIG=/path/to/your.yaml
+# (or a bare name -> configs/<name>.yaml). A rollout's env_kwargs still win per run.
+
+env_var_prefix: ANDROID_LAB
+
+env_kwargs:                          # explicit constructor/bind kwargs
+  max_steps: 25                      # bind default (mirrors AndroidLab paper); eval configs set their own
+  post_action_delay: 3.0             # wait-after-action before next observation
+  observation_text: none             # none | a11y_tree:{pixel,norm} | a11y_list:{pixel,norm}
+  screenshot_max_dim: 1600           # downscale screenshot longer side before send
+  seed: null                         # null = unseeded; eval registers a fixed seed (judges are deterministic, so it's a no-op here)
+  valid_actions: null                # null = no GUI action filter; [] deliberately removes the action-batch tool
+  extra_tools: []                    # opt-in; available: open_app, response, terminate; rollout/eval yaml enables
+  image: "cua-lite/androidlab:latest"   # spawn image; override -> derived image [B]
+
+# Env-wide make defaults, applied via registry.set_env_make_kwargs.
+# Per-task register() kwargs and gym.make() kwargs still override
+# (precedence: make-default < make_kwargs < register < gym.make).
+make_kwargs:
+  reset_timeout: 600.0               # AVD Quick Boot snapshot restore headroom (default 300 too tight)
+
+server_kwargs:                       # module-level infra (was ANDROID_LAB_* env-vars)
+  max_workers: 256
+  max_resets_per_container: 0
+  boot_timeout: 600
+  api_timeout: 120
+  android_ready_timeout: 120
+  memory_limit: "6g"

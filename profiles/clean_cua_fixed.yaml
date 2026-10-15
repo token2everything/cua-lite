@@ -1,0 +1,66 @@
+# CUA multimodal profile using official deterministic operations.
+# E17 and FM-17 are text-only reasoning disclosure requirements; V3 allows
+# real no-reasoning trajectories. Coding-specific groups are excluded.
+# FX-06/07/08 are excluded: this batch preserves all actual calls, texts and
+# argument order. Applicable defects are filtered; mask proposals are recorded.
+name: clean_cua_fixed
+apply_ref_use_loss_seq: true
+groups:
+- name: common_format_fixes
+  run_method: files_by_step
+  ordering: by_phase
+  operations:
+  - operation: format_fix:FX-03
+  - operation: format_fix:FX-04
+  - operation: format_fix:FX-05
+- name: common_format_filters
+  run_method: steps_by_file
+  ordering: by_phase
+  operations:
+  - operation: format_filter_e:E18
+  - operation: format_filter_e:E19
+  - operation: format_filter_e:E08
+  - operation: format_filter_e:E11
+  - operation: format_filter_e:E14
+  - operation: format_filter_fm:FM-01
+  - operation: format_filter_fm:FM-02
+  - operation: format_filter_fm:FM-03
+  - operation: format_filter_fm:FM-05
+  - operation: format_filter_fm:FM-06
+  - operation: format_filter_fm:FM-07
+  - operation: format_filter_fm:FM-08
+  - operation: format_filter_fm:FM-09
+  - operation: format_filter_fm:FM-10
+  - operation: format_filter_fm:FM-12
+  - operation: format_filter_tl:TL-01
+  - operation: format_filter_tl:TL-02
+  - operation: format_filter_tl:TL-03
+  - operation: format_filter_tl:TL-04
+  - operation: format_filter_tl:TL-05
+  - operation: format_filter_tl:TL-06
+  - operation: format_filter_tl:TL-07
+  - operation: format_filter_tl:TL-08
+  - operation: format_filter_tl:TL-10
+  - operation: format_filter_tl:TL-11
+  - operation: format_filter_tl:TL-12
+  - operation: format_filter_tl:TL-13
+  - operation: format_filter_tl:TL-14
+  - operation: format_filter_tl:TL-15
+  - operation: format_filter_tl:TL-16
+  - operation: format_filter_tl:TL-17
+  - operation: format_filter_tl:TL-18
+  - operation: format_filter_tl:TL-19
+  - operation: format_filter_tl:TL-20
+  - operation: format_filter_tl:TL-21
+  - operation: format_filter_tl:TL-22
+  - operation: format_filter_ct:CT-01
+  - operation: format_filter_ct:CT-02
+  - operation: format_filter_ct:CT-03
+  - operation: format_filter_ct:CT-05
+  - operation: format_filter_ct:CT-06
+- name: gui_behavior_filters
+  run_method: steps_by_file
+  ordering: by_phase
+  operations:
+  - operation: behavior_filter:BH-01
+  - operation: behavior_filter:BH-06

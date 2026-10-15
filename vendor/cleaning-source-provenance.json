@@ -1,0 +1,17 @@
+{
+  "internflow": {
+    "version": "0.2.0",
+    "source_commit": "2a85ae67fce1329d47258b2d82966c1b74bba5b9"
+  },
+  "InternValidata": {
+    "version": "0.4.17",
+    "source_commit": "31949e767d8a2caa42d83fdcd24b31d57261a1b0"
+  },
+  "wheels": {
+    "vendor/wheels/internflow-0.2.0-py3-none-any.whl": "ce4440c993f18caaff543ca41c8368da30adbb2147511a979682690076709cc7",
+    "vendor/wheels/internvalidata-0.4.17-py3-none-any.whl": "0b8a4594ecd01d826a945a981aead0ae21d78c07bd7e66129105d2b8a0bca3a8"
+  },
+  "dependency_scope": "Import closure for frozen fixed46 deterministic CUA cleaning, not all InternFlow optional services",
+  "requirements_sha256": "97f78769366955b4f2e264d122332aeb74b8562a13823a2428fa497a54b055a6",
+  "requirements_resolution": "uv pip compile of explicit cleaning.in with a consistent mcp/fastmcp and AWS closure"
+}

@@ -1,0 +1,7 @@
+{
+  "description": "cua-lite preprocessed version of GUIOdyssey (hflqf88888/GUIOdyssey). A long-horizon cross-app Android mobile dataset of 8,334 task trajectories over ~128k screenshots. Produces two cohorts: use (multi-step agent episodes) and understanding (per-step screen captioning from the source `description` annotations).",
+  "original_urls": ["https://huggingface.co/datasets/hflqf88888/GUIOdyssey"],
+  "license": "See original dataset (hflqf88888/GUIOdyssey).",
+  "citation": "See https://huggingface.co/datasets/hflqf88888/GUIOdyssey",
+  "extra_notes": "Source `info` coordinates are already normalized to [0, 1000] (per the upstream README) and are used directly — they are NOT device pixels."
+}

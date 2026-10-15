@@ -1,0 +1,23 @@
+# lite.scalecua registration defaults.
+# This env reuses the lite.osworld desktop image and only changes task
+# catalogs/setup/evaluation transport.
+
+env_var_prefix: LITE_SCALECUA
+
+make_kwargs:
+  step_timeout: 120.0
+
+env_kwargs:
+  max_steps: 30
+  post_action_delay: 2.0
+  computer:
+    image: "cua-lite/lite.osworld:latest"
+    display_resolution: [1920, 1080]
+    # Same image, same GEGL headroom as lite.osworld -- see the note on
+    # ``memory`` in /lite/gym/envs/lite/osworld/configs/default.yaml.
+    memory: "8GB"
+    cpu: "2"
+    timeout: 600
+
+server_kwargs:
+  max_resets_per_container: 0

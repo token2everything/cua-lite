@@ -1,0 +1,34 @@
+# cua.sandbox defaults — the open-ended CuaSandboxEnv wrapper (direct, NOT a
+# gym-registered env). Read once at import via the shared resolver:
+#   from lite.gym.utils import config as env_config
+#   CFG = env_config.load(ENV_DIR)           # ENV_DIR = lite/gym/envs/cua/sandbox
+#   ... CFG.env_kwargs["max_steps"] ...
+#
+# Override the WHOLE file at startup (no per-key merge — the file IS the config):
+#   export CUA_SANDBOX_CONFIG=/abs/path/cloud.yaml   # absolute path
+#   export CUA_SANDBOX_CONFIG=cloud                   # → configs/cloud.yaml
+#
+# Precedence (defaults only — a caller's kwargs still override per construction):
+#   CuaSandboxEnv(...) kwargs  >  CUA_SANDBOX_CONFIG override  >  base default
+# (no `overrides:` block — cua.sandbox has no per-variant dimension; every platform
+# shares one base, and platform itself is a plain kwarg.)
+#
+# NOTE: resolution is intentionally ABSENT. cua.sandbox drives a Cua Sandbox whose
+# container runtime has the display size baked into the image (the SDK exposes no
+# setter) — so width/height here would be inert. (This is the key difference from
+# cua.bench, whose native provider DOES force setup_config to 1920×1080.) Only
+# genuinely settable construction defaults live below.
+env_var_prefix: CUA_SANDBOX
+
+make_kwargs:
+  # CuaSandboxEnv is constructed directly, so it reads this value itself and
+  # composites the tracked cursor at capture time (the Cua screenshot has no host cursor).
+  cursor: true
+
+env_kwargs:
+  max_steps: 30           # step budget before truncation (inference-only; no reward)
+  extra_tools: []         # opt-in; available: response, terminate
+  platform: linux         # linux | macos | windows | android (android → mobile action space)
+  local: true             # true → local QEMU/Docker (no key); false → Cua cloud (needs CUA_API_KEY)
+  post_action_delay: 2.0  # asyncio.sleep after each step before the screenshot; desktop settle
+                          #   (match osworld / lite.osworld / lite.cuaworld); android tasks can override

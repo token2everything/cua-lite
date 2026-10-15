@@ -1,0 +1,7 @@
+{
+  "description": "cua-lite preprocessed version of OpenBMB/CAGUI. Chinese-language Android mobile dataset contributing understanding (UI-element functional captioning + OCR, region-conditioned) and use (multi-step agent demonstrations across Chinese apps such as Eleme, WeChat, NetEase Music).",
+  "original_urls": ["https://huggingface.co/datasets/OpenBMB/CAGUI"],
+  "license": "See original dataset (OpenBMB/CAGUI).",
+  "citation": "See https://huggingface.co/datasets/OpenBMB/CAGUI",
+  "extra_notes": "First Chinese-only dataset in cua-lite (metadata.others.language = \"zh\"). Use rows preserve the upstream per-step ui_positions (all on-screen element boxes) under metadata.others.ui_positions, converted to [0, 1000] [x1, y1, x2, y2]."
+}

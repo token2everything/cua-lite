@@ -1,0 +1,7 @@
+{
+  "description": "cua-lite preprocessed version of xlangai/AgentNet (OpenCUA). Desktop `use` trajectories from Ubuntu and Windows/Mac environments with pyautogui-style actions converted to CUA-lite tool calls.",
+  "original_urls": ["https://huggingface.co/datasets/xlangai/AgentNet"],
+  "license": "See original dataset (xlangai/AgentNet).",
+  "citation": "See https://huggingface.co/datasets/xlangai/AgentNet",
+  "extra_notes": ""
+}

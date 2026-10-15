@@ -1,0 +1,11 @@
+{
+  "workbench.startupEditor": "none",
+  "telemetry.telemetryLevel": "off",
+  "update.mode": "none",
+  "extensions.autoCheckUpdates": false,
+  "chat.commandCenter.enabled": false,
+  "workbench.welcomePage.walkthroughs.openOnInstall": false,
+  "security.workspace.trust.enabled": false,
+  "security.workspace.trust.startupPrompt": "never",
+  "security.workspace.trust.emptyWindow": false
+}

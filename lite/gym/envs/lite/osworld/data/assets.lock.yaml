@@ -1,0 +1,7 @@
+assets:
+  repo: cua-lite/lite.osworld-assets
+  revision: 426008284b98a1ab13ef4addbc11bc2e99a3391d
+  components:
+    synth:
+      path: "."
+      baked: false

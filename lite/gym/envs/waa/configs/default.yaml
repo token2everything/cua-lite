@@ -1,0 +1,46 @@
+# WindowsAgentArena registration defaults, read once at import via
+# ``env_config.load(ENV_DIR)`` -> CFG.env_kwargs / CFG.server_kwargs.
+#
+# Sections (only these three are read; any other top-level key is silently
+# ignored by the loader):
+#   make_kwargs   - env-wide gym.make defaults (timeouts plus env-owned cursor).
+#   env_kwargs    - per-instance tunables, fed to explicit construction /
+#                   bind(); a rollout's env_kwargs override these per run.
+#                   base_disk / assets_dir / runner_image are constructor kwargs.
+#   server_kwargs - per-deploy infra (VM resources, bridge HTTP timeouts, paths);
+#                   set at deploy time, not per run.
+#
+# Replace the WHOLE file at startup with WAA_CONFIG=<abs-path | name-under-configs/>.
+
+env_var_prefix: WAA
+
+make_kwargs:
+  cursor: true
+  reset_timeout: 1800.0
+  step_timeout: 780.0
+  loop_detect_terminal_status: success  # loop detection should submit DONE, not WAA FAIL
+
+env_kwargs:
+  max_steps: 15
+  seed: null
+  valid_actions: null
+  extra_tools: []
+  post_action_delay: 0.5
+  base_disk: "~/.cache/cua-lite/waa/images/windows11-waa.qcow2"
+  assets_dir: "~/.cache/cua-lite/waa/assets"
+  runner_image: "cua-lite/waa:latest"
+
+server_kwargs:
+  runtime_root: "~/.cache/cua-lite/waa/runtime"
+  snapshot_dir: "~/.cache/cua-lite/waa/snapshot"
+  vcpus: 8
+  memory_gb: 8
+  shm_size: "2g"
+  bind_address: "127.0.0.1"
+  ready_timeout_s: 900.0
+  readiness_poll_interval_s: 5.0
+  # Bridge HTTP-call timeouts (per-deploy infra, not per-episode state).
+  action_timeout_s: 300.0
+  control_timeout_s: 60.0
+  evaluate_timeout_s: 600.0
+  close_timeout_s: 20.0

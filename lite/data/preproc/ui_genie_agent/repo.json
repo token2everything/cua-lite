@@ -1,0 +1,7 @@
+{
+  "description": "cua-lite preprocessed version of UI-Genie-Agent (HanXiao1999/UI-Genie-Agent-16k). Mobile/Android multi-step agent trajectories from two subsets: ui_genie (UI-Genie-Agent-16k) and amex (an AMEX re-annotation). Mapped to the `use` task type with per-step action descriptions.",
+  "original_urls": ["https://huggingface.co/datasets/HanXiao1999/UI-Genie-Agent-16k"],
+  "license": "See original dataset (HanXiao1999/UI-Genie-Agent-16k).",
+  "citation": "See https://huggingface.co/datasets/HanXiao1999/UI-Genie-Agent-16k",
+  "extra_notes": "Two subsets carried as variants: ui_genie, amex. AMEX screenshots are sourced from Yuxiang007/AMEX. Coordinates are pixels in the per-step screen resolution, normalized to [0,1000]."
+}

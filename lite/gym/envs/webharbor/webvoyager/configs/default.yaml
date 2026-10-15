@@ -1,0 +1,33 @@
+# webharbor.webvoyager registration defaults. Read at import by env_config.load(ENV_DIR).
+# Override the whole config at startup with WEBHARBOR_WEBVOYAGER_CONFIG=/path/to/file.yaml
+# or a bundled name under configs/. A rollout's env_kwargs still win per run.
+
+env_var_prefix: WEBHARBOR_WEBVOYAGER
+
+make_kwargs:
+  cursor: true
+
+env_kwargs:
+  max_steps: null                    # null -> per-task value from data/tasks.json
+  step_timeout: 90.0
+  post_action_delay: 0.5
+  viewport: [1280, 720]
+  fix_box_color: true
+  use_som: false                     # draw Set-of-Marks [N] boxes on the screenshot. false = plain screenshot (coord mode); som.yaml sets true.
+  valid_actions: ["click", "type", "key", "scroll", "wait"]
+  extra_tools: []                    # opt in per rollout yaml; supported: back, goto, response, terminate (coord mode) | click, input, scroll, navigate, go_back, response (WebHarbor SoM)
+  eval_config:
+    model: "gpt-4.1"
+    max_attached_imgs: 3             # last N screenshots sent to the judge
+    api_key_env_var: "OPENAI_API_KEY"  # override with WEBHARBOR_WEBVOYAGER_EVAL_API_KEY_VAR
+
+server_kwargs:
+  rpc_port: 8000                     # fallback URL only; ensure() auto-publishes 7800-7899
+  rpc_url: ""                        # "" -> http://localhost:{rpc_port}; set only for a remote server
+  instances: 0                       # 0 = auto-derive from host RAM; passed as WEBHARBOR_WEBVOYAGER_INSTANCES
+  page_load_timeout_s: 15.0
+  script_timeout_s: 10.0
+  reset_settle_s: 2.0
+  instance_ttl_s: 600.0
+  reaper_interval_s: 30.0
+  rm_timeout_s: 60.0                 # override with CUA_LITE_WEBHARBOR_WEBVOYAGER_RM_TIMEOUT_S

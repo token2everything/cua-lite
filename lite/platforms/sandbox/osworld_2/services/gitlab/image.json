@@ -1,0 +1,7 @@
+{
+  "source": "docker.io/gitlab/gitlab-ce@sha256:9c17686c3cd1b72f52282543d2dcf7c96add29b4698ec367bfb1455be8f13ce0",
+  "pinned_image": "registry-v2.h.pjlab.org.cn/ailab-llmagent/gitlab-ce@sha256:214aaa6d2ce66c76d7fa17d168bcf73599a6633c5e000df00e71139dd9f070e6",
+  "image_id": "sha256:4435b05d4975823c01f25bdc8ea9adf224412c7db3090dbdcbb49dab6cb08f8a",
+  "version": "18.7.0-ce.0",
+  "fresh_pull_verified_at": "2026-09-23T16:22:16.710382+00:00"
+}

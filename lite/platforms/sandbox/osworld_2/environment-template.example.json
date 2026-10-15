@@ -1,0 +1,30 @@
+{
+  "name": "osworld-v2.1-worker",
+  "description": "OSWorld 2.1 benchmark and generic Agent images, with release-pinned AFS data.",
+  "project": "<project>",
+  "image": {
+    "uri": "registry2-cloud.d.pjlab.org.cn/ccr-sandbox/sandbox-dind:dind-202608311205"
+  },
+  "entrypoint": ["/bin/bash", "/opt/osworld-build/input/launch_worker.sh"],
+  "timeout": 7200,
+  "resourceRequests": {"cpu": "8", "memory": "16Gi"},
+  "ports": [{"containerPort": 8800, "name": "osworld-worker", "protocol": "tcp"}],
+  "env": {
+    "OSWORLD_BENCHMARK_RELEASE": "osworld-v2.1",
+    "OSWORLD_BUILD_ID": "<build-id>",
+    "OSWORLD_WORKER_IMAGE": "<registry>/<project>/osworld-worker@sha256:<digest>",
+    "CUA_AGENT_IMAGE": "<registry>/<project>/cua-agent@sha256:<digest>",
+    "OSWORLD_VM_NETWORK": "user",
+    "OSWORLD_VM_RAM_SIZE": "4G"
+  },
+  "extensions": {
+    "runtimeClassName": "sysbox-runc",
+    "kvm": "true",
+    "webhook-feishu": "<feishu-webhook-url>"
+  },
+  "volumes": [
+    {"subPath": "benchmarks/osworld/osworld-v2.1", "mountPath": "/opt/osworld-data", "readOnly": true},
+    {"subPath": "benchmarks/osworld/worker-builds/<build-id>", "mountPath": "/opt/osworld-build", "readOnly": true},
+    {"subPath": "outputs/osworld", "mountPath": "/results", "readOnly": false}
+  ]
+}

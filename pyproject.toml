@@ -1,0 +1,38 @@
+[project]
+name = "webarena-verified-pipeline"
+version = "0.3.0"
+description = "Fixed-asset, single-site WebArena-Verified task generation and GUI trajectories"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "requests>=2.32,<3",
+  "pillow>=10,<12",
+  "pydantic>=2.10.6,<3",
+  "pyyaml>=6,<7",
+  "jsonschema==4.26.0",
+  "jsonpath-ng==1.7.0",
+  "numpy>=1.26,<3",
+  "pyarrow>=18,<24",
+  "beautifulsoup4>=4.12,<5",
+  "playwright>=1.49,<2",
+  "url-normalize>=2,<3",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8,<10", "pytest-asyncio>=0.24", "pytest-xdist>=3.6", "ruff>=0.8",
+  "compact-json", "geopy", "pint", "price-parser", "pytimeparse2",
+  "usaddress-scourgify", "thefuzz", "unidecode", "us", "word2number",
+]
+
+[tool.uv]
+package = false
+environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "infra", "devs/data/webarena_verified_generated"]
+addopts = "-ra -p no:cacheprovider"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100

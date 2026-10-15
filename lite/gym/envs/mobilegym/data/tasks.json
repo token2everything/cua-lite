@@ -1,0 +1,7275 @@
+{
+  "account.Railway12306ChangePassword": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "settings",
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "account.Railway12306ForgotPasswordReset": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "settings",
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "account.Railway12306LoginWithAccount": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306",
+      "notes"
+    ],
+    "capabilities": [
+      "search",
+      "edit",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "account.Railway12306RegisterThenLogin": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "create",
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "account.WechatAccountCancellation": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "settings",
+      "delete"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "alipay.AnalyzeSpending": {
+    "answer_fields": true,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "alipay.CalculateMonthlyExpenseTrend": {
+    "answer_fields": true,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "alipay.CheckBalance": {
+    "answer_fields": true,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "alipay.CheckDailyIncome": {
+    "answer_fields": true,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "alipay.CheckLatestMessageContent": {
+    "answer_fields": true,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "alipay.CheckUnreadMessageCount": {
+    "answer_fields": true,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "alipay.ConfigureLanguageAndFastPay": {
+    "answer_fields": false,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "alipay.CountLargeTransferIncomes": {
+    "answer_fields": true,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "alipay.DisableAllNotifications": {
+    "answer_fields": false,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "alipay.EnableDarkMode": {
+    "answer_fields": false,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "finance",
+      "settings"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "alipay.EnableRefreshSound": {
+    "answer_fields": false,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "atomic",
+    "difficulty": "L2",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "alipay.FindFriend": {
+    "answer_fields": true,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "nav",
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L3",
+    "max_steps": 15,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "alipay.FindLargestTransferPartner": {
+    "answer_fields": true,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "alipay.MonthlyIncomeByCounterparty": {
+    "answer_fields": true,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "alipay.SearchTransferRecords": {
+    "answer_fields": true,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "alipay.SendMessageToContact": {
+    "answer_fields": false,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "alipay.SetFontSizeLevel": {
+    "answer_fields": false,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "atomic",
+    "difficulty": "L3",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "alipay.SetPayOrderCcbYuebaoBalance": {
+    "answer_fields": false,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "alipay.ShowReceiveQRCode": {
+    "answer_fields": false,
+    "apps": [
+      "alipay"
+    ],
+    "capabilities": [
+      "nav"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "bilibili.CoinVideoTask": {
+    "answer_fields": false,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "bilibili.FavVideoAndCountTask": {
+    "answer_fields": true,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "social",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "bilibili.FollowRecommendationTask": {
+    "answer_fields": false,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "bilibili.OpenRankingTask": {
+    "answer_fields": false,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "nav"
+    ],
+    "composition": "sequential",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "bilibili.SanlianTask": {
+    "answer_fields": false,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "bilibili.SearchUserFollowerCountTask": {
+    "answer_fields": true,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "bilibili.SetBirthdayTask": {
+    "answer_fields": false,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "bilibili.SetSexTask": {
+    "answer_fields": false,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "bilibili.SubscribeTask": {
+    "answer_fields": false,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "search",
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "bilibili.ToggleAnimeSubscriptionTask": {
+    "answer_fields": false,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "bilibili.UnfollowAndClearHistoryTask": {
+    "answer_fields": false,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "social",
+      "search"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "bilibili.UpdateNicknameTask": {
+    "answer_fields": false,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "bilibili.UpdateSignTask": {
+    "answer_fields": false,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "bilibili.VideoAnswerOnlineTask": {
+    "answer_fields": true,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "bilibili.VideoAnswerTagsTask": {
+    "answer_fields": true,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "bilibili.VideoCommentContainsAnswerLocationTask": {
+    "answer_fields": true,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "explore"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "bilibili.VideoCommentContainsAnswerUidTask": {
+    "answer_fields": true,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "explore"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "bilibili.ViewFavoritesFolderCountTask": {
+    "answer_fields": true,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "bilibili.ViewMyUidTask": {
+    "answer_fields": false,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "bilibili.ViewProfileStatTask": {
+    "answer_fields": true,
+    "apps": [
+      "bilibili"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "calendar.CalculateDateInterval": {
+    "answer_fields": true,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "calendar.ChangeDefaultReminder": {
+    "answer_fields": false,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "calendar.CompareScheduleDensity": {
+    "answer_fields": true,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "calendar.ConfigAllReminders": {
+    "answer_fields": false,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L1",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "calendar.CreateBirthdayEvent": {
+    "answer_fields": false,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "calendar.CreateEvent": {
+    "answer_fields": false,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "calendar.CreateEventWithAlarmAndConfirm": {
+    "answer_fields": false,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "create",
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "calendar.CreateEventWithReminder": {
+    "answer_fields": false,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "create",
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "calendar.CreateTimedEvent": {
+    "answer_fields": false,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "calendar.DateCalcForward": {
+    "answer_fields": true,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "calendar.DateCalcThenCreate": {
+    "answer_fields": true,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "create",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "calendar.DeleteEvent": {
+    "answer_fields": false,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "calendar.EditAndReportNewTime": {
+    "answer_fields": true,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "edit",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "calendar.EditEventTime": {
+    "answer_fields": false,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "calendar.MakeupDayReminder": {
+    "answer_fields": true,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "create",
+      "reasoning",
+      "explore"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "calendar.QueryFirstEventOnDate": {
+    "answer_fields": true,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "calendar.QueryHolidayLength": {
+    "answer_fields": true,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "explore"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "calendar.QueryMakeupWorkday": {
+    "answer_fields": true,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "explore"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "calendar.SearchDeleteAll": {
+    "answer_fields": true,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "search",
+      "delete",
+      "reasoning",
+      "extract"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "calendar.SearchEventTitle": {
+    "answer_fields": true,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "calendar.ToggleShowWeekNumber": {
+    "answer_fields": false,
+    "apps": [
+      "calendar"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "clock.AddAlarm": {
+    "answer_fields": false,
+    "apps": [
+      "clock"
+    ],
+    "capabilities": [
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "clock.AddAlarmWithSettings": {
+    "answer_fields": false,
+    "apps": [
+      "clock"
+    ],
+    "capabilities": [
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "clock.AddCityAndCheckTime": {
+    "answer_fields": true,
+    "apps": [
+      "clock"
+    ],
+    "capabilities": [
+      "nav",
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "clock.AddCityAndCompareTimeDiff": {
+    "answer_fields": true,
+    "apps": [
+      "clock"
+    ],
+    "capabilities": [
+      "nav",
+      "search",
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "clock.AddWorldCity": {
+    "answer_fields": false,
+    "apps": [
+      "clock"
+    ],
+    "capabilities": [
+      "nav",
+      "search"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "clock.CheckAlarmNote": {
+    "answer_fields": true,
+    "apps": [
+      "clock"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "clock.CheckCityTime": {
+    "answer_fields": true,
+    "apps": [
+      "clock"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "clock.CityLocalTimeDiff": {
+    "answer_fields": true,
+    "apps": [
+      "clock"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "clock.CompareCityTimeDiff": {
+    "answer_fields": true,
+    "apps": [
+      "clock"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "clock.CountAlarms": {
+    "answer_fields": true,
+    "apps": [
+      "clock"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L3",
+    "max_steps": 15,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "clock.DeleteAlarm": {
+    "answer_fields": false,
+    "apps": [
+      "clock"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "clock.EnableAllAlarms": {
+    "answer_fields": false,
+    "apps": [
+      "clock"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "clock.LatestTimezoneCity": {
+    "answer_fields": true,
+    "apps": [
+      "clock"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "clock.RemoveWorldCity": {
+    "answer_fields": false,
+    "apps": [
+      "clock"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "clock.ReorganizeWorldClock": {
+    "answer_fields": false,
+    "apps": [
+      "clock"
+    ],
+    "capabilities": [
+      "edit",
+      "search"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "clock.SetAlarmRepeat": {
+    "answer_fields": false,
+    "apps": [
+      "clock"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "clock.SetupMorningAlarms": {
+    "answer_fields": false,
+    "apps": [
+      "clock"
+    ],
+    "capabilities": [
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "clock.ToggleAlarm": {
+    "answer_fields": false,
+    "apps": [
+      "clock"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_commerce.AlipayBalanceToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "alipay",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "hybrid",
+    "scope": "S2",
+    "seed": null,
+    "split": "train"
+  },
+  "crossapp_commerce.AlipayLargestExpenseToMoments": {
+    "answer_fields": false,
+    "apps": [
+      "alipay",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "social",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_commerce.AlipayLargestExpenseToNotes": {
+    "answer_fields": false,
+    "apps": [
+      "alipay",
+      "notes"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "create"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_commerce.AlipayMonthlySpendToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "alipay",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S2",
+    "seed": null,
+    "split": "train"
+  },
+  "crossapp_commerce.AlipayMonthlyToNotesAndWechat": {
+    "answer_fields": false,
+    "apps": [
+      "alipay",
+      "notes",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": null,
+    "split": "train"
+  },
+  "crossapp_commerce.AlipayRecentTransactionsToNotes": {
+    "answer_fields": false,
+    "apps": [
+      "alipay",
+      "notes"
+    ],
+    "capabilities": [
+      "extract",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": null,
+    "split": "train"
+  },
+  "crossapp_commerce.AlipayShareBillDetail": {
+    "answer_fields": false,
+    "apps": [
+      "alipay",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_commerce.AlipayThankTopIncomeTransfer": {
+    "answer_fields": false,
+    "apps": [
+      "alipay",
+      "notes",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_commerce.AlipayYearCompareTopExpenseToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "alipay",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_commerce.BillTypeYearSummaryToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "alipay",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_commerce.EbayBalanceDiffToNotes": {
+    "answer_fields": false,
+    "apps": [
+      "ebay",
+      "alipay",
+      "notes"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "reasoning",
+      "create"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "hybrid",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_commerce.EbayDualItemBalanceToNotes": {
+    "answer_fields": false,
+    "apps": [
+      "ebay",
+      "alipay",
+      "notes"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "reasoning",
+      "create"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "hybrid",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_commerce.EbayDualItemCompareToNotes": {
+    "answer_fields": false,
+    "apps": [
+      "ebay",
+      "notes"
+    ],
+    "capabilities": [
+      "search",
+      "reasoning",
+      "create"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_commerce.EbayLowestPriceToNotes": {
+    "answer_fields": false,
+    "apps": [
+      "ebay",
+      "notes"
+    ],
+    "capabilities": [
+      "search",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_commerce.EbayPriceBelowBudgetToNotes": {
+    "answer_fields": false,
+    "apps": [
+      "ebay",
+      "notes"
+    ],
+    "capabilities": [
+      "search",
+      "reasoning",
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": null,
+    "split": "train"
+  },
+  "crossapp_commerce.EbayProductShareToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "ebay",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "hybrid",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_commerce.FinancialReportToNotes": {
+    "answer_fields": false,
+    "apps": [
+      "alipay",
+      "notes"
+    ],
+    "capabilities": [
+      "extract",
+      "finance",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": null,
+    "split": "train"
+  },
+  "crossapp_commerce.FullShoppingDecisionFlow": {
+    "answer_fields": false,
+    "apps": [
+      "ebay",
+      "alipay",
+      "notes",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "create",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "hybrid",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_commerce.MonthCompareThenExplainToNote": {
+    "answer_fields": false,
+    "apps": [
+      "alipay",
+      "notes"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "create"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_commerce.Top3ExpenseSummaryToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "alipay",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "hybrid",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.BilibiliRankAuthorLastNovToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "bilibili",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.BilibiliRankTop3FolderAndWechat": {
+    "answer_fields": false,
+    "apps": [
+      "bilibili",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "create",
+      "social",
+      "handoff"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.BilibiliRankingToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "bilibili",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 30,
+    "objective": "hybrid",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.BilibiliTripleLikeThenMoments": {
+    "answer_fields": false,
+    "apps": [
+      "bilibili",
+      "wechat"
+    ],
+    "capabilities": [
+      "social",
+      "create",
+      "handoff"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.CulturalChecklistToRedbook": {
+    "answer_fields": false,
+    "apps": [
+      "spotify",
+      "wechat_reading",
+      "notes",
+      "redbook"
+    ],
+    "capabilities": [
+      "extract",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.DailyLogToMoments": {
+    "answer_fields": false,
+    "apps": [
+      "notes",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "social",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.EbayCheapToRedbook": {
+    "answer_fields": false,
+    "apps": [
+      "ebay",
+      "redbook"
+    ],
+    "capabilities": [
+      "search",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.FavoriteWaterSceneryPhotos": {
+    "answer_fields": false,
+    "apps": [
+      "gallery",
+      "wechat"
+    ],
+    "capabilities": [
+      "image",
+      "edit",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.FileManagerSendFileToWechatContact": {
+    "answer_fields": false,
+    "apps": [
+      "file_manager",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "social",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": null,
+    "split": "train"
+  },
+  "crossapp_content.NotesContentToRedbookAndX": {
+    "answer_fields": false,
+    "apps": [
+      "notes",
+      "redbook",
+      "x"
+    ],
+    "capabilities": [
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L2",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.NotesToWechatAndRedbook": {
+    "answer_fields": false,
+    "apps": [
+      "notes",
+      "wechat",
+      "redbook"
+    ],
+    "capabilities": [
+      "create",
+      "social",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": null,
+    "split": "train"
+  },
+  "crossapp_content.ReadingPlanToNotes": {
+    "answer_fields": false,
+    "apps": [
+      "wechat_reading",
+      "notes"
+    ],
+    "capabilities": [
+      "extract",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.RedbookAuthorFollowersToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "redbook",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "social",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S2",
+    "seed": null,
+    "split": "train"
+  },
+  "crossapp_content.RedbookAuthorTopCollectToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "redbook",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.RedbookDmThenWechatReport": {
+    "answer_fields": false,
+    "apps": [
+      "redbook",
+      "wechat"
+    ],
+    "capabilities": [
+      "social",
+      "handoff"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.RedbookFollowingNoteCountToSms": {
+    "answer_fields": false,
+    "apps": [
+      "redbook",
+      "sms"
+    ],
+    "capabilities": [
+      "extract",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.RedbookSearchTitleToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "redbook",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 30,
+    "objective": "hybrid",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.RedbookTopLikedToNotes": {
+    "answer_fields": false,
+    "apps": [
+      "redbook",
+      "notes"
+    ],
+    "capabilities": [
+      "search",
+      "reasoning",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.RedbookUserBestWorstToNotes": {
+    "answer_fields": false,
+    "apps": [
+      "redbook",
+      "notes"
+    ],
+    "capabilities": [
+      "search",
+      "reasoning",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.RedbookUserTopCollectToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "redbook",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "social",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.SpotifyNowPlayingToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "spotify",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "social",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "hybrid",
+    "scope": "S2",
+    "seed": null,
+    "split": "train"
+  },
+  "crossapp_content.SpotifySaveCurrentSongToNotes": {
+    "answer_fields": false,
+    "apps": [
+      "spotify",
+      "notes"
+    ],
+    "capabilities": [
+      "extract",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": null,
+    "split": "train"
+  },
+  "crossapp_content.SpotifySongFullDetailsToRedbook": {
+    "answer_fields": false,
+    "apps": [
+      "spotify",
+      "redbook"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": null,
+    "split": "train"
+  },
+  "crossapp_content.SpotifyTodayNthPlayToRedbook": {
+    "answer_fields": false,
+    "apps": [
+      "spotify",
+      "redbook"
+    ],
+    "capabilities": [
+      "extract",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.ThirdSpotifyPlayRecommendOnRedbookAndPlaylist": {
+    "answer_fields": false,
+    "apps": [
+      "spotify",
+      "redbook"
+    ],
+    "capabilities": [
+      "extract",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.WechatReadingBestBookToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "wechat_reading",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.WechatReadingShareBookList": {
+    "answer_fields": false,
+    "apps": [
+      "wechat_reading",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "handoff",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": null,
+    "split": "train"
+  },
+  "crossapp_content.WechatReadingStatsToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "wechat_reading",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.WeeklyReadingAndLikedSpotifySongsToMoment": {
+    "answer_fields": false,
+    "apps": [
+      "wechat_reading",
+      "spotify",
+      "wechat"
+    ],
+    "capabilities": [
+      "create",
+      "reasoning",
+      "social",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_content.XLatestPostToReddit_WithTitleFormat": {
+    "answer_fields": false,
+    "apps": [
+      "x",
+      "reddit"
+    ],
+    "capabilities": [
+      "extract",
+      "create",
+      "social",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.CalendarEventToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "calendar",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": null,
+    "split": "train"
+  },
+  "crossapp_life.CalendarFreeWeatherInvite": {
+    "answer_fields": false,
+    "apps": [
+      "calendar",
+      "weather",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.FullTripPlanWeatherDriven": {
+    "answer_fields": false,
+    "apps": [
+      "weather",
+      "railway12306",
+      "calendar",
+      "clock"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "search",
+      "create"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.MapNearbyBestToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "map",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.MapPlaceToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "map",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.MapRatingConditionBuyTicket": {
+    "answer_fields": false,
+    "apps": [
+      "map",
+      "railway12306"
+    ],
+    "capabilities": [
+      "search",
+      "reasoning",
+      "extract"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.OpenedFridgeFoodsToMom": {
+    "answer_fields": false,
+    "apps": [
+      "wechat",
+      "gallery"
+    ],
+    "capabilities": [
+      "image",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.RailwayBalanceConditionalBuyNotify": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306",
+      "alipay",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "reasoning",
+      "extract",
+      "handoff"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.RailwayDestWeatherQuery": {
+    "answer_fields": true,
+    "apps": [
+      "railway12306",
+      "weather"
+    ],
+    "capabilities": [
+      "extract",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.RailwayEarliestGTrainToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.RailwayMyAccountToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.RailwayPriceVsBalance": {
+    "answer_fields": true,
+    "apps": [
+      "railway12306",
+      "alipay"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.RailwayTomorrowMomBookingToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.RailwayTrainInfoToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.RailwayWeatherToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306",
+      "weather",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.RealisticTrip001": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306",
+      "weather",
+      "notes",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "reasoning",
+      "create",
+      "handoff"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.RecommendMenuDishesToXiaozhou": {
+    "answer_fields": false,
+    "apps": [
+      "wechat",
+      "gallery"
+    ],
+    "capabilities": [
+      "image",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.RestaurantRatingInviteCalendar": {
+    "answer_fields": false,
+    "apps": [
+      "map",
+      "wechat",
+      "calendar"
+    ],
+    "capabilities": [
+      "search",
+      "reasoning",
+      "handoff",
+      "create"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.TopRatedNearbyPlaceConditionalWechatOrSmsInvite": {
+    "answer_fields": false,
+    "apps": [
+      "map",
+      "wechat",
+      "sms"
+    ],
+    "capabilities": [
+      "search",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.TravelPlanToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "map",
+      "weather",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.TripClosedLoopNotify": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306",
+      "calendar",
+      "clock",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.TripMemoAndNotify": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306",
+      "weather",
+      "notes",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.WeatherCalendar_CreateEventIfNotSunny": {
+    "answer_fields": false,
+    "apps": [
+      "weather",
+      "calendar"
+    ],
+    "capabilities": [
+      "extract",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": null,
+    "split": "train"
+  },
+  "crossapp_life.WeatherFilterNonRainyDays": {
+    "answer_fields": false,
+    "apps": [
+      "weather",
+      "notes"
+    ],
+    "capabilities": [
+      "extract",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L2",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.WeatherFirstNonRainyDayBuyTicket": {
+    "answer_fields": false,
+    "apps": [
+      "weather",
+      "railway12306"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "search"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.WeatherFirstNonRainyToCalendarAndSms": {
+    "answer_fields": false,
+    "apps": [
+      "weather",
+      "calendar",
+      "sms"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "create",
+      "handoff"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.WeatherFirstSunnyDayCalendarAlarm": {
+    "answer_fields": false,
+    "apps": [
+      "weather",
+      "calendar",
+      "clock"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "create"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.WeatherRainBranchNotify": {
+    "answer_fields": false,
+    "apps": [
+      "weather",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": null,
+    "split": "train"
+  },
+  "crossapp_life.WeatherReportToNotes": {
+    "answer_fields": false,
+    "apps": [
+      "weather",
+      "notes"
+    ],
+    "capabilities": [
+      "extract",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": null,
+    "split": "train"
+  },
+  "crossapp_life.WeatherShareMetric": {
+    "answer_fields": false,
+    "apps": [
+      "weather",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.WechatFoodExtractMapSms": {
+    "answer_fields": false,
+    "apps": [
+      "wechat",
+      "map",
+      "sms"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "search",
+      "handoff"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.WeekendShanghaiTripIfClearAndFree": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306",
+      "weather",
+      "calendar",
+      "clock",
+      "notes",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "reasoning",
+      "create",
+      "handoff"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_life.WeekendTripFullPlan": {
+    "answer_fields": false,
+    "apps": [
+      "weather",
+      "map",
+      "calendar",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "search",
+      "create",
+      "handoff"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.CalendarEarliestToAlarm": {
+    "answer_fields": false,
+    "apps": [
+      "calendar",
+      "clock"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "create"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": null,
+    "split": "train"
+  },
+  "crossapp_work.CountCurrentLogErrorsToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "file_manager",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "search",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.CountOpenWorkOrdersFromPhotosToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "wechat",
+      "gallery"
+    ],
+    "capabilities": [
+      "image",
+      "extract",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.ExistingMeetingToCalendar": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting",
+      "calendar"
+    ],
+    "capabilities": [
+      "extract",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.FullMeetingConflictCheckBroadcast": {
+    "answer_fields": false,
+    "apps": [
+      "calendar",
+      "tencent_meeting",
+      "wechat",
+      "sms"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "create",
+      "handoff"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.InspectionReportToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "file_manager",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.MeetingDurationToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.MeetingFullFlowToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting",
+      "calendar",
+      "wechat"
+    ],
+    "capabilities": [
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.MeetingJoinAndNotifySms": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting",
+      "sms"
+    ],
+    "capabilities": [
+      "nav",
+      "edit",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.MeetingLongestInfoToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L2",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.MeetingMultiChannelNotify": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting",
+      "wechat",
+      "sms"
+    ],
+    "capabilities": [
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.MeetingReminderToNotes": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting",
+      "notes"
+    ],
+    "capabilities": [
+      "extract",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.MeetingRouteEtaToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting",
+      "map",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "search",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.OrganizeMeetingMaterialsToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "calendar",
+      "file_manager",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "search",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.OrganizePdfReportsToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "file_manager",
+      "wechat"
+    ],
+    "capabilities": [
+      "search",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.OrganizeReimbursementPhotosToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "wechat",
+      "gallery",
+      "file_manager"
+    ],
+    "capabilities": [
+      "image",
+      "search",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.ScheduleReleaseMeetingAndNotifyViaNotesWechatSms": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting",
+      "notes",
+      "wechat",
+      "sms"
+    ],
+    "capabilities": [
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.SmsAndCalendarOnDate": {
+    "answer_fields": false,
+    "apps": [
+      "sms",
+      "calendar"
+    ],
+    "capabilities": [
+      "create",
+      "handoff"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.SubmitRequestedAttachmentsToBoss": {
+    "answer_fields": false,
+    "apps": [
+      "wechat",
+      "file_manager"
+    ],
+    "capabilities": [
+      "search",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.TencentMeetingKeywordLongestParticipationToNotes": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting",
+      "notes"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "create",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.TencentMeetingLongestPlannedToWechat": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting",
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "crossapp_work.WeatherConditionalCancelMeeting": {
+    "answer_fields": false,
+    "apps": [
+      "weather",
+      "tencent_meeting",
+      "clock"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "edit",
+      "create"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S3",
+    "seed": 42,
+    "split": "eval"
+  },
+  "ebay.CompareTwoGroupCounts": {
+    "answer_fields": true,
+    "apps": [
+      "ebay"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "ebay.CompareTwoProductPrices": {
+    "answer_fields": true,
+    "apps": [
+      "ebay"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "ebay.CountNikeSneakersInRange": {
+    "answer_fields": true,
+    "apps": [
+      "ebay"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "ebay.CountSonyHeadphonesEurope": {
+    "answer_fields": true,
+    "apps": [
+      "ebay"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "ebay.FindCheapestProduct": {
+    "answer_fields": true,
+    "apps": [
+      "ebay"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "ebay.SearchFirstResult": {
+    "answer_fields": true,
+    "apps": [
+      "ebay"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "ebay.SortSearchResults": {
+    "answer_fields": false,
+    "apps": [
+      "ebay"
+    ],
+    "capabilities": [
+      "search"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "ebay.SwitchTheme": {
+    "answer_fields": false,
+    "apps": [
+      "ebay"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "file_manager.CleanObsoleteHandoffFiles": {
+    "answer_fields": false,
+    "apps": [
+      "file_manager"
+    ],
+    "capabilities": [
+      "search",
+      "delete",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "file_manager.CreateKeepFolderAndDeleteRawLogs": {
+    "answer_fields": false,
+    "apps": [
+      "file_manager"
+    ],
+    "capabilities": [
+      "create",
+      "delete"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "file_manager.RenameEvidenceFilesByDate": {
+    "answer_fields": false,
+    "apps": [
+      "file_manager"
+    ],
+    "capabilities": [
+      "edit",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "launcher.ChangeWallpaperAndAddWidget": {
+    "answer_fields": false,
+    "apps": [],
+    "capabilities": [
+      "settings",
+      "nav"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "launcher.DesktopAppsToFolder": {
+    "answer_fields": false,
+    "apps": [],
+    "capabilities": [
+      "nav",
+      "create",
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "map.BestRatedWithWalkRoute": {
+    "answer_fields": true,
+    "apps": [
+      "map"
+    ],
+    "capabilities": [
+      "search",
+      "nav",
+      "extract"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "map.CheckDriveRoute": {
+    "answer_fields": false,
+    "apps": [
+      "map"
+    ],
+    "capabilities": [
+      "search",
+      "nav"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "map.CheckHighestRatedPlace": {
+    "answer_fields": true,
+    "apps": [
+      "map"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "map.CheckNearestPlaceAddress": {
+    "answer_fields": true,
+    "apps": [
+      "map"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "map.CheckRouteSuccess": {
+    "answer_fields": true,
+    "apps": [
+      "map"
+    ],
+    "capabilities": [
+      "nav",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "map.CompareRouteDuration": {
+    "answer_fields": true,
+    "apps": [
+      "map"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "map.DarkModeSettings": {
+    "answer_fields": false,
+    "apps": [
+      "map"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "map.EstimateDrivingCost": {
+    "answer_fields": true,
+    "apps": [
+      "map"
+    ],
+    "capabilities": [
+      "nav",
+      "extract",
+      "reasoning"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "map.FindBestRatedAndRoute": {
+    "answer_fields": true,
+    "apps": [
+      "map"
+    ],
+    "capabilities": [
+      "search",
+      "nav",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "map.FindNearestAndRoute": {
+    "answer_fields": false,
+    "apps": [
+      "map"
+    ],
+    "capabilities": [
+      "search",
+      "nav"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "map.FindNearestWithRating": {
+    "answer_fields": true,
+    "apps": [
+      "map"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "map.ModifyMultiSettings": {
+    "answer_fields": false,
+    "apps": [
+      "map"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "map.NearestDetailAndWalkRoute": {
+    "answer_fields": true,
+    "apps": [
+      "map"
+    ],
+    "capabilities": [
+      "search",
+      "nav",
+      "extract"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "map.NearestInRadiusRatingRank": {
+    "answer_fields": true,
+    "apps": [
+      "map"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "map.NorthResearchInstituteAnswer": {
+    "answer_fields": true,
+    "apps": [
+      "map"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "query",
+    "scope": "S2",
+    "seed": 42,
+    "split": "eval"
+  },
+  "map.QueryDrivingDistance": {
+    "answer_fields": true,
+    "apps": [
+      "map"
+    ],
+    "capabilities": [
+      "nav",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "map.SetMapNorthUp": {
+    "answer_fields": false,
+    "apps": [
+      "map"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "notes.AddNewTodo": {
+    "answer_fields": false,
+    "apps": [
+      "notes"
+    ],
+    "capabilities": [
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "notes.ChangeViewMode": {
+    "answer_fields": false,
+    "apps": [
+      "notes"
+    ],
+    "capabilities": [
+      "settings",
+      "nav"
+    ],
+    "composition": "atomic",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "notes.CreateFolderAndMoveNote": {
+    "answer_fields": false,
+    "apps": [
+      "notes"
+    ],
+    "capabilities": [
+      "create",
+      "edit",
+      "nav"
+    ],
+    "composition": "sequential",
+    "difficulty": "L1",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "notes.CreateNewNote": {
+    "answer_fields": false,
+    "apps": [
+      "notes"
+    ],
+    "capabilities": [
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "notes.CreateNoteWithReminder": {
+    "answer_fields": true,
+    "apps": [
+      "notes"
+    ],
+    "capabilities": [
+      "create",
+      "edit",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "notes.DeleteAllCompletedTodos": {
+    "answer_fields": false,
+    "apps": [
+      "notes"
+    ],
+    "capabilities": [
+      "delete",
+      "nav"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "notes.DeleteTodo": {
+    "answer_fields": false,
+    "apps": [
+      "notes"
+    ],
+    "capabilities": [
+      "delete",
+      "nav"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "notes.PinNote": {
+    "answer_fields": false,
+    "apps": [
+      "notes"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "notes.PrivateNotesWorkflow": {
+    "answer_fields": true,
+    "apps": [
+      "notes"
+    ],
+    "capabilities": [
+      "edit",
+      "nav",
+      "extract"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "notes.ReadNoteContent": {
+    "answer_fields": true,
+    "apps": [
+      "notes"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "notes.ReadNotesCount": {
+    "answer_fields": true,
+    "apps": [
+      "notes"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "notes.ReadTodoText": {
+    "answer_fields": true,
+    "apps": [
+      "notes"
+    ],
+    "capabilities": [
+      "extract",
+      "nav"
+    ],
+    "composition": "atomic",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "notes.RestoreFromTrash": {
+    "answer_fields": false,
+    "apps": [
+      "notes"
+    ],
+    "capabilities": [
+      "edit",
+      "nav"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "notes.SearchNoteTitle": {
+    "answer_fields": true,
+    "apps": [
+      "notes"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "notes.TodoBatchWorkflow": {
+    "answer_fields": true,
+    "apps": [
+      "notes"
+    ],
+    "capabilities": [
+      "create",
+      "edit",
+      "extract"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "railway12306.BuyReturnTicketFromLatestOrder": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "search",
+      "create",
+      "reasoning"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "railway12306.BuyTicketForNewPassenger": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "search",
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "railway12306.BuyTicketForPassenger": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "search",
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "railway12306.BuyTicketsForTwoPassengers": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "search",
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "railway12306.CheckDefaultPassengerName": {
+    "answer_fields": true,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "railway12306.CheckIdVerificationStatus": {
+    "answer_fields": true,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "nav",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "railway12306.CheckPassengerCount": {
+    "answer_fields": true,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L3",
+    "max_steps": 15,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "railway12306.CheckRecentTripCities": {
+    "answer_fields": true,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "railway12306.CheckStudentVerify": {
+    "answer_fields": true,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "nav",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "railway12306.CheckTicketPriceByDate": {
+    "answer_fields": true,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "railway12306.FindTrainByDate": {
+    "answer_fields": true,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "railway12306.OpenAllApps": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "nav"
+    ],
+    "composition": "atomic",
+    "difficulty": "L3",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "railway12306.OpenInvoice": {
+    "answer_fields": false,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "nav",
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "railway12306.OpenServicePhone": {
+    "answer_fields": true,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "nav",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "railway12306.QueryAndCheckRoute": {
+    "answer_fields": true,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "railway12306.QueryFastestTrainDetails": {
+    "answer_fields": true,
+    "apps": [
+      "railway12306"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "redbook.CheckFirstChatLastMessage": {
+    "answer_fields": true,
+    "apps": [
+      "redbook"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "redbook.CheckFirstCollectedAuthorField": {
+    "answer_fields": true,
+    "apps": [
+      "redbook"
+    ],
+    "capabilities": [
+      "nav",
+      "extract"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "redbook.CheckFollowingUserNoteCount": {
+    "answer_fields": true,
+    "apps": [
+      "redbook"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "redbook.CheckMyProfileField": {
+    "answer_fields": true,
+    "apps": [
+      "redbook"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "redbook.CheckSearchNoteField": {
+    "answer_fields": true,
+    "apps": [
+      "redbook"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "redbook.CheckSearchUserField": {
+    "answer_fields": true,
+    "apps": [
+      "redbook"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "redbook.CollectFeedNoteAndDMAuthor": {
+    "answer_fields": false,
+    "apps": [
+      "redbook"
+    ],
+    "capabilities": [
+      "explore",
+      "social",
+      "create"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "redbook.CollectSearchNote": {
+    "answer_fields": false,
+    "apps": [
+      "redbook"
+    ],
+    "capabilities": [
+      "search",
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "redbook.DMFollowedUser": {
+    "answer_fields": false,
+    "apps": [
+      "redbook"
+    ],
+    "capabilities": [
+      "social",
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "redbook.LikeFeedNoteAndReportLikes": {
+    "answer_fields": true,
+    "apps": [
+      "redbook"
+    ],
+    "capabilities": [
+      "explore",
+      "social",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "redbook.LikeFirstFeedNote": {
+    "answer_fields": false,
+    "apps": [
+      "redbook"
+    ],
+    "capabilities": [
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "redbook.PublishAndShareToFollowing": {
+    "answer_fields": false,
+    "apps": [
+      "redbook"
+    ],
+    "capabilities": [
+      "create",
+      "social"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "redbook.PublishNoteWithTitleAndContent": {
+    "answer_fields": false,
+    "apps": [
+      "redbook"
+    ],
+    "capabilities": [
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "redbook.ReplyToFeedNoteFirstComment": {
+    "answer_fields": false,
+    "apps": [
+      "redbook"
+    ],
+    "capabilities": [
+      "explore",
+      "social",
+      "create"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "redbook.SearchCollectAndReportAuthor": {
+    "answer_fields": true,
+    "apps": [
+      "redbook"
+    ],
+    "capabilities": [
+      "search",
+      "social",
+      "extract"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "redbook.SearchFirstNoteAuthorTopLikedTitle": {
+    "answer_fields": true,
+    "apps": [
+      "redbook"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "redbook.UncollectFirstCollectedNote": {
+    "answer_fields": false,
+    "apps": [
+      "redbook"
+    ],
+    "capabilities": [
+      "nav",
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "reddit.Reddit_AddCommentToPost": {
+    "answer_fields": false,
+    "apps": [
+      "reddit"
+    ],
+    "capabilities": [
+      "nav",
+      "social",
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "reddit.Reddit_AdvancedPrivacyToggles": {
+    "answer_fields": false,
+    "apps": [
+      "reddit"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "reddit.Reddit_CreatePostToCommunity": {
+    "answer_fields": false,
+    "apps": [
+      "reddit"
+    ],
+    "capabilities": [
+      "nav",
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L1",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "reddit.Reddit_DeepThreadReplyAndDeleteSeedMessage": {
+    "answer_fields": false,
+    "apps": [
+      "reddit"
+    ],
+    "capabilities": [
+      "nav",
+      "social",
+      "create",
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "reddit.Reddit_DeleteSeededChatMessage": {
+    "answer_fields": false,
+    "apps": [
+      "reddit"
+    ],
+    "capabilities": [
+      "nav",
+      "delete",
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L1",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "reddit.Reddit_DeleteSeededOwnComment": {
+    "answer_fields": false,
+    "apps": [
+      "reddit"
+    ],
+    "capabilities": [
+      "nav",
+      "delete",
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "reddit.Reddit_DeleteSeededOwnPost": {
+    "answer_fields": false,
+    "apps": [
+      "reddit"
+    ],
+    "capabilities": [
+      "nav",
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "reddit.Reddit_DisableCommunityThemes": {
+    "answer_fields": false,
+    "apps": [
+      "reddit"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "atomic",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "reddit.Reddit_EditSeededOwnComment": {
+    "answer_fields": false,
+    "apps": [
+      "reddit"
+    ],
+    "capabilities": [
+      "nav",
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "reddit.Reddit_JoinCommunityFromFeed": {
+    "answer_fields": false,
+    "apps": [
+      "reddit"
+    ],
+    "capabilities": [
+      "nav",
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "reddit.Reddit_OpenLinksOutsideApp": {
+    "answer_fields": false,
+    "apps": [
+      "reddit"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "reddit.Reddit_SendChatMessage": {
+    "answer_fields": false,
+    "apps": [
+      "reddit"
+    ],
+    "capabilities": [
+      "social",
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "reddit.Reddit_TurnOffMatureContentButKeepUnblurred": {
+    "answer_fields": false,
+    "apps": [
+      "reddit"
+    ],
+    "capabilities": [
+      "settings",
+      "reasoning"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "reddit.Reddit_UpdateProfileBio": {
+    "answer_fields": false,
+    "apps": [
+      "reddit"
+    ],
+    "capabilities": [
+      "nav",
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L1",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "reddit.Reddit_UpvoteAnyComment": {
+    "answer_fields": false,
+    "apps": [
+      "reddit"
+    ],
+    "capabilities": [
+      "nav",
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "reddit.Reddit_UpvoteSpecificFeedPost": {
+    "answer_fields": false,
+    "apps": [
+      "reddit"
+    ],
+    "capabilities": [
+      "nav",
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "sms.CompareConversationMessageCount": {
+    "answer_fields": true,
+    "apps": [
+      "sms"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "sms.DeleteConversation": {
+    "answer_fields": false,
+    "apps": [
+      "sms"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "sms.FindAndReplySendersByKeyword": {
+    "answer_fields": false,
+    "apps": [
+      "sms"
+    ],
+    "capabilities": [
+      "extract",
+      "create"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "sms.MarkAllConversationsRead": {
+    "answer_fields": false,
+    "apps": [
+      "sms"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "atomic",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "sms.OpenConversationBySender": {
+    "answer_fields": false,
+    "apps": [
+      "sms"
+    ],
+    "capabilities": [
+      "nav"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "sms.ReadUnreadConversationCount": {
+    "answer_fields": true,
+    "apps": [
+      "sms"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "sms.ReplyToConversation": {
+    "answer_fields": false,
+    "apps": [
+      "sms"
+    ],
+    "capabilities": [
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "sms.ReplyToLatestUnread": {
+    "answer_fields": false,
+    "apps": [
+      "sms"
+    ],
+    "capabilities": [
+      "extract",
+      "create"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "sms.ToggleFreeNetworkSetting": {
+    "answer_fields": false,
+    "apps": [
+      "sms"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "sms.ToggleMainSetting": {
+    "answer_fields": false,
+    "apps": [
+      "sms"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "spotify.AddArtistSongsToPlaylist": {
+    "answer_fields": false,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "search",
+      "nav"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "spotify.AddToQueueAndPlay": {
+    "answer_fields": false,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "search",
+      "nav"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "spotify.BuildPlaylistFromTwoArtists": {
+    "answer_fields": false,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "search",
+      "create",
+      "nav"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L2",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "spotify.CollectLikedRecentAndPlay": {
+    "answer_fields": false,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "nav",
+      "create"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "spotify.CreateNewPlaylist": {
+    "answer_fields": false,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "spotify.DiscoverSaveAndReport": {
+    "answer_fields": true,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "search",
+      "social",
+      "extract"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L2",
+    "max_steps": 60,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "spotify.FilterLikedSongsToPlaylist": {
+    "answer_fields": false,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "nav",
+      "create"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "spotify.FindRecentArtistSongs": {
+    "answer_fields": true,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "extract",
+      "nav"
+    ],
+    "composition": "atomic",
+    "difficulty": "L4",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "spotify.FollowAndPlayArtist": {
+    "answer_fields": false,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "search",
+      "social",
+      "nav"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "spotify.LikeAndAddToPlaylist": {
+    "answer_fields": false,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "social",
+      "nav"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "spotify.LikeSongFromSearch": {
+    "answer_fields": false,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "search",
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "spotify.ListLibraryArtists": {
+    "answer_fields": true,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "extract",
+      "nav"
+    ],
+    "composition": "atomic",
+    "difficulty": "L3",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "spotify.MoveArtistToNewPlaylist": {
+    "answer_fields": false,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "nav",
+      "create",
+      "edit"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "spotify.PlaySongFromSearch": {
+    "answer_fields": false,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "search",
+      "nav"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "spotify.QueueAndLikeSong": {
+    "answer_fields": false,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "search",
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "spotify.QueueTopArtistSongs": {
+    "answer_fields": false,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "search",
+      "nav"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "spotify.SearchAlbumInfo": {
+    "answer_fields": true,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "spotify.SearchBuildPlaylistAndPlay": {
+    "answer_fields": false,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "search",
+      "create",
+      "nav"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L2",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "spotify.SearchPlayAndReport": {
+    "answer_fields": true,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "search",
+      "nav",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "spotify.SetSleepTimer": {
+    "answer_fields": false,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "settings",
+      "nav"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "spotify.SwapSongInPlaylist": {
+    "answer_fields": false,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "search",
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "spotify.TogglePrivacy": {
+    "answer_fields": false,
+    "apps": [
+      "spotify"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "tencent_meeting.CalculateTotalMeetingDuration": {
+    "answer_fields": true,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L2",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "tencent_meeting.ChatInMeeting": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "tencent_meeting.ChatWithSpecificUser": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "tencent_meeting.CheckContactCount": {
+    "answer_fields": true,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "tencent_meeting.CheckPendingMeetingId": {
+    "answer_fields": true,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "tencent_meeting.CheckPersonalRoomId": {
+    "answer_fields": true,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "tencent_meeting.CheckScheduledMeetingEndTime": {
+    "answer_fields": true,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "tencent_meeting.CompareParticipationDurations": {
+    "answer_fields": true,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "tencent_meeting.ConfigAudioSettings": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "atomic",
+    "difficulty": "L2",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "tencent_meeting.ConfigPrivacySettings": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "tencent_meeting.ConfigShowIdentity": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "tencent_meeting.CountFriendMeetings": {
+    "answer_fields": true,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "tencent_meeting.FindLongestMeeting": {
+    "answer_fields": true,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "tencent_meeting.FindMeetingHistory": {
+    "answer_fields": true,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "tencent_meeting.FindMeetingWithMostParticipants": {
+    "answer_fields": true,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "tencent_meeting.GetSecondParticipationTime": {
+    "answer_fields": true,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "tencent_meeting.JoinMeetingAndRename": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "tencent_meeting.ScheduleMeeting": {
+    "answer_fields": true,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "create",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "tencent_meeting.ShareScreenAndConfirm": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "tencent_meeting.StartFastMeeting": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "tencent_meeting.ToggleNotification": {
+    "answer_fields": false,
+    "apps": [
+      "tencent_meeting"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "atomic",
+    "difficulty": "L2",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "weather.AddCityAndFindWarmestDay": {
+    "answer_fields": true,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "search",
+      "extract",
+      "reasoning"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "weather.AddCityFullReport": {
+    "answer_fields": true,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "weather.CheckAQIPollutant": {
+    "answer_fields": true,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "weather.CheckCurrentTemp": {
+    "answer_fields": true,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "weather.CheckCurrentWeather": {
+    "answer_fields": true,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "weather.CheckDetailCard": {
+    "answer_fields": true,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "weather.CheckLifeIndex": {
+    "answer_fields": true,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "weather.ColdestDayIn14": {
+    "answer_fields": true,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "weather.CompareCityTemp": {
+    "answer_fields": true,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "weather.CompareHumidity": {
+    "answer_fields": true,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "weather.CompareTempRange": {
+    "answer_fields": true,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "weather.ConditionalAction": {
+    "answer_fields": false,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "extract",
+      "settings",
+      "reasoning"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "weather.EnableNightDnd": {
+    "answer_fields": false,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "weather.FeelsLikeDiff": {
+    "answer_fields": true,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "weather.NightLowTemp": {
+    "answer_fields": true,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "weather.OpenDailyForecast": {
+    "answer_fields": true,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "weather.SwitchTempUnit": {
+    "answer_fields": false,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "weather.SwitchUnitAndReport": {
+    "answer_fields": true,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "settings",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "weather.SwitchWindUnit": {
+    "answer_fields": false,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "weather.ThreeCityRainCheck": {
+    "answer_fields": true,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "weather.WarmestDayInWeek": {
+    "answer_fields": true,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "weather.WeekendTempRange3City": {
+    "answer_fields": true,
+    "apps": [
+      "weather"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat.BlacklistContact": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "nav",
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat.ConditionalReplyToBoss": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "edit"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat.DeauthorizeApp": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "nav",
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L1",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat.DisableWechatSportsLeaderboard": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "nav",
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat.EnableDarkMode": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat.OpenBlacklist": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "nav"
+    ],
+    "composition": "atomic",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat.OpenNewFriends": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "nav"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat.OpenRadarAddFriend": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "nav"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat.PostMomentFromChat": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "extract",
+      "create",
+      "social",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat.PostMomentsText": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat.PostMomentsTextWithCity": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat.ReadContactRegion": {
+    "answer_fields": true,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "nav",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L1",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat.ReadMyWxid": {
+    "answer_fields": true,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "nav",
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat.ReadStepsLeaderboardTop": {
+    "answer_fields": true,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "nav",
+      "settings",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat.ScenicPhotoToMomentsWithPhrase": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "social",
+      "handoff"
+    ],
+    "composition": "transfer",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S2",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat.SetAddMeSearch": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat.SetFriendChatOnly": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "nav",
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat.SetMomentsVisibleRange": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "nav",
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat.SetPatText": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat.SetSignature": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "nav",
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat.StarAndRestrictFriend": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "nav",
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat.ToggleDiscoverEntry": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "nav",
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat.ToggleFriendConfirmation": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat.ToggleMobileAutoPlayMomentsVideo": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "nav",
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat.ToggleStrangerViewMoments": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "nav",
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat.ToggleWechatSports": {
+    "answer_fields": false,
+    "apps": [
+      "wechat"
+    ],
+    "capabilities": [
+      "nav",
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat_reading.AddBookAndReadTo": {
+    "answer_fields": false,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "search",
+      "create",
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat_reading.AddBookToShelf": {
+    "answer_fields": false,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "search",
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat_reading.AnalyzeReadingHabit": {
+    "answer_fields": true,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat_reading.CheckBookRating": {
+    "answer_fields": true,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat_reading.CheckCalendarMonthReading": {
+    "answer_fields": true,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat_reading.CheckCoinBalance": {
+    "answer_fields": true,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat_reading.CheckHotSearchRank": {
+    "answer_fields": true,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "extract"
+    ],
+    "composition": "atomic",
+    "difficulty": "L3",
+    "max_steps": 15,
+    "objective": "query",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat_reading.CompareBookLengths": {
+    "answer_fields": true,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning",
+      "create"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L2",
+    "max_steps": 45,
+    "objective": "hybrid",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat_reading.ConfigureReaderSettings": {
+    "answer_fields": false,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat_reading.EditProfileName": {
+    "answer_fields": false,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat_reading.FindAudiobookPlays": {
+    "answer_fields": true,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat_reading.FindHighestRatedBookInCategory": {
+    "answer_fields": true,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "extract",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat_reading.FindLowestProgressAndRead": {
+    "answer_fields": false,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "reasoning",
+      "edit"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat_reading.ManageShelf": {
+    "answer_fields": false,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "delete"
+    ],
+    "composition": "sequential",
+    "difficulty": "L1",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat_reading.OrganizeShelfByRecommendation": {
+    "answer_fields": false,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "delete",
+      "reasoning"
+    ],
+    "composition": "deep_dive",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat_reading.PrivacyAndThemeBundle": {
+    "answer_fields": false,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat_reading.ReadBookProgress": {
+    "answer_fields": false,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat_reading.SearchBookAuthor": {
+    "answer_fields": true,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "search",
+      "extract"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "query",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "wechat_reading.SetDarkMode": {
+    "answer_fields": false,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat_reading.SetProfileVisibility": {
+    "answer_fields": false,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat_reading.TogglePrivateReading": {
+    "answer_fields": false,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "settings",
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "wechat_reading.UnfollowUser": {
+    "answer_fields": false,
+    "apps": [
+      "wechat_reading"
+    ],
+    "capabilities": [
+      "edit"
+    ],
+    "composition": "sequential",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "x.ComplexSettingsChain": {
+    "answer_fields": false,
+    "apps": [
+      "x"
+    ],
+    "capabilities": [
+      "nav",
+      "settings",
+      "explore"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "x.FollowUserAndLikeTheirPost": {
+    "answer_fields": false,
+    "apps": [
+      "x"
+    ],
+    "capabilities": [
+      "social",
+      "search"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "x.PostWithImageAndReply": {
+    "answer_fields": false,
+    "apps": [
+      "x"
+    ],
+    "capabilities": [
+      "create",
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L1",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "x.QuotePostAndTweet": {
+    "answer_fields": false,
+    "apps": [
+      "x"
+    ],
+    "capabilities": [
+      "search",
+      "social",
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "x.ReplyAndRetweetSamePost": {
+    "answer_fields": false,
+    "apps": [
+      "x"
+    ],
+    "capabilities": [
+      "social",
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "x.SearchAndBookmark": {
+    "answer_fields": false,
+    "apps": [
+      "x"
+    ],
+    "capabilities": [
+      "search",
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 30,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "x.SearchMultipleKeywordsAndInteract": {
+    "answer_fields": false,
+    "apps": [
+      "x"
+    ],
+    "capabilities": [
+      "search",
+      "social"
+    ],
+    "composition": "sequential",
+    "difficulty": "L4",
+    "max_steps": 60,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "x.SendDmToConversation": {
+    "answer_fields": false,
+    "apps": [
+      "x"
+    ],
+    "capabilities": [
+      "social",
+      "create"
+    ],
+    "composition": "sequential",
+    "difficulty": "L1",
+    "max_steps": 15,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "x.SetAudiencePrivacyBundle": {
+    "answer_fields": false,
+    "apps": [
+      "x"
+    ],
+    "capabilities": [
+      "nav",
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  },
+  "x.SetCallPermissionsBundle": {
+    "answer_fields": false,
+    "apps": [
+      "x"
+    ],
+    "capabilities": [
+      "nav",
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L2",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": 42,
+    "split": "eval"
+  },
+  "x.SetPushNotificationMix": {
+    "answer_fields": false,
+    "apps": [
+      "x"
+    ],
+    "capabilities": [
+      "nav",
+      "settings"
+    ],
+    "composition": "sequential",
+    "difficulty": "L3",
+    "max_steps": 45,
+    "objective": "operate",
+    "scope": "S1",
+    "seed": null,
+    "split": "train"
+  }
+}

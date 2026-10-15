@@ -1,0 +1,53 @@
+# browsergym strict-isolation variant — a COMPLETE config, used WHOLE (no merge).
+# Engage with: BROWSERGYM_CONFIG=isolation (bare name → this bundled file). Pair
+# with a *_FULL_RESET endpoint + a raised --max-attempts for full eval rigor.
+# This RETIRES the old CUA_LITE_BROWSERGYM_BACKEND_ISOLATION=strict env-var.
+#
+# Because <PREFIX>_CONFIG REPLACES the whole config (env_config.load), this file
+# must carry EVERY key main.py reads — it is default.yaml with the single change
+# `backend_isolation: "strict"`. Keep it in sync with default.yaml.
+
+env_var_prefix: BROWSERGYM
+
+make_kwargs:
+  cursor: true
+  loop_detect_terminal_status: success  # loop detection should send DONE text, not report_infeasible
+
+env_kwargs:
+  # null → use the per-benchmark budget HARDCODED at registration (miniwob 10;
+  # webarena / visualwebarena 30). A concrete int here overrides all benchmarks.
+  max_steps: null
+  post_action_delay: 0.0     # asyncio.sleep before the post-step screenshot (browsergym renders synchronously → 0)
+  seed: null                 # null = unseeded bare construction; registration hardcodes a fixed task seed
+  extra_tools: null          # null = all action_subset tools; [] = none; [names] = subset
+
+server_kwargs:
+  # The ONLY change from default.yaml: strict serializes writers on the shared
+  # WA/VWA stack (conflict_keys/mutating gate) instead of running fully concurrent.
+  backend_isolation: "strict"
+  # Writer-close restore: poll the WA full-reset /status every restore_poll_s,
+  # capped at restore_timeout_s (a WA stack reset takes 200-500 s).
+  restore_poll_s: 20.0
+  restore_timeout_s: 900.0
+  # L2 dead-backend fail-fast (see default.yaml for the full rationale). 0 disables.
+  pool_unreachable_failed_steps: 4
+  # WA+VWA LLM-judge model — see default.yaml for the rationale (kept in sync; the
+  # whole-file replacement merges nothing, so every default.yaml key MUST appear here).
+  llm_judge_model: "gpt-4.1"
+
+  # ── Auxiliary-service host ports ───────────────────────────────────────────
+  # PREFERRED host ports (DEFAULTS only — auto-reallocated if busy via
+  # _auto_pick_webarena_ports). Identical to default.yaml; see it for the rationale.
+  miniwob_port: 7560           # miniwob static-HTML singleton (NOT 8080 — webgym's node default collides)
+  shopping_port: 7770          # WA/VWA Shopping (Magento storefront)
+  shopping_admin_port: 7780    # WA Shopping Admin
+  reddit_port: 9999            # WA/VWA Forum (Reddit/Postmill)
+  gitlab_port: 8023            # WA GitLab
+  wikipedia_port: 8888         # WA/VWA Wikipedia (Kiwix)
+  classifieds_port: 9980       # VWA Classifieds
+  homepage_port: 4399          # WA/VWA homepage portal
+  map_port: 3000               # WA Map (OSM frontend)
+  wa_fallback_port_range: [8500, 8999]
+  miniwob_port_range: [7560, 7659]
+  wikipedia_path: "/wikipedia_en_all_maxi_2022-05/A/User:The_other_Kiwix_guy/Landing"
+  classifieds_reset_token: "4b61655535e7ed388f0d40a93600254c"

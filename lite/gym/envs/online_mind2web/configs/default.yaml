@@ -1,0 +1,43 @@
+# online_mind2web registration defaults. Read at import by env_config.load(ENV_DIR).
+# Override the whole config at startup with ONLINE_MIND2WEB_CONFIG=/path/to/file.yaml
+# or a bundled name under configs/. A rollout's env_kwargs still win per run.
+
+env_var_prefix: ONLINE_MIND2WEB
+
+make_kwargs:
+  cursor: true
+
+env_kwargs:
+  # null -> default Online-Mind2Web rollout horizon (30).
+  max_steps: null
+  step_timeout: 600.0                 # terminal step includes WebJudge reward/eval
+  post_action_delay: 1.5
+  viewport: [1280, 720]
+  # GUI action enum only. Finish actions are terminal env operations, not
+  # metadata.valid_actions; nav tools stay opt-in through extra_tools below.
+  valid_actions: ["click", "type", "key", "scroll", "wait"]
+  extra_tools: []                    # opt-in extras: back, forward, goto, response, terminate
+  trajectory_dir: ""                 # "" -> temp dir per episode; set to persist v2 submissions
+  overwrite_trajectory: true         # when trajectory_dir is set, reuse <trajectory_dir>/<task_id>
+  skip_eval: false                   # pass skip_eval=True per run to disable WebJudge rewards
+  eval_config:
+    mode: "WebJudge_Online_Mind2Web_eval"
+    model: "o4-mini"
+    score_threshold: 1
+    api_key_env_var: "OPENAI_API_KEY"
+    max_images: 50
+    image_judge_workers: 16           # upstream judges trajectory images concurrently
+    request_timeout: 180.0
+
+server_kwargs:
+  hf_repo_id: "osunlp/Online-Mind2Web"
+  hf_filename: "Online_Mind2Web.json"
+  hf_revision: "6aa56e07c9d247fcc2b72fc3d94ad0f857f1e5d4"
+  rpc_port: 8000                     # fallback URL only; ensure() auto-publishes 7900-7999
+  rpc_url: ""                        # "" -> http://localhost:{rpc_port}; set only for remote
+  instances: 0                       # 0 = auto-derive from host RAM; passed as ONLINE_MIND2WEB_INSTANCES
+  page_load_timeout_s: 20.0
+  reset_settle_s: 1.0
+  instance_ttl_s: 600.0
+  reaper_interval_s: 30.0
+  rm_timeout_s: 60.0                 # override with CUA_LITE_ONLINE_MIND2WEB_RM_TIMEOUT_S

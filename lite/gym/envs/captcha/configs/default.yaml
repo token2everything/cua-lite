@@ -1,0 +1,29 @@
+# captcha registration defaults. Read at import by env_config.load(ENV_DIR).
+# Override the WHOLE config at startup: CAPTCHA_CONFIG=/path/to/your.yaml
+# (or a bare name -> configs/<name>.yaml). A rollout's env_kwargs still win per run.
+
+env_var_prefix: CAPTCHA
+
+# Env-wide make defaults, applied via registry.set_env_make_kwargs. Per-task
+# register() kwargs and gym.make() kwargs still override.
+make_kwargs:
+  # captcha drives its own headless Chromium: the Playwright capture buffer has
+  # NO native pointer, so the env composites the tracked cursor at capture time
+  # (same contract as the other browser-backed envs). captcha is a
+  # click-PRECISION benchmark — without this the agent cannot see its pointer.
+  cursor: true
+
+env_kwargs:
+  # null → per-category budget hardcoded at registration (_register_local per
+  # _CATEGORIES: 10 or 15). A concrete int here overrides every category.
+  max_steps: null
+  post_action_delay: 0.5             # asyncio.sleep after each step, before the screenshot
+  display_resolution: [1920, 1080]   # Playwright browser viewport + _to_pixel click-map
+  seed: null                         # null = unseeded; eval registers a fixed per-category seed
+  headless: true                     # Chromium launch headless flag
+  extra_tools: []                    # explicit opt-in only: response / terminate
+  valid_actions: ["click", "type", "key", "scroll", "drag", "wait"]
+
+server_kwargs:
+  # Each episode spawns its OWN Flask challenge server; this is the boot deadline.
+  server_start_timeout: 30.0

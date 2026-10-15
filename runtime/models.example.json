@@ -1,0 +1,37 @@
+{
+  "default_model": "teacher",
+  "models": {
+    "teacher": {
+      "model": "qwen3.8-max",
+      "expected_returned_model": "qwen3.8-max",
+      "api_type": "openai_chat",
+      "history_turns": 19,
+      "base_url": "REPLACE_FROM_ENV",
+      "api_key": "REPLACE_FROM_ENV",
+      "params": {
+        "max_tokens": 32768,
+        "temperature": 0.0,
+        "top_p": 0.9,
+        "reasoning_effort": "xhigh",
+        "enable_thinking": true,
+        "preserve_thinking": true,
+        "parallel_tool_calls": false,
+        "stream": false
+      }
+    },
+    "student": {
+      "model": "z-ai/glm-5.3-flash",
+      "expected_returned_model": "glm-5.3-flash",
+      "api_type": "openai_chat",
+      "history_turns": 19,
+      "base_url": "REPLACE_FROM_ENV",
+      "api_key": "REPLACE_FROM_ENV",
+      "params": {
+        "max_tokens": 32768,
+        "enable_thinking": true,
+        "preserve_thinking": true,
+        "reasoning_effort": "max"
+      }
+    }
+  }
+}

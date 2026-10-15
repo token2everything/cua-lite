@@ -1,0 +1,44 @@
+# 复制到 cua-lite/.sandbox/run.yaml；所有本地相对路径以该 YAML 所在目录为基准。
+# 所有 manage 命令共用此配置；未传 --config 时读取 .sandbox/run.yaml。
+# 管理员提供 environment_id；模板固定 Worker 和 Agent 镜像，这里不填写任何密钥。
+# 完整 054 示例见 lite/gym/envs/osworld_2/WORKER.md。
+# 自动并发：manage batch --concurrency 4 --dry-run 预览；去掉 --dry-run 启动。
+# batch 将 tasks/task_set 拆为每题一个 Sandbox，完成后同步、回收并补位。
+project: ailab-llmagent
+base_url: http://deepenv.sandbox.pjlab.org.cn
+afs_url: http://10.140.95.76:28081
+environment_id: 5d5b5dbb-bd30-447e-bff5-e67ec8b7bba4
+results_prefix: outputs/osworld
+release: osworld-v2.1
+
+# 按任务覆盖外层 Sandbox 的资源；未列出的任务沿用模板。CPU、内存都必须填写字符串。
+# 不改变桌面 VM 或 Agent 容器的内存；例如 026 需要给同 Sandbox 的 GitLab 额外留空间。
+# task_resources:
+#   "026": {cpu: "8", memory: "32Gi"}
+
+# 平台凭据文件的路径，文件内容示例：{"ak":"REPLACE_WITH_AK","sk":"REPLACE_WITH_SK"}。
+# 若配置放在 .sandbox/run.yaml，这里读取 .sandbox/AK-SK；已有文件在别处可填绝对路径。
+credentials: AK-SK
+
+# 工作站上的状态目录，程序自动创建；.sandbox/run.yaml 对应 .sandbox/state/。
+# 保存 Sandbox 所有权、提交记录和批次进度，供 sync、delete、batch --resume 使用。
+# 完成结果同步和资源回收前请保留；其中含私密作业配置，不提交 Git。
+state_dir: state
+# 默认从 Environment 继承飞书；模板未配置时，取消下一行注释。
+# feishu_config: feishu-webhook.json
+
+# 仅 manage batch 生效；复用上面的飞书配置或模板机器人，无需另建应用。
+monitor:
+  enabled: true
+  interval: 300                   # 每 5 分钟发送一张可折叠的进度卡片
+  stall_after: 900                 # 15 分钟无新 Agent 步骤时提醒“疑似停滞”
+
+job:
+  model_config: model-api.json    # 与 run.yaml 放在同一私密目录，或改为已有文件路径
+  model_profile: glm5.3-flash
+  tasks: ["054"]                  # 必须加引号；多个任务在同一 Sandbox 内顺序执行
+  # task_set: offline             # 与 tasks 二选一；offline 仅 v2.1 提供
+  max_steps: 500                  # 正式评测采用论文的 500 步预算；每阶段按 Agent 交互回合计数
+  history_turns: 4                 # Chat：4 张历史截图＋当前截图，文本完整保留
+  results_root: results           # 本地结果根目录；batch 自动归档为 <批次名>/task_<任务号>/<run-id>/
+  # experiment: v21-054-my-run    # 默认生成唯一名称；batch 用作批次 ID，恢复用 --resume <ID>

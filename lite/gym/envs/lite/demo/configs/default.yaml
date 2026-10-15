@@ -1,0 +1,18 @@
+# lite.demo registration defaults. Read at import by env_config.load(ENV_DIR).
+# Override the WHOLE config at startup: LITE_DEMO_CONFIG=/path/to/your.yaml
+# (or a bare name -> configs/<name>.yaml). A rollout's env_kwargs still win per run.
+
+env_var_prefix: LITE_DEMO
+
+env_kwargs:
+  post_action_delay: 2.0   # match lite.osworld — 1s wasn't enough for slow UI (e.g. a terminal opening) to render before the screenshot, leaving stale "frozen" frames
+  computer:                          # the whole computer_config (env-init param)
+    image: "cua-lite/sandbox.linux:latest"  # VISIBLE default; DO NOT override (evals hardwired to this layout)
+    display_resolution: [1920, 1080]   # -> VNC_RESOLUTION
+    # -> docker run --memory. 8GB for parity with the rest of the lite.*
+    # desktop family; see /lite/gym/envs/lite/osworld/configs/default.yaml.
+    memory: "8GB"
+    cpu: "2"                           # -> --cpus
+    timeout: 120                       # -> ready_timeout (boot-readiness ceiling)
+
+server_kwargs: {}   # no module-level infra env-vars; reaper/pool/admission are framework-owned

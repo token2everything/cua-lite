@@ -1,0 +1,16 @@
+{
+  "release": "v0.4-development",
+  "imported_release": "v0.3-r2",
+  "imported_source_directory": "/root/webarena-verified-pipeline-v03",
+  "imported_provenance": "provenance/v03/SOURCE_PROVENANCE.json",
+  "imported_reproduction_verification": "provenance/v03/REPRODUCTION_VERIFICATION.json",
+  "asset_version": "webarena-verified-1.2.3-seed",
+  "selected_sites": ["shopping", "gitlab"],
+  "trajectory_format": "multimodal_image_text_dialogs_v3",
+  "live_verification_status": "not_yet_verified",
+  "plan_document": "https://gcnxubmy1vgu.feishu.cn/wiki/KogewnJCViCdAJkFZGUc80eLnab#doxcnx9N7bGrOjz0kUDFQdIavqg",
+  "release_hash_owner": "per-run release_manifest.json",
+  "credentials_included": false,
+  "generated_data_included": false,
+  "training_promotion": false
+}

@@ -1,0 +1,7 @@
+assets:
+  repo: cua-lite/lite.cuaworld-assets
+  revision: 766f3013d2db11b2f012f1974e79fe11797e520f
+  components:
+    software_materials:
+      path: "{upstream_env}"
+      baked: true

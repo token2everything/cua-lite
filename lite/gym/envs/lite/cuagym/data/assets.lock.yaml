@@ -1,0 +1,13 @@
+assets:
+  repo: cua-lite/lite.cuagym-assets
+  revision: 025b0ab5f89c8f492850dd8536398bf60cb14b45
+  components:
+    task_table:
+      path: data/tasks.parquet
+      baked: false
+    task_bundles:
+      path: artifacts/cua_gym_tasks_v1.tar.zst
+      baked: false
+    mock_hub:
+      path: artifacts/cua_gym_hub.tar.zst
+      baked: true

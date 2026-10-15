@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+.secrets/
+runs/
+plans/
+__pycache__/
+.pytest_cache/
+.venv/
+*.pyc

@@ -1,0 +1,7 @@
+{
+  "description": "cua-lite preprocessed version of GUI-360 (vyokky/GUI-360), a large-scale dataset of computer-using-agent trajectories on Windows Microsoft-Office apps (Word / Excel / PowerPoint). Provides three desktop task types derived from the successful training trajectories: multi-step use, point grounding (intent -> element coordinate), and screen parsing (listing all interactive UI controls).",
+  "original_urls": ["https://huggingface.co/datasets/vyokky/GUI-360"],
+  "license": "MIT (see vyokky/GUI-360).",
+  "citation": "See https://huggingface.co/datasets/vyokky/GUI-360 (arXiv:2511.04307)",
+  "extra_notes": ""
+}

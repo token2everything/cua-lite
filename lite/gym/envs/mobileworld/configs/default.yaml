@@ -1,0 +1,63 @@
+# mobileworld registration defaults — the single, visible source of every
+# tunable that would otherwise be a main.py/container.py literal or env-var.
+#
+# Read once at env-module import via the shared resolver:
+#   from lite.gym.utils import config as env_config
+#   CFG = env_config.load(ENV_DIR)   # CFG.env_kwargs / CFG.server_kwargs
+#
+# Override the WHOLE config at startup (no merge — the file IS the config):
+#   export MOBILE_WORLD_CONFIG=/abs/path/to/variant.yaml   # absolute path
+#   export MOBILE_WORLD_CONFIG=somevariant                 # → configs/somevariant.yaml
+#
+# Precedence (defaults only — a rollout's env_kwargs still override per run):
+#   rollout/grpo yaml env_kwargs  >  MOBILE_WORLD_CONFIG override  >  default.yaml
+#
+# Secrets are env-var-only (never yaml): the simulated-user LLM for ask_user
+# tasks reads its credentials from the host's standard OPENAI_API_KEY /
+# OPENAI_BASE_URL env vars, forwarded into each container at spawn as the
+# USER_AGENT_* names the upstream code expects (container.py's
+# _USER_AGENT_ENV_MAP). The model name is NOT a secret → it's the
+# server_kwargs.user_agent_model knob below.
+env_var_prefix: MOBILE_WORLD
+
+# Env-wide make defaults, applied via
+# registry.set_env_make_kwargs. Per-task register() kwargs and gym.make()
+# kwargs still override.
+make_kwargs:
+  # reset() wall-clock cap. A cold boot runs the whole DinD pipeline (nested
+  # dockerd + app-backend images + emulator snapshot boot + server), typically
+  # 2-5 min but far longer on contended hosts; /task/init on a warm container
+  # is seconds-to-a-minute (snapshot reload + app-backend restart). The cap
+  # must also absorb time queued behind server_kwargs.spawn_concurrency when
+  # many resets arrive at once (rollout --concurrency > spawn_concurrency).
+  reset_timeout: 1800.0
+
+env_kwargs:                       # explicit constructor/bind kwargs
+  max_steps: 50                   # upstream eval convention (mw eval --max_round 50)
+  post_action_delay: 3.0          # gates asyncio.sleep before the post-step screenshot
+                                  # (upstream --step_wait_time 3 in the reference eval)
+  valid_actions: null             # null = no GUI action filter; [] deliberately removes the action-batch tool
+  extra_tools: []                 # explicit default: none (available: open_app, ask_user, response, terminate)
+  image: "cua-lite/mobileworld:latest"   # spawn image (must match scripts/install.sh)
+
+server_kwargs:                    # per-deploy infra
+  max_workers: 64                 # ThreadPoolExecutor size (each live container holds ≤2 threads)
+  spawn_concurrency: 4            # max concurrent container spawns (docker run → ready) per process;
+                                  # bounds daemon load in BOTH modes (direct mode has no framework
+                                  # docker-create semaphore). Queued resets wait — keep rollout
+                                  # --concurrency within ~2-4x of this and budget reset_timeout for
+                                  # the queue (see make_kwargs / README).
+  boot_timeout: 900               # docker run → POST /init 200 deadline (s); covers the full DinD boot
+  memory_limit: "32g"             # docker run --memory / --memory-swap (emulator + nested backends)
+  step_timeout: 180               # /step + /screenshot HTTP timeout (s); ask_user calls an LLM
+  task_init_timeout: 600          # /task/init HTTP timeout (s): snapshot reload + app-backend restart
+  eval_timeout: 600               # /task/eval HTTP timeout (s): backend DB / adb state checks
+  user_agent_model: "gpt-4.1"     # simulated-user LLM for ask_user tasks (upstream README's example
+                                  # model), injected into containers as USER_AGENT_MODEL; credentials
+                                  # come from host OPENAI_API_KEY / OPENAI_BASE_URL (see header)
+  max_resets_per_container: 30    # recycle (destroy + cold-spawn) after N in-place /task/init reuses.
+                                  # MobileWorld is DESIGNED to reuse one container across episodes
+                                  # (cold DinD boot is 2-5 min; snapshot reload is seconds), so unlike
+                                  # androidworld this must stay LARGE — 0 would cold-boot every episode.
+                                  # The cap bounds out-of-snapshot drift (qemu, adb daemon, in-container
+                                  # python globals, /tmp) that the snapshot reload cannot roll back.

@@ -1,0 +1,14 @@
+{
+  "desktop-python.tar.gz": {
+    "bytes": 9452443,
+    "SHA256": "e79a2c58653e5d479d8c3a0abdd946c4132296b2ae0745f7b9ecfd87e99d210c"
+  },
+  "osworld-b138d348.bundle": {
+    "bytes": 11168646,
+    "SHA256": "f42a9bfb664f5a9e8638fa3062988af3a2f7bdd9f4916534cfb394a15c67ce86"
+  },
+  "gui-python.tar.gz": {
+    "bytes": 48479370,
+    "SHA256": "ecdeb93ee65104f867352dbae8d9eb4a49dcdd5f9b4b63e9bdbdf0018adda21e"
+  }
+}

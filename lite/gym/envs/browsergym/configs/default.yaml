@@ -1,0 +1,79 @@
+# browsergym registration defaults. Read at import by env_config.load(ENV_DIR).
+# Override the WHOLE config at startup: BROWSERGYM_CONFIG=isolation (bundled
+# configs/isolation.yaml) or BROWSERGYM_CONFIG=/path/to/your.yaml.
+#
+# Config rule (uniform across cua-lite envs): a `BrowserGymEnv.__init__` default IS
+# the module-level `CFG.env_kwargs[...]` constant below — never an arbitrary
+# literal. browsergym's main.py registers MULTIPLE benchmarks (miniwob / webarena /
+# visualwebarena) whose budgets differ, so the per-instance knob that varies by
+# benchmark (`max_steps`) is `null` HERE and the concrete value is hardcoded at the
+# registration site (`_register_benchmark(max_steps=10|30)`). Uniform knobs
+# (post_action_delay / seed / extra_tools) carry their real default here.
+# Precedence: rollout/grpo yaml env_kwargs > BROWSERGYM_CONFIG override > default.yaml.
+
+env_var_prefix: BROWSERGYM
+
+make_kwargs:
+  cursor: true
+  loop_detect_terminal_status: success  # loop detection should send DONE text, not report_infeasible
+
+env_kwargs:
+  # null → use the per-benchmark budget HARDCODED at registration (miniwob 10;
+  # webarena / visualwebarena 30). A concrete int here overrides all benchmarks.
+  max_steps: null
+  post_action_delay: 0.0     # asyncio.sleep before the post-step screenshot (browsergym renders synchronously → 0)
+  seed: null                 # null = unseeded bare construction; registration hardcodes a fixed task seed
+  extra_tools: null          # null = all action_subset tools; [] = none; [names] = subset
+
+server_kwargs:
+  # Shared-backend (WA/VWA) conflict gate. "off" (default) runs fully concurrent;
+  # "strict" serializes writers on the shared stack (use configs/isolation.yaml).
+  backend_isolation: "off"
+  # Writer-close restore: poll the WA full-reset /status every restore_poll_s,
+  # capped at restore_timeout_s (a WA stack reset takes 200-500 s).
+  restore_poll_s: 20.0
+  restore_timeout_s: 900.0
+  # L2 dead-backend fail-fast: after this many CONSECUTIVE
+  # steps where the BrowserGym step itself failed to return an observation
+  # (last_obs is None — a dead WA/VWA stack / miniwob / crashed page, NOT a
+  # logical action error, which returns an obs with last_action_error), treat
+  # the backend as unreachable and truncate the trajectory loudly instead of
+  # grinding to max_steps as a silent reward-0. A real observation resets the
+  # counter, so a transient blip never trips it. 0 disables.
+  pool_unreachable_failed_steps: 4
+
+  # LLM-judge model for the ``llm_fuzzy_match`` evaluator shared by BOTH WebArena
+  # AND VisualWebArena (webarena/visualwebarena evaluation_harness both HARD-CODE
+  # "gpt-4-1106-preview"). main.py overrides it to THIS value so the model is one
+  # config knob, while ROUTING stays universal: set OPENAI_API_KEY, and set
+  # OPENAI_BASE_URL only for a custom endpoint. "gpt-4.1" matches webgym's
+  # judge path (text-only judge — vision is unused). See README "evaluator API".
+  llm_judge_model: "gpt-4.1"
+
+  # ── Auxiliary-service host ports ───────────────────────────────────────────
+  # PREFERRED host ports for each browsergym backend — DEFAULTS only, exactly like
+  # webgym's `master_port: 7000  # auto-reallocated if busy`. ensure_services()
+  # keeps the port when free, else auto-reallocates a free one from
+  # wa_fallback_port_range (the same flock-protected allocator webgym uses), so two
+  # env-servers' WA/VWA stacks coexist on one host. An operator-set <SVC>_PORT env
+  # var pins the port verbatim. Values match WebArena's published Docker images +
+  # scripts/start.sh's shell defaults (keep both in sync if you change a port).
+  miniwob_port: 7560           # miniwob static-HTML singleton (NOT 8080 — webgym's node default collides)
+  shopping_port: 7770          # WA/VWA Shopping (Magento storefront)
+  shopping_admin_port: 7780    # WA Shopping Admin
+  reddit_port: 9999            # WA/VWA Forum (Reddit/Postmill)
+  gitlab_port: 8023            # WA GitLab
+  wikipedia_port: 8888         # WA/VWA Wikipedia (Kiwix)
+  classifieds_port: 9980       # VWA Classifieds
+  homepage_port: 4399          # WA/VWA homepage portal
+  map_port: 3000               # WA Map (OSM frontend)
+  # Auto-reallocation range for any WA/VWA host port whose default is busy
+  # (mirror lite/gym/utils/backend/ports.py's range map; flock-protected pick).
+  wa_fallback_port_range: [8500, 8999]
+  # miniwob's own conflict-avoidance range (preferred port = miniwob_port above).
+  miniwob_port_range: [7560, 7659]
+  # Wikipedia (Kiwix) landing path appended after host:port in the WA_/VWA_WIKIPEDIA url.
+  wikipedia_path: "/wikipedia_en_all_maxi_2022-05/A/User:The_other_Kiwix_guy/Landing"
+  # VWA Classifieds self-reset token (the 22 require_reset classifieds tasks); also
+  # exported by scripts/start.sh — keep the two literals in sync.
+  classifieds_reset_token: "4b61655535e7ed388f0d40a93600254c"

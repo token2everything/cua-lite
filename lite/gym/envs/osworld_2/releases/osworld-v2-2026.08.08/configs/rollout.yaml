@@ -1,0 +1,8 @@
+# Pass --env-id osworld_2.v2026_08_08 --task-id 054 --concurrency 1 --group-size 1.
+# Set OSWORLD_WORKER_CONNECTION to the private JSON returned by the OSWorld manage attach command.
+env_id: osworld_2.v2026_08_08
+env_kwargs:
+  max_steps: 200
+  post_action_delay: 0.2
+  extra_tools: [terminate, response, report_infeasible]
+  loop_detect: 0

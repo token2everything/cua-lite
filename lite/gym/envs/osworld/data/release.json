@@ -1,0 +1,7 @@
+{
+  "qcow2": {
+    "filename": "Ubuntu.qcow2",
+    "size": 24460197888,
+    "url": "https://huggingface.co/datasets/xlangai/ubuntu_osworld/resolve/main/Ubuntu.qcow2.zip"
+  }
+}

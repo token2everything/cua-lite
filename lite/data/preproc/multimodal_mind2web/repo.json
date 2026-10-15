@@ -1,0 +1,7 @@
+{
+  "description": "cua-lite preprocessed version of Multimodal-Mind2Web (osunlp/Multimodal-Mind2Web). The screenshot-augmented Mind2Web web-agent benchmark: real human-annotated multi-step navigation episodes across 100+ websites. Only the train split is processed (the test_task/test_website/test_domain benchmark holdouts are never trained on). Episodes containing a native <select> step are dropped (no native select tool in the cua-lite action space).",
+  "original_urls": ["https://huggingface.co/datasets/osunlp/Multimodal-Mind2Web"],
+  "license": "See original dataset (osunlp/Multimodal-Mind2Web).",
+  "citation": "See https://huggingface.co/datasets/osunlp/Multimodal-Mind2Web",
+  "extra_notes": "Train split only; test_* splits are benchmark holdouts and are not produced. Coordinates are the centre of the target element's bounding box, normalized to [0,1000]."
+}

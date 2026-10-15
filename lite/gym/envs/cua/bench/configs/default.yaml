@@ -1,0 +1,56 @@
+# cua.bench registration defaults — the single, visible source for values that used
+# to be bench/main.py constants. Read once at import via the shared resolver.
+# (cua.sandbox is a separate logic — a direct CuaSandboxEnv wrapper — with its OWN
+# co-located sandbox/configs/default.yaml, prefix CUA_SANDBOX, read the same way.)
+#   from lite.gym.utils import config as env_config
+#   CFG  = env_config.load(ENV_DIR)          # ENV_DIR = lite/gym/envs/cua/bench
+#   DCFG = CFG.for_override(dataset)         # base + this dataset's overrides (per-group deep merge)
+#
+# Override the WHOLE file at startup (no per-key merge — the file IS the config):
+#   export CUA_BENCH_CONFIG=/abs/path/variant.yaml   # absolute path
+#   export CUA_BENCH_CONFIG=somevariant              # → configs/somevariant.yaml
+#
+# Precedence (defaults only — a rollout's env_kwargs still override per run):
+#   rollout yaml env_kwargs  >  CUA_BENCH_CONFIG override  >  overrides[dataset]  >  base default
+env_var_prefix: CUA_BENCH
+
+make_kwargs:
+  # cua-bench screenshots are capture buffers without a native host cursor.
+  # Keep repaint env-owned: CuaBenchEnv tracks the dispatched cursor in pixels
+  # and composites only screenshots it returns.
+  cursor: true
+
+# --- Base defaults: apply to EVERY dataset unless an `overrides.<dataset>` block below
+#     overrides them (per-group deep merge via CFG.for_override). cua.bench is a GROWING suite —
+#     onboard a new dataset by dropping a block under `overrides:` with any env_kwarg /
+#     server_kwarg it needs; no code change. ---
+env_kwargs:
+  max_steps: 30                 # default budget (basic + any new dataset)
+  extra_tools: []               # opt-in; available: response, terminate
+  valid_actions: ["click", "type", "key", "mouse_move", "drag", "scroll", "wait"]
+  post_action_delay: 2.0        # asyncio.sleep after each step before re-grabbing the screenshot;
+                                #   desktop settle (match osworld / lite.osworld / lite.cuaworld). cua-bench's
+                                #   own step() screenshots with no delay, so we re-grab a settled frame.
+  # Native (cua.bench.local) desktop resolution — the cua-lite desktop convention
+  # (matches osworld / lite.osworld 1920×1080), forced on every native task's
+  # setup_config. The agent's [0,1000] click space is derived from the live
+  # screenshot, so coordinates map regardless. (cua.sandbox resolution is fixed by
+  # the cua image — the container runtime SDK exposes no setter.)
+  width: 1920
+  height: 1080
+
+server_kwargs:
+  base_image: "trycua/cua-xfce:latest"   # base every native cua.bench task boots (then installs its app)
+
+# --- Per-dataset overrides (per-group deep merge over the base above via CFG.for_override).
+#     List only what differs; omit a dataset (e.g. `basic`) to inherit the base. A
+#     new dataset may override ANY env_kwarg (max_steps, width/height) or
+#     server_kwarg (base_image) here. ---
+overrides:
+  kicad:
+    env_kwargs:
+      # 200-step budget matches the reference KiCad eval budget.
+      max_steps: 200
+  workflows:
+    env_kwargs:
+      max_steps: 100            # cua-bench runners.py default

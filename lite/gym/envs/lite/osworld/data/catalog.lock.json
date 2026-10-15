@@ -1,0 +1,25 @@
+{
+  "generated": true,
+  "sources": {
+    "asset_identity": "{\"component\":\"synth\",\"path\":\".\",\"repo\":\"cua-lite/lite.osworld-assets\",\"revision\":\"426008284b98a1ab13ef4addbc11bc2e99a3391d\"}",
+    "generator": "scripts/utils/tasks.sh"
+  },
+  "splits": {
+    "eval": {
+      "path": "eval.jsonl",
+      "rows": 369,
+      "sha256": "c6fea2868e34d46f65d4d1c590bbd03366be52e4b7dbb75faca722b1b9ee3937"
+    },
+    "train.perturb": {
+      "path": "train.perturb.jsonl",
+      "rows": 707,
+      "sha256": "1f5a1ad29fb545becd06140aafb12cd81a9b1b21b769d5e66ba8a0fdf9810640"
+    },
+    "train.synth": {
+      "path": "train.synth.jsonl",
+      "rows": 1722,
+      "sha256": "186cda2675adc9916bc700d44b17306df091cfa4b7735fb831d602c99ea1d9b9"
+    }
+  },
+  "version": 1
+}

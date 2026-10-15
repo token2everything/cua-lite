@@ -1,0 +1,31 @@
+# lite.osworld registration defaults. Read at import by env_config.load(ENV_DIR).
+# Override the WHOLE config at startup: LITE_OSWORLD_CONFIG=/path/to/your.yaml
+# (or a bare name -> configs/<name>.yaml). A rollout's env_kwargs still win per run.
+
+env_var_prefix: LITE_OSWORLD
+
+make_kwargs:                          # env-wide make defaults (applied via registry.set_env_make_kwargs)
+  step_timeout: 120.0                 # per-step wall-clock cap
+
+env_kwargs:
+  max_steps: 15
+  post_action_delay: 2.0
+  noise: false
+  seed: null                         # null = unseeded; eval registers a fixed per-task seed
+  extra_tools: []                    # opt-in (e.g. report_infeasible); rollout/eval yaml enables
+  computer:                          # the whole computer_config (env-init param)
+    image: "cua-lite/lite.osworld:latest"
+    display_resolution: [1920, 1080]   # -> VNC_RESOLUTION
+    # -> docker run --memory. 8GB, not 4: GIMP's GEGL filter ops need ~6.2GB
+    # peak on the stock 1578x948 task image (measured: OOM-killed at 2/3/4GB,
+    # completes at 6256MB when given 16GB, and does not grow past that). A
+    # container hitting this cap is SIGKILLed, which reads as an app crash: the
+    # dialog renders blank, GIMP vanishes, no crash log is written, and
+    # action-history never flushes, so filter tasks score 0 for what looks like
+    # an agent failure. ``free`` inside the container reports HOST RAM, so GIMP
+    # cannot self-limit -- the cap has to be right here.
+    memory: "8GB"
+    cpu: "2"                           # -> --cpus
+    timeout: 600                       # -> ready_timeout (boot-readiness ceiling)
+
+server_kwargs: {}   # no module-level infra env-vars; reaper/pool/admission are framework-owned

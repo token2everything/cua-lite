@@ -1,0 +1,1382 @@
+{
+  "bluecoins_1": {
+    "adb_query": null,
+    "app": "bluecoins",
+    "app_module_name": "bluecoins",
+    "category": "",
+    "instruction": "Could you tell me how much I spent on May 10, 2024?",
+    "judge_class_name": "bluecoins_1",
+    "metric_type": "query_detect",
+    "package": "com.rammigsoftware.bluecoins"
+  },
+  "bluecoins_10": {
+    "adb_query": null,
+    "app": "bluecoins",
+    "app_module_name": "bluecoins",
+    "category": "",
+    "instruction": "For May 14, 2024, record an expenditure of 256 CNY, marked as 'eating'.",
+    "judge_class_name": "bluecoins_10",
+    "metric_type": "operation",
+    "package": "com.rammigsoftware.bluecoins"
+  },
+  "bluecoins_11": {
+    "adb_query": null,
+    "app": "bluecoins",
+    "app_module_name": "bluecoins",
+    "category": "",
+    "instruction": "Adjust the expenditure on May 15, 2024, to 500 CNY.",
+    "judge_class_name": "bluecoins_11",
+    "metric_type": "operation",
+    "package": "com.rammigsoftware.bluecoins"
+  },
+  "bluecoins_12": {
+    "adb_query": null,
+    "app": "bluecoins",
+    "app_module_name": "bluecoins",
+    "category": "",
+    "instruction": "Shift the income entry from May 12th, 2024, to May 10th, 2024, and update the amount to 18,250 CNY.",
+    "judge_class_name": "bluecoins_12",
+    "metric_type": "operation",
+    "package": "com.rammigsoftware.bluecoins"
+  },
+  "bluecoins_13": {
+    "adb_query": null,
+    "app": "bluecoins",
+    "app_module_name": "bluecoins",
+    "category": "",
+    "instruction": "Switch the May 13, 2024, transaction from 'expense' to 'income' and add 'Gift' as the note.",
+    "judge_class_name": "bluecoins_13",
+    "metric_type": "operation",
+    "package": "com.rammigsoftware.bluecoins"
+  },
+  "bluecoins_14": {
+    "adb_query": null,
+    "app": "bluecoins",
+    "app_module_name": "bluecoins",
+    "category": "",
+    "instruction": "Change the type of the transaction on May 2, 2024, from 'income' to 'expense', adjust the amount to 520 CNY, and change the note to 'Wrong Operation'.",
+    "judge_class_name": "bluecoins_14",
+    "metric_type": "operation",
+    "package": "com.rammigsoftware.bluecoins"
+  },
+  "bluecoins_15": {
+    "adb_query": null,
+    "app": "bluecoins",
+    "app_module_name": "bluecoins",
+    "category": "",
+    "instruction": "Move the expense entry from May 12, 2024, to May 13, 2024, adjust the amount to 936.02 CNY, and update the note to 'Grocery Shopping'.",
+    "judge_class_name": "bluecoins_15",
+    "metric_type": "operation",
+    "package": "com.rammigsoftware.bluecoins"
+  },
+  "bluecoins_2": {
+    "adb_query": null,
+    "app": "bluecoins",
+    "app_module_name": "bluecoins",
+    "category": "",
+    "instruction": "What was the reason behind the 388.88 CNY I spent on May 3, 2024?",
+    "judge_class_name": "bluecoins_2",
+    "metric_type": "query_detect",
+    "package": "com.rammigsoftware.bluecoins"
+  },
+  "bluecoins_3": {
+    "adb_query": null,
+    "app": "bluecoins",
+    "app_module_name": "bluecoins",
+    "category": "",
+    "instruction": "How much did I shell out in total on May 6, 2024?",
+    "judge_class_name": "bluecoins_3",
+    "metric_type": "query_detect",
+    "package": "com.rammigsoftware.bluecoins"
+  },
+  "bluecoins_4": {
+    "adb_query": null,
+    "app": "bluecoins",
+    "app_module_name": "bluecoins",
+    "category": "",
+    "instruction": "How many transactions did I make all together on May 6, 2024?",
+    "judge_class_name": "bluecoins_4",
+    "metric_type": "query_detect",
+    "package": "com.rammigsoftware.bluecoins"
+  },
+  "bluecoins_5": {
+    "adb_query": null,
+    "app": "bluecoins",
+    "app_module_name": "bluecoins",
+    "category": "",
+    "instruction": "What's the total amount I spent on taxis this week?",
+    "judge_class_name": "bluecoins_5",
+    "metric_type": "query_detect",
+    "package": "com.rammigsoftware.bluecoins"
+  },
+  "bluecoins_6": {
+    "adb_query": null,
+    "app": "bluecoins",
+    "app_module_name": "bluecoins",
+    "category": "",
+    "instruction": "Log an expenditure of 512 CNY in the books.",
+    "judge_class_name": "bluecoins_6",
+    "metric_type": "operation",
+    "package": "com.rammigsoftware.bluecoins"
+  },
+  "bluecoins_7": {
+    "adb_query": null,
+    "app": "bluecoins",
+    "app_module_name": "bluecoins",
+    "category": "",
+    "instruction": "Record an income of 8000 CNY in the books, and mark it as 'salary'.",
+    "judge_class_name": "bluecoins_7",
+    "metric_type": "operation",
+    "package": "com.rammigsoftware.bluecoins"
+  },
+  "bluecoins_8": {
+    "adb_query": null,
+    "app": "bluecoins",
+    "app_module_name": "bluecoins",
+    "category": "",
+    "instruction": "Note down an expense of 768 CNY for May 11, 2024.",
+    "judge_class_name": "bluecoins_8",
+    "metric_type": "operation",
+    "package": "com.rammigsoftware.bluecoins"
+  },
+  "bluecoins_9": {
+    "adb_query": null,
+    "app": "bluecoins",
+    "app_module_name": "bluecoins",
+    "category": "",
+    "instruction": "For March 8, 2024, jot down an income of 3.14 CNY with 'Weixin red packet' as the note.",
+    "judge_class_name": "bluecoins_9",
+    "metric_type": "operation",
+    "package": "com.rammigsoftware.bluecoins"
+  },
+  "calendar_1": {
+    "adb_query": null,
+    "app": "calendar",
+    "app_module_name": "calendar",
+    "category": "",
+    "instruction": "I want to add an event at 5:00PM today, whose Title is \"work\".",
+    "judge_class_name": "calendar_1",
+    "metric_type": "operation",
+    "package": "com.skuld.calendario"
+  },
+  "calendar_10": {
+    "adb_query": null,
+    "app": "calendar",
+    "app_module_name": "calendar",
+    "category": "",
+    "instruction": "arrange an event \"this day\"",
+    "judge_class_name": "calendar_10",
+    "metric_type": "operation",
+    "package": "com.skuld.calendario"
+  },
+  "calendar_11": {
+    "adb_query": null,
+    "app": "calendar",
+    "app_module_name": "calendar",
+    "category": "",
+    "instruction": "edit the event titled \"this day\", and make it repeat weekly",
+    "judge_class_name": "calendar_11",
+    "metric_type": "operation",
+    "package": "com.skuld.calendario"
+  },
+  "calendar_12": {
+    "adb_query": null,
+    "app": "calendar",
+    "app_module_name": "calendar",
+    "category": "",
+    "instruction": "Help me add a note \"Hello\" to the event titled \"Today\".",
+    "judge_class_name": "calendar_12",
+    "metric_type": "operation",
+    "package": "com.skuld.calendario"
+  },
+  "calendar_13": {
+    "adb_query": null,
+    "app": "calendar",
+    "app_module_name": "calendar",
+    "category": "",
+    "instruction": "Arrange an event titled \"exam\".",
+    "judge_class_name": "calendar_13",
+    "metric_type": "operation",
+    "package": "com.skuld.calendario"
+  },
+  "calendar_14": {
+    "adb_query": null,
+    "app": "calendar",
+    "app_module_name": "calendar",
+    "category": "",
+    "instruction": "Edit the event titled \"exam\" and make it an all-day event.",
+    "judge_class_name": "calendar_14",
+    "metric_type": "operation",
+    "package": "com.skuld.calendario"
+  },
+  "calendar_2": {
+    "adb_query": null,
+    "app": "calendar",
+    "app_module_name": "calendar",
+    "category": "",
+    "instruction": "Arrange an event titled \"homework\" for me at May 21st, and set the notification time to be 10 minutes before.",
+    "judge_class_name": "calendar_2",
+    "metric_type": "operation",
+    "package": "com.skuld.calendario"
+  },
+  "calendar_3": {
+    "adb_query": null,
+    "app": "calendar",
+    "app_module_name": "calendar",
+    "category": "",
+    "instruction": "Help me arrange an event titled \"meeting\" at May 13th with note \"conference room B202\" .",
+    "judge_class_name": "calendar_3",
+    "metric_type": "operation",
+    "package": "com.skuld.calendario"
+  },
+  "calendar_4": {
+    "adb_query": null,
+    "app": "calendar",
+    "app_module_name": "calendar",
+    "category": "",
+    "instruction": "arrange an event which starts at 2024/6/1 and repeats monthly",
+    "judge_class_name": "calendar_4",
+    "metric_type": "operation",
+    "package": "com.skuld.calendario"
+  },
+  "calendar_5": {
+    "adb_query": null,
+    "app": "calendar",
+    "app_module_name": "calendar",
+    "category": "",
+    "instruction": "Edit the event with title \"work\", change the end time to be 7:00 PM.",
+    "judge_class_name": "calendar_5",
+    "metric_type": "operation",
+    "package": "com.skuld.calendario"
+  },
+  "calendar_6": {
+    "adb_query": null,
+    "app": "calendar",
+    "app_module_name": "calendar",
+    "category": "",
+    "instruction": "add the note \"classroom 101\" to the event \"homework\"",
+    "judge_class_name": "calendar_6",
+    "metric_type": "operation",
+    "package": "com.skuld.calendario"
+  },
+  "calendar_7": {
+    "adb_query": null,
+    "app": "calendar",
+    "app_module_name": "calendar",
+    "category": "",
+    "instruction": "change the notification time of event \"meeting\" to be 5 minutes before and 10 minutes before.",
+    "judge_class_name": "calendar_7",
+    "metric_type": "operation",
+    "package": "com.skuld.calendario"
+  },
+  "calendar_8": {
+    "adb_query": null,
+    "app": "calendar",
+    "app_module_name": "calendar",
+    "category": "",
+    "instruction": "Edit the event titled \"work\" and add a Note \"computer\" to it",
+    "judge_class_name": "calendar_8",
+    "metric_type": "operation",
+    "package": "com.skuld.calendario"
+  },
+  "calendar_9": {
+    "adb_query": null,
+    "app": "calendar",
+    "app_module_name": "calendar",
+    "category": "",
+    "instruction": "For the event titled \"work\", please help me set recurrence to be daily",
+    "judge_class_name": "calendar_9",
+    "metric_type": "operation",
+    "package": "com.skuld.calendario"
+  },
+  "cantook_1": {
+    "adb_query": null,
+    "app": "Cantook",
+    "app_module_name": "cantook",
+    "category": "",
+    "instruction": "Do I have Pride and Prejudice on my bookshelf?",
+    "judge_class_name": "cantook_1",
+    "metric_type": "query_detect",
+    "package": "Cantook"
+  },
+  "cantook_10": {
+    "adb_query": null,
+    "app": "Cantook",
+    "app_module_name": "cantook",
+    "category": "",
+    "instruction": "Open Romeo and Juliet.",
+    "judge_class_name": "cantook_10",
+    "metric_type": "operation",
+    "package": "Cantook"
+  },
+  "cantook_11": {
+    "adb_query": null,
+    "app": "Cantook",
+    "app_module_name": "cantook",
+    "category": "",
+    "instruction": "Open the category named 'Tragedies'.",
+    "judge_class_name": "cantook_11",
+    "metric_type": "operation",
+    "package": "Cantook"
+  },
+  "cantook_12": {
+    "adb_query": null,
+    "app": "Cantook",
+    "app_module_name": "cantook",
+    "category": "",
+    "instruction": "Create a new collection called \"Favorite\".",
+    "judge_class_name": "cantook_12",
+    "metric_type": "operation",
+    "package": "Cantook"
+  },
+  "cantook_2": {
+    "adb_query": null,
+    "app": "Cantook",
+    "app_module_name": "cantook",
+    "category": "",
+    "instruction": "What was the last book I recently read?",
+    "judge_class_name": "cantook_2",
+    "metric_type": "query_detect",
+    "package": "Cantook"
+  },
+  "cantook_3": {
+    "adb_query": null,
+    "app": "Cantook",
+    "app_module_name": "cantook",
+    "category": "",
+    "instruction": "Who is the author of the second book in my recently added?",
+    "judge_class_name": "cantook_3",
+    "metric_type": "query_detect",
+    "package": "Cantook"
+  },
+  "cantook_4": {
+    "adb_query": null,
+    "app": "Cantook",
+    "app_module_name": "cantook",
+    "category": "",
+    "instruction": "How many Charles Dickens books do I have?",
+    "judge_class_name": "cantook_4",
+    "metric_type": "query_detect",
+    "package": "Cantook"
+  },
+  "cantook_5": {
+    "adb_query": null,
+    "app": "Cantook",
+    "app_module_name": "cantook",
+    "category": "",
+    "instruction": "What is my progress in reading Romeo and Juliet?",
+    "judge_class_name": "cantook_5",
+    "metric_type": "query_detect",
+    "package": "Cantook"
+  },
+  "cantook_6": {
+    "adb_query": null,
+    "app": "Cantook",
+    "app_module_name": "cantook",
+    "category": "",
+    "instruction": "Import Alice's Advantures in Wonderland from folder /Download/Ebooks/.",
+    "judge_class_name": "cantook_6",
+    "metric_type": "operation",
+    "package": "Cantook"
+  },
+  "cantook_7": {
+    "adb_query": null,
+    "app": "Cantook",
+    "app_module_name": "cantook",
+    "category": "",
+    "instruction": "Delete Don Quixote from my books.",
+    "judge_class_name": "cantook_7",
+    "metric_type": "operation",
+    "package": "Cantook"
+  },
+  "cantook_8": {
+    "adb_query": null,
+    "app": "Cantook",
+    "app_module_name": "cantook",
+    "category": "",
+    "instruction": "Mark Hamlet as read.",
+    "judge_class_name": "cantook_8",
+    "metric_type": "operation",
+    "package": "Cantook"
+  },
+  "cantook_9": {
+    "adb_query": null,
+    "app": "Cantook",
+    "app_module_name": "cantook",
+    "category": "",
+    "instruction": "Mark the second book I recently read as unread.",
+    "judge_class_name": "cantook_9",
+    "metric_type": "operation",
+    "package": "Cantook"
+  },
+  "clock_1": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Alarm set",
+    "instruction": "Set an alarm for 3PM with the label \"meeting\" using Clock.",
+    "judge_class_name": "clock_1",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_10": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Alarm query",
+    "instruction": "What is my earliest alarm which is open?",
+    "judge_class_name": "clock_10",
+    "metric_type": "query_detect",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_11": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Alarm query",
+    "instruction": "Is there an alarm set on 4PM everyday?",
+    "judge_class_name": "clock_11",
+    "metric_type": "query_detect",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_12": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Alarm query",
+    "instruction": "Does my alarm at 4PM turn on vibrate?",
+    "judge_class_name": "clock_12",
+    "metric_type": "query_detect",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_13": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Alarm query",
+    "instruction": "How many alarms have been turned on?",
+    "judge_class_name": "clock_13",
+    "metric_type": "query_detect",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_14": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Alarm query",
+    "instruction": "Have my alarm at 9AM been turned on?",
+    "judge_class_name": "clock_14",
+    "metric_type": "query_detect",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_15": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Clock",
+    "instruction": "Add London and Barcelona time in clock",
+    "judge_class_name": "clock_15",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_16": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Clock",
+    "instruction": "Query the current time in Barcelona and the time difference with local time in clock",
+    "judge_class_name": "clock_16",
+    "metric_type": "query_detect",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_17": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Clock",
+    "instruction": "Delete Barcelona time from clock",
+    "judge_class_name": "clock_17",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_18": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Timer",
+    "instruction": "Set a countdown timer for 1 hour 15 minutes but do not start it",
+    "judge_class_name": "clock_18",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_19": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Bedtime",
+    "instruction": "Set bedtime for 10PM to sleep, wake up at 7AM",
+    "judge_class_name": "clock_19",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_2": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Alarm set",
+    "instruction": "Set an alarm for 6:45AM, disable vibrate and change ring song to Argon",
+    "judge_class_name": "clock_2",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_20": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Bedtime",
+    "instruction": "Set sleep sounds to deep space",
+    "judge_class_name": "clock_20",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_21": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Bedtime",
+    "instruction": "Turn on the Wake-up alarm in Bedtime",
+    "judge_class_name": "clock_21",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_22": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Clock Setting",
+    "instruction": "Set alarm style to Analog",
+    "judge_class_name": "clock_22",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_23": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Clock Setting",
+    "instruction": "Change home time zone to Tokyo in clock",
+    "judge_class_name": "clock_23",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_24": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Clock Setting",
+    "instruction": "Modify silence after to 5 minutes",
+    "judge_class_name": "clock_24",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_25": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "App",
+    "instruction": "Open clock app",
+    "judge_class_name": "clock_25",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_26": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Alarm set",
+    "instruction": "Close my 7:30AM alarm",
+    "judge_class_name": "clock_26",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_27": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Alarm set",
+    "instruction": "Set an alarm at 3PM",
+    "judge_class_name": "clock_27",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_3": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Alarm set",
+    "instruction": "Help me set an alarm every Monday to Friday, 7AM in morning",
+    "judge_class_name": "clock_3",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_4": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Alarm set",
+    "instruction": "Change my clock at 9AM, make it ring everyday",
+    "judge_class_name": "clock_4",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_5": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Alarm set",
+    "instruction": "Help me set an alarm at 10:30AM tomorrow",
+    "judge_class_name": "clock_5",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_6": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Alarm set",
+    "instruction": "I need to set a 10:30PM clock every weekend, and label it as \"Watch Football Games\" to remind me",
+    "judge_class_name": "clock_6",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_7": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Alarm set",
+    "instruction": "Turn off all alarms",
+    "judge_class_name": "clock_7",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_8": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Alarm set",
+    "instruction": "Delete all alarms after 2PM",
+    "judge_class_name": "clock_8",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "clock_9": {
+    "adb_query": null,
+    "app": "clock",
+    "app_module_name": "clock",
+    "category": "Alarm set",
+    "instruction": "Turn off the alarm at 4PM",
+    "judge_class_name": "clock_9",
+    "metric_type": "operation",
+    "package": "com.google.android.deskclock"
+  },
+  "contacts_1": {
+    "adb_query": null,
+    "app": "Contacts",
+    "app_module_name": "contacts",
+    "category": "add contacts' information",
+    "instruction": "Add John as a contacts and set his mobile phone number to be 12345678",
+    "judge_class_name": "contacts_1",
+    "metric_type": "operation",
+    "package": "com.google.android.contacts"
+  },
+  "contacts_10": {
+    "adb_query": null,
+    "app": "Contacts",
+    "app_module_name": "contacts",
+    "category": "call or message",
+    "instruction": "Call ABC",
+    "judge_class_name": "contacts_10",
+    "metric_type": "operation",
+    "package": "com.google.android.contacts"
+  },
+  "contacts_11": {
+    "adb_query": null,
+    "app": "Contacts",
+    "app_module_name": "contacts",
+    "category": "modify contacts' information",
+    "instruction": "Delete contacts AAA",
+    "judge_class_name": "contacts_11",
+    "metric_type": "operation",
+    "package": "com.google.android.contacts"
+  },
+  "contacts_12": {
+    "adb_query": null,
+    "app": "Contacts",
+    "app_module_name": "contacts",
+    "category": "check contacts' information",
+    "instruction": "What is ABC's phone number",
+    "judge_class_name": "contacts_12",
+    "metric_type": "query_detect",
+    "package": "com.google.android.contacts"
+  },
+  "contacts_13": {
+    "adb_query": null,
+    "app": "Contacts",
+    "app_module_name": "contacts",
+    "category": "check contacts' information",
+    "instruction": "Check Li's working email in contacts",
+    "judge_class_name": "contacts_13",
+    "metric_type": "query_detect",
+    "package": "com.google.android.contacts"
+  },
+  "contacts_14": {
+    "adb_query": null,
+    "app": "Contacts",
+    "app_module_name": "contacts",
+    "category": "check contacts' information",
+    "instruction": "When is ABC's birthday?",
+    "judge_class_name": "contacts_14",
+    "metric_type": "query_detect",
+    "package": "com.google.android.contacts"
+  },
+  "contacts_15": {
+    "adb_query": null,
+    "app": "Contacts",
+    "app_module_name": "contacts",
+    "category": "check contacts' information",
+    "instruction": "What is AAA's company?",
+    "judge_class_name": "contacts_15",
+    "metric_type": "query_detect",
+    "package": "com.google.android.contacts"
+  },
+  "contacts_2": {
+    "adb_query": null,
+    "app": "Contacts",
+    "app_module_name": "contacts",
+    "category": "add contacts' information",
+    "instruction": "Add a contacts whose first name is \"John\", last name is \"Smith\", mobile phone number is 12345678, and working email as 123456@gmail.com",
+    "judge_class_name": "contacts_2",
+    "metric_type": "operation",
+    "package": "com.google.android.contacts"
+  },
+  "contacts_3": {
+    "adb_query": null,
+    "app": "Contacts",
+    "app_module_name": "contacts",
+    "category": "add contacts' information",
+    "instruction": "Add a contacts whose name is Xu, set the working phone number to be 12345678 and mobile phone number to be 87654321",
+    "judge_class_name": "contacts_3",
+    "metric_type": "operation",
+    "package": "com.google.android.contacts"
+  },
+  "contacts_4": {
+    "adb_query": null,
+    "app": "Contacts",
+    "app_module_name": "contacts",
+    "category": "add contacts' information",
+    "instruction": "Add a contacts named Chen, whose company is Tsinghua University",
+    "judge_class_name": "contacts_4",
+    "metric_type": "operation",
+    "package": "com.google.android.contacts"
+  },
+  "contacts_5": {
+    "adb_query": null,
+    "app": "Contacts",
+    "app_module_name": "contacts",
+    "category": "add contacts' information",
+    "instruction": "Create a new label as work, and add AAA\u3001ABC into it",
+    "judge_class_name": "contacts_5",
+    "metric_type": "operation",
+    "package": "com.google.android.contacts"
+  },
+  "contacts_6": {
+    "adb_query": null,
+    "app": "Contacts",
+    "app_module_name": "contacts",
+    "category": "modify contacts' information",
+    "instruction": "Add a work phone number 00112233 to contacts ABC",
+    "judge_class_name": "contacts_6",
+    "metric_type": "operation",
+    "package": "com.google.android.contacts"
+  },
+  "contacts_7": {
+    "adb_query": null,
+    "app": "Contacts",
+    "app_module_name": "contacts",
+    "category": "modify contacts' information",
+    "instruction": "Add birthday to AAA as 1996/10/24",
+    "judge_class_name": "contacts_7",
+    "metric_type": "operation",
+    "package": "com.google.android.contacts"
+  },
+  "contacts_8": {
+    "adb_query": null,
+    "app": "Contacts",
+    "app_module_name": "contacts",
+    "category": "modify contacts' information",
+    "instruction": "Set contacts ABC's website to be abc.github.com",
+    "judge_class_name": "contacts_8",
+    "metric_type": "operation",
+    "package": "com.google.android.contacts"
+  },
+  "contacts_9": {
+    "adb_query": null,
+    "app": "Contacts",
+    "app_module_name": "contacts",
+    "category": "call or message",
+    "instruction": "Edit a message to ABC, whose content is \"Nice to meet you\", but do not send it",
+    "judge_class_name": "contacts_9",
+    "metric_type": "operation",
+    "package": "com.google.android.contacts"
+  },
+  "map_1": {
+    "adb_query": null,
+    "app": "map.me",
+    "app_module_name": "map_me",
+    "category": "",
+    "instruction": "Check the walking distance and time between Bus Stop of Stanford Campus Oval and Bus Stop of Oxford Street & University Avenue",
+    "judge_class_name": "map_1",
+    "metric_type": "query_detect",
+    "package": "com.mapswithme.maps.pro"
+  },
+  "map_10": {
+    "adb_query": null,
+    "app": "map.me",
+    "app_module_name": "map_me",
+    "category": "",
+    "instruction": "Check the nearest IKEA, and tell me how long it will take to drive to the IKEA",
+    "judge_class_name": "map_10",
+    "metric_type": "query_detect",
+    "package": "com.mapswithme.maps.pro"
+  },
+  "map_11": {
+    "adb_query": null,
+    "app": "map.me",
+    "app_module_name": "map_me",
+    "category": "",
+    "instruction": "Add the address of openai to my Work place",
+    "judge_class_name": "map_11",
+    "metric_type": "operation",
+    "package": "com.mapswithme.maps.pro"
+  },
+  "map_12": {
+    "adb_query": null,
+    "app": "map.me",
+    "app_module_name": "map_me",
+    "category": "",
+    "instruction": "Navigate from my location to Stanford University",
+    "judge_class_name": "map_12",
+    "metric_type": "operation",
+    "package": "com.mapswithme.maps.pro"
+  },
+  "map_13": {
+    "adb_query": null,
+    "app": "map.me",
+    "app_module_name": "map_me",
+    "category": "",
+    "instruction": "Navigate from my location to University South",
+    "judge_class_name": "map_13",
+    "metric_type": "operation",
+    "package": "com.mapswithme.maps.pro"
+  },
+  "map_14": {
+    "adb_query": null,
+    "app": "map.me",
+    "app_module_name": "map_me",
+    "category": "",
+    "instruction": "Navigate from my location to OpenAI",
+    "judge_class_name": "map_14",
+    "metric_type": "operations",
+    "package": "com.mapswithme.maps.pro"
+  },
+  "map_15": {
+    "adb_query": null,
+    "app": "map.me",
+    "app_module_name": "map_me",
+    "category": "",
+    "instruction": "Navigate from my location to University of California, Berkeley",
+    "judge_class_name": "map_15",
+    "metric_type": "operation",
+    "package": "com.mapswithme.maps.pro"
+  },
+  "map_2": {
+    "adb_query": null,
+    "app": "map.me",
+    "app_module_name": "map_me",
+    "category": "",
+    "instruction": "Check the driving distance and time between Bus stop of 2700 Coast Avenue and Bus Stop Route 51",
+    "judge_class_name": "map_2",
+    "metric_type": "query_detect",
+    "package": "com.mapswithme.maps.pro"
+  },
+  "map_3": {
+    "adb_query": null,
+    "app": "map.me",
+    "app_module_name": "map_me",
+    "category": "",
+    "instruction": "Check the riding time between Bus Stop of Stanford Campus Oval and Bus Stop of Oxford Street & University Avenue",
+    "judge_class_name": "map_3",
+    "metric_type": "query_detect",
+    "package": "com.mapswithme.maps.pro"
+  },
+  "map_4": {
+    "adb_query": null,
+    "app": "map.me",
+    "app_module_name": "map_me",
+    "category": "",
+    "instruction": "Check the route by public transportation between Bus stop of 2700 Coast Avenue and Bus Stop Route 51",
+    "judge_class_name": "map_4",
+    "metric_type": "query_detect",
+    "package": "com.mapswithme.maps.pro"
+  },
+  "map_5": {
+    "adb_query": null,
+    "app": "map.me",
+    "app_module_name": "map_me",
+    "category": "",
+    "instruction": "Compare which takes less time to travel between Bus stop of 2700 Coast Avenue and Bus Stop Route 51, by riding or by public transportation?",
+    "judge_class_name": "map_5",
+    "metric_type": "query_detect",
+    "package": "com.mapswithme.maps.pro"
+  },
+  "map_6": {
+    "adb_query": null,
+    "app": "map.me",
+    "app_module_name": "map_me",
+    "category": "",
+    "instruction": "Compare which takes less time to travel between Bus Stop of Stanford Campus Oval and Bus Stop of Oxford Street & University Avenue, by riding or by public transportation?",
+    "judge_class_name": "map_6",
+    "metric_type": "query_detect",
+    "package": "com.mapswithme.maps.pro"
+  },
+  "map_7": {
+    "adb_query": null,
+    "app": "map.me",
+    "app_module_name": "map_me",
+    "category": "",
+    "instruction": "Check the nearest restaurant and tell me what is it",
+    "judge_class_name": "map_7",
+    "metric_type": "query_detect",
+    "package": "com.mapswithme.maps.pro"
+  },
+  "map_8": {
+    "adb_query": null,
+    "app": "map.me",
+    "app_module_name": "map_me",
+    "category": "",
+    "instruction": "Check the nearest restaurant, and tell me the time it will take to walk to the restaurant.",
+    "judge_class_name": "map_8",
+    "metric_type": "query_detect",
+    "package": "com.mapswithme.maps.pro"
+  },
+  "map_9": {
+    "adb_query": null,
+    "app": "map.me",
+    "app_module_name": "map_me",
+    "category": "",
+    "instruction": "Check the nearest hotel, tell me what is it",
+    "judge_class_name": "map_9",
+    "metric_type": "query_detect",
+    "package": "com.mapswithme.maps.pro"
+  },
+  "pimusic_1": {
+    "adb_query": null,
+    "app": "Pi Music Player",
+    "app_module_name": "pimusic",
+    "category": "",
+    "instruction": "Tell me how many songs do I have in total?",
+    "judge_class_name": "pimusic_1",
+    "metric_type": "query_detect",
+    "package": "com.Project100Pi.themusicplayer"
+  },
+  "pimusic_10": {
+    "adb_query": null,
+    "app": "Pi Music Player",
+    "app_module_name": "pimusic",
+    "category": "",
+    "instruction": "Pause the currently playing song and seek to 1 minute and 27 seconds.",
+    "judge_class_name": "pimusic_10",
+    "metric_type": "operation",
+    "package": "com.Project100Pi.themusicplayer"
+  },
+  "pimusic_11": {
+    "adb_query": null,
+    "app": "Pi Music Player",
+    "app_module_name": "pimusic",
+    "category": "",
+    "instruction": "Play Lightship by Sonny Boy.",
+    "judge_class_name": "pimusic_11",
+    "metric_type": "operation",
+    "package": "com.Project100Pi.themusicplayer"
+  },
+  "pimusic_12": {
+    "adb_query": null,
+    "app": "Pi Music Player",
+    "app_module_name": "pimusic",
+    "category": "",
+    "instruction": "Sort the songs by duration time in ascending order.",
+    "judge_class_name": "pimusic_12",
+    "metric_type": "operation",
+    "package": "com.Project100Pi.themusicplayer"
+  },
+  "pimusic_2": {
+    "adb_query": null,
+    "app": "Pi Music Player",
+    "app_module_name": "pimusic",
+    "category": "",
+    "instruction": "Help me check how many Pink Floyd's songs do I have?",
+    "judge_class_name": "pimusic_2",
+    "metric_type": "query_detect",
+    "package": "com.Project100Pi.themusicplayer"
+  },
+  "pimusic_3": {
+    "adb_query": null,
+    "app": "Pi Music Player",
+    "app_module_name": "pimusic",
+    "category": "",
+    "instruction": "What is the album name of the song Wish You Were Here?",
+    "judge_class_name": "pimusic_3",
+    "metric_type": "query_detect",
+    "package": "com.Project100Pi.themusicplayer"
+  },
+  "pimusic_4": {
+    "adb_query": null,
+    "app": "Pi Music Player",
+    "app_module_name": "pimusic",
+    "category": "",
+    "instruction": "What is the duration time of the longest song by Pink Floyd?",
+    "judge_class_name": "pimusic_4",
+    "metric_type": "query_detect",
+    "package": "com.Project100Pi.themusicplayer"
+  },
+  "pimusic_5": {
+    "adb_query": null,
+    "app": "Pi Music Player",
+    "app_module_name": "pimusic",
+    "category": "",
+    "instruction": "Sort the songs by title in ascending order. What are the second and fourth songs?",
+    "judge_class_name": "pimusic_5",
+    "metric_type": "query_detect",
+    "package": "com.Project100Pi.themusicplayer"
+  },
+  "pimusic_6": {
+    "adb_query": null,
+    "app": "Pi Music Player",
+    "app_module_name": "pimusic",
+    "category": "",
+    "instruction": "What is the total duration time of all of Eason Chan's songs?",
+    "judge_class_name": "pimusic_6",
+    "metric_type": "query_detect",
+    "package": "com.Project100Pi.themusicplayer"
+  },
+  "pimusic_7": {
+    "adb_query": null,
+    "app": "Pi Music Player",
+    "app_module_name": "pimusic",
+    "category": "",
+    "instruction": "Play the first song in 'Favorite' playlist.",
+    "judge_class_name": "pimusic_7",
+    "metric_type": "operation",
+    "package": "com.Project100Pi.themusicplayer"
+  },
+  "pimusic_8": {
+    "adb_query": null,
+    "app": "Pi Music Player",
+    "app_module_name": "pimusic",
+    "category": "",
+    "instruction": "Sort Pink Floyd's songs by duration time in descending order.",
+    "judge_class_name": "pimusic_8",
+    "metric_type": "operation",
+    "package": "com.Project100Pi.themusicplayer"
+  },
+  "pimusic_9": {
+    "adb_query": null,
+    "app": "Pi Music Player",
+    "app_module_name": "pimusic",
+    "category": "",
+    "instruction": "Create a playlist named 'Creepy' for me.",
+    "judge_class_name": "pimusic_9",
+    "metric_type": "operation",
+    "package": "com.Project100Pi.themusicplayer"
+  },
+  "setting_0": {
+    "adb_query": "adb shell settings get global airplane_mode_on",
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "Network",
+    "instruction": "Turn on airplane mode of my phone",
+    "judge_class_name": "setting_0",
+    "metric_type": "query_detect",
+    "package": "com.android.settings"
+  },
+  "setting_1": {
+    "adb_query": null,
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "Network",
+    "instruction": "I do not want turn on wifi automatically, turn it off",
+    "judge_class_name": "setting_1",
+    "metric_type": "operation",
+    "package": "com.android.settings"
+  },
+  "setting_10": {
+    "adb_query": "adb shell settings list system | grep volume_alarm_speaker",
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "Sound",
+    "instruction": "Set my alarm volume to max",
+    "judge_class_name": "setting_10",
+    "metric_type": "query_detect",
+    "package": "com.android.settings"
+  },
+  "setting_11": {
+    "adb_query": null,
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "Sound",
+    "instruction": "Change text-to-speech language to Chinese",
+    "judge_class_name": "setting_11",
+    "metric_type": "query_detect",
+    "package": "com.android.settings"
+  },
+  "setting_12": {
+    "adb_query": null,
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "Time",
+    "instruction": "Set current time of my phone to 2024-5-1",
+    "judge_class_name": "setting_12",
+    "metric_type": "query_detect",
+    "package": "com.android.settings"
+  },
+  "setting_13": {
+    "adb_query": null,
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "Sound",
+    "instruction": "Turn off Ring vibration",
+    "judge_class_name": "setting_13",
+    "metric_type": "operation",
+    "package": "com.android.settings"
+  },
+  "setting_14": {
+    "adb_query": "adb shell 'getprop persist.sys.timezone'",
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "Time",
+    "instruction": "What is my time zone",
+    "judge_class_name": "setting_14",
+    "metric_type": "query_detect",
+    "package": "com.android.settings"
+  },
+  "setting_15": {
+    "adb_query": null,
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "Language",
+    "instruction": "Add Espa\u00f1ol (Estados Unidos) as second favorite languages",
+    "judge_class_name": "setting_15",
+    "metric_type": "operation",
+    "package": "com.android.settings"
+  },
+  "setting_16": {
+    "adb_query": null,
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "Language",
+    "instruction": "What is the primary language of my phone",
+    "judge_class_name": "setting_16",
+    "metric_type": "query_detect",
+    "package": "com.android.settings"
+  },
+  "setting_17": {
+    "adb_query": "adb shell getprop ro.build.version.release",
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "Language",
+    "instruction": "Check Android Version",
+    "judge_class_name": "setting_17",
+    "metric_type": "query_detect",
+    "package": "com.android.settings"
+  },
+  "setting_18": {
+    "adb_query": null,
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "App notifications",
+    "instruction": "Disable Contacts' APP notifications",
+    "judge_class_name": "setting_18",
+    "metric_type": "operation",
+    "package": "com.android.settings"
+  },
+  "setting_19": {
+    "adb_query": null,
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "APP",
+    "instruction": "Check my default browser and change it to firefox",
+    "judge_class_name": "setting_19",
+    "metric_type": "operation",
+    "package": "com.android.settings"
+  },
+  "setting_2": {
+    "adb_query": null,
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "Network",
+    "instruction": "set private DNS to dns.google",
+    "judge_class_name": "setting_2",
+    "metric_type": "operation",
+    "package": "com.android.settings"
+  },
+  "setting_20": {
+    "adb_query": "adb shell pm list packages | grep 'com.booking'",
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "APP",
+    "instruction": "uninstall booking app",
+    "judge_class_name": "setting_20",
+    "metric_type": "operation",
+    "package": "com.android.settings"
+  },
+  "setting_21": {
+    "adb_query": null,
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "APP",
+    "instruction": "Open settings",
+    "judge_class_name": "setting_21",
+    "metric_type": "operation",
+    "package": "com.android.settings"
+  },
+  "setting_22": {
+    "adb_query": "adb shell settings get global airplane_mode_on",
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "APP",
+    "instruction": "Does my airplane mode open or not",
+    "judge_class_name": "setting_22",
+    "metric_type": "operation",
+    "package": "com.android.settings"
+  },
+  "setting_3": {
+    "adb_query": "adb shell settings get global bluetooth_on",
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "Bluetooth",
+    "instruction": "Turn off my bluetooth",
+    "judge_class_name": "setting_3",
+    "metric_type": "operation",
+    "package": "com.android.settings"
+  },
+  "setting_4": {
+    "adb_query": null,
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "Bluetooth",
+    "instruction": "change my bluetooth device name to \"my AVD\"",
+    "judge_class_name": "setting_4",
+    "metric_type": "operation",
+    "package": "com.android.settings"
+  },
+  "setting_5": {
+    "adb_query": null,
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "Battery",
+    "instruction": "Show battery percentage in status bar",
+    "judge_class_name": "setting_5",
+    "metric_type": "operation",
+    "package": "com.android.settings"
+  },
+  "setting_6": {
+    "adb_query": null,
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "Storage",
+    "instruction": "How much storage does Apps use",
+    "judge_class_name": "setting_6",
+    "metric_type": "query_detect",
+    "package": "com.android.settings"
+  },
+  "setting_7": {
+    "adb_query": null,
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "Display",
+    "instruction": "Turn my phone to Dark theme",
+    "judge_class_name": "setting_7",
+    "metric_type": "operation",
+    "package": "com.android.settings"
+  },
+  "setting_8": {
+    "adb_query": null,
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "Display",
+    "instruction": "Change my Brightness level to 0%",
+    "judge_class_name": "setting_8",
+    "metric_type": "operation",
+    "package": "com.android.settings"
+  },
+  "setting_9": {
+    "adb_query": "adb shell settings list system | grep volume_ring_speaker",
+    "app": "Settings",
+    "app_module_name": "setting",
+    "category": "Sound",
+    "instruction": "I need to close down my Ring & notification volume to 0%",
+    "judge_class_name": "setting_9",
+    "metric_type": "query_detect",
+    "package": "com.android.settings"
+  },
+  "zoom_1": {
+    "adb_query": null,
+    "app": "zoom",
+    "app_module_name": "zoom",
+    "category": "",
+    "instruction": "Join meeting 1234567890. (You should not click join button, and leave it to user)",
+    "judge_class_name": "zoom_1",
+    "metric_type": "operation",
+    "package": "us.zoom.videomeetings"
+  },
+  "zoom_2": {
+    "adb_query": null,
+    "app": "zoom",
+    "app_module_name": "zoom",
+    "category": "",
+    "instruction": "Join meeting 0987654321, and set my name as 'Alice'. (You should not click join button, and leave it to user)",
+    "judge_class_name": "zoom_2",
+    "metric_type": "operation",
+    "package": "us.zoom.videomeetings"
+  },
+  "zoom_3": {
+    "adb_query": null,
+    "app": "zoom",
+    "app_module_name": "zoom",
+    "category": "",
+    "instruction": "I need to join meeting 1234567890 without audio and video. (You should not click join button, and leave it to user)",
+    "judge_class_name": "zoom_3",
+    "metric_type": "operation",
+    "package": "us.zoom.videomeetings"
+  },
+  "zoom_4": {
+    "adb_query": null,
+    "app": "zoom",
+    "app_module_name": "zoom",
+    "category": "",
+    "instruction": "Set auto connect to audio when wifi is connected in zoom settings.",
+    "judge_class_name": "zoom_4",
+    "metric_type": "operation",
+    "package": "us.zoom.videomeetings"
+  },
+  "zoom_5": {
+    "adb_query": null,
+    "app": "zoom",
+    "app_module_name": "zoom",
+    "category": "",
+    "instruction": "Change my reaction skin to Medium-light in zoom settings.",
+    "judge_class_name": "zoom_5",
+    "metric_type": "operation",
+    "package": "us.zoom.videomeetings"
+  }
+}

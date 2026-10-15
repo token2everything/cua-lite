@@ -1,0 +1,59 @@
+# gym-anything (CUAWorld) registration defaults. Read once at import by
+# config.load(ENV_DIR) in software.py. Swap the WHOLE config at startup with
+# LITE_CUAWORLD_CONFIG=<abs-path | bundled-name>; a bare name resolves under
+# configs/, which ships this file only, so use an absolute path to override.
+# A rollout's env_kwargs still win per run; these are only registration defaults.
+#
+# Per-software values that legitimately VARY (cpu, and gpu for blender3d)
+# are hardcoded at register_cuaworld_software(...) in main.py — the spec's
+# "register(...) hardcode for benchmark-varying values". This file holds only the
+# SHARED baseline every lite.cuaworld.<software> starts from.
+
+env_var_prefix: LITE_CUAWORLD
+
+make_kwargs:                 # env-wide make defaults (applied via registry.set_env_make_kwargs)
+  step_timeout: 1800.0       # total action + terminal verification deadline
+  reset_timeout: 600.0       # cold reset and warm pre-boot post_start share this deadline
+
+env_kwargs:
+  # VLM judge. The judged-task share is detector-dependent; run the current census
+  # before quoting a percentage or count. A misconfigured or under-provisioned judge
+  # is still mass false-negatives on this env, not a slow run.
+  #
+  # The MODEL ID IS THE ONLY REQUIRED SETTING and it belongs here, not hardcoded.
+  # litellm infers the provider from the id and resolves credentials/base URL
+  # from the evaluator process environment. For the default GPT route, export
+  # OPENAI_API_KEY and set OPENAI_BASE_URL only for a custom endpoint. Override
+  # per run with VLM_MODEL, or point elsewhere with VLM_BASE_URL / VLM_API_KEY.
+  #
+  # BEFORE CHANGING THIS, check the deployment's RPM headroom at your concurrency.
+  # webgym measured a judge deployment without it 429ing at concurrency 32: the 429s
+  # get swallowed and the eval comes back corrupted or timed out (11/24 completed,
+  # 13 ERR, 96×429 — see lite/gym/envs/webgym/configs/default.yaml, which also has the
+  # sem_judge cap and request batching this env does not yet have).
+  judge:
+    model: "gpt-5.5"         # same id the agent rolls out with (--model-id gpt-5.5)
+  n_tasks: 5                 # fallback sample size when a materials registered.json is absent
+  post_action_delay: 2.0     # asyncio.sleep after each action before the screenshot; desktop apps
+                             #   render slowly (match lite.osworld / osworld — 1s leaves stale frames)
+  computer:                  # shared container baseline; main.py overrides cpu (and gpus for blender3d).
+                             #   NOT memory: a per-software memory= would have to EXCEED this baseline to
+                             #   mean anything, and _resolve_memory already raises it to a larger declared
+                             #   resources.mem_gb on its own.
+    display_resolution: [1920, 1080]
+    # -> docker run --memory. 8GB by the same POLICY as lite.osworld (a desktop
+    # app can peak past 4GB and be SIGKILLed, which reads as an app crash rather
+    # than a cap -- see the note in
+    # /lite/gym/envs/lite/osworld/configs/default.yaml). Not a shared image:
+    # cuaworld builds on lite.cuaworld.base (sandbox Dockerfile.linux, FROM
+    # ubuntu:22.04), so the number is copied deliberately, not inherited.
+    memory: "8GB"
+    cpu: "2"                 # -> --cpus
+    timeout: 180             # boot-readiness ceiling (DockerProvisioner poll)
+    # image is derived per-software as cua-lite/lite.cuaworld.<software>:latest (not a yaml knob)
+
+server_kwargs:               # framework-owned (reaper/admission) except the declared recycle cap:
+  # gym-anything contract: fresh runner per episode (see software.py's
+  # reset_to_pristine: a runner that already served an episode is never
+  # rolled back; a never-ran one is kept).
+  max_resets_per_container: 0

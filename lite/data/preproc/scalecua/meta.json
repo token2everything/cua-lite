@@ -1,0 +1,2466 @@
+{
+    "android_action_grounding_20250328": {
+      "root": "data/data_20250328/android/images/",
+      "annotation": "annotations/data_20250328_android_filter_action_grounding_20250405_202507011.jsonl",
+      "conv_style": "internvl2_5_android_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_action_grounding",
+      "language": false
+    },
+    "windows_action_grounding_20250328": {
+      "root": "data/data_20250328/windows",
+      "annotation": "annotations/data_20250328_windows_action_grounding_20250409_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "web_action_grounding_20250328": {
+      "root": "data/data_20250328/web_25k/images",
+      "annotation": "annotations/data_20250328_web_25k_action_grounding_20250404_202507011.jsonl",
+      "conv_style": "internvl2_5_web_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "web_action_grounding",
+      "language": false
+    },
+    "ubuntu_action_grounding_20250310": {
+      "root": "data/data_20250310/ubuntu/",
+      "annotation": "annotations/data_20250310_ubuntu_action_grounding_20250407_202507011.jsonl",
+      "conv_style": "internvl2_5_ubuntu_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "ubuntu_action_grounding",
+      "language": false
+    },
+    "ubuntu_action_grounding_20250317": {
+      "root": "data/data_20250317/ubuntu/images/",
+      "annotation": "annotations/data_20250317_ubuntu_action_grounding_20250407_202507011.jsonl",
+      "conv_style": "internvl2_5_ubuntu_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "ubuntu_action_grounding",
+      "language": false
+    },
+    "windows_action_grounding_20250317": {
+      "root": "data/data_20250317/windows/images",
+      "annotation": "annotations/data_20250317_windows_action_grounding_20250421_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_crop_action_grounding_20250317": {
+      "root": "data/data_20250317/windows/images",
+      "annotation": "annotations/data_20250317_windows_crop_action_grounding_20250421_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_action_grounding_20250310": {
+      "root": "data/data_20250310/windows/images",
+      "annotation": "annotations/data_20250310_windows_action_grounding_20250421_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_crop_action_grounding_20250310": {
+      "root": "data/data_20250310/windows/images",
+      "annotation": "annotations/data_20250310_windows_crop_action_grounding_20250421_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "mac_action_grounding_20250407": {
+      "root": "data/data_20250407/mac/images",
+      "annotation": "annotations/data_20250407_mac_action_grounding_20250410_202507011.jsonl",
+      "conv_style": "internvl2_5_macos_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "mac_action_grounding",
+      "language": false
+    },
+    "iphone_action_grounding_20250407": {
+      "root": "data/data_20250407/iphone/white/images/",
+      "annotation": "annotations/data_20250407_iphone_white_action_grounding_20250410_202507011.jsonl",
+      "conv_style": "internvl2_5_iphone_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "iphone_action_grounding",
+      "language": false
+    },
+    "web_action_grounding_20250407": {
+      "root": "data/data_20250407/web/images/",
+      "annotation": "annotations/data_20250407_web_action_grounding_20250414_202507011.jsonl",
+      "conv_style": "internvl2_5_web_grounding_v1",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "web_action_grounding",
+      "language": false
+    },
+    "android_action_grounding_20250407": {
+      "root": "data/data_20250407/android",
+      "annotation": "annotations/data_20250407_android_action_grounding_20250410_202507011.jsonl",
+      "conv_style": "internvl2_5_android_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_action_grounding",
+      "language": false
+    },
+    "windows_action_grounding_20250407": {
+      "root": "data/data_20250407/windows/images",
+      "annotation": "annotations/data_20250407_windows_action_grounding_20250416_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_human_action_grounding_20250407": {
+      "root": "data/data_20250407/windows/images",
+      "annotation": "annotations/data_20250407_windows_human_action_grounding_20250416_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 3,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_human_action_grounding",
+      "language": false
+    },
+    "windows_aug_cropping_action_grounding_20250407": {
+      "root": "data/data_20250407/windows/images",
+      "annotation": "annotations/data_20250407_windows_sub_action_grounding_20250421_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_cropping_action_grounding",
+      "language": false
+    },
+    "iphone_action_grounding_20250414": {
+      "root": "data/data_20250414/iphone/images",
+      "annotation": "annotations/data_20250414_iphone_action_grounding_20250417_202507011.jsonl",
+      "conv_style": "internvl2_5_all_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "iphone_action_grounding",
+      "language": false
+    },
+    "iphone_human_action_grounding_20250414": {
+      "root": "data/data_20250414/iphone/images",
+      "annotation": "annotations/data_20250414_iphone_human_action_grounding_20250421_202507011.jsonl",
+      "conv_style": "internvl2_5_all_grounding_v1",
+      "repeat_time": 3,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "iphone_human_action_grounding",
+      "language": false
+    },
+    "mac_human_action_grounding_20250414": {
+      "root": "data/data_20250414/mac/images",
+      "annotation": "annotations/data_20250414_mac_human_action_grounding_20250418_202507011.jsonl",
+      "conv_style": "internvl2_5_all_grounding_v1",
+      "repeat_time": 3,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "mac_human_action_grounding",
+      "language": false
+    },
+    "android_action_grounding_20250421": {
+      "root": "data/data_20250421/Android",
+      "annotation": "annotations/data_20250421_Android_action_grounding_20250429_202507011.jsonl",
+      "conv_style": "internvl2_5_android_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_action_grounding",
+      "language": false
+    },
+    "android_action_grounding_20250428": {
+      "root": "data/data_20250428/Android",
+      "annotation": "annotations/data_20250428_Android_action_grounding_20250429_202507011.jsonl",
+      "conv_style": "internvl2_5_android_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_action_grounding",
+      "language": false
+    },
+    "web_canvas_action_grounding_20250428": {
+      "root": "data/data_20250428/web_canvas/images",
+      "annotation": "annotations/data_20250428_web_canvas_action_grounding_20250429_202507011.jsonl",
+      "conv_style": "internvl2_5_web_grounding_v1",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "web_action_grounding",
+      "language": false
+    },
+    "web_action_grounding_20250421": {
+      "root": "data/data_20250421/web/images/",
+      "annotation": "annotations/data_20250421_web_action_grounding_20250505_202507011.jsonl",
+      "conv_style": "internvl2_5_web_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "web_action_grounding",
+      "language": false
+    },
+    "ubuntu_action_grounding_20250428": {
+      "root": "data/data_20250428/ubuntu/images/",
+      "annotation": "annotations/data_20250428_ubuntu_action_grounding_20250505_202507011.jsonl",
+      "conv_style": "internvl2_5_ubuntu_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "ubuntu_action_grounding",
+      "language": false
+    },
+    "android_action_grounding_20250505": {
+      "root": "data/data_20250505/android/images/",
+      "annotation": "annotations/data_20250505_android_action_grounding_20250506_202507011.jsonl",
+      "conv_style": "internvl2_5_android_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_action_grounding",
+      "language": false
+    },
+    "windows_action_grounding_20250505": {
+      "root": "data/data_20250505/windows/images",
+      "annotation": "annotations/data_20250505_windows_action_grounding_20250508_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_crop_action_grounding_20250505": {
+      "root": "data/data_20250505/windows/images",
+      "annotation": "annotations/data_20250505_windows_crop_action_grounding_20250508_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "ubuntu_action_grounding_20250508": {
+      "root": "data/data_20250508/ubuntu/images",
+      "annotation": "annotations/data_20250508_ubuntu_action_grounding_20250509_202507011.jsonl",
+      "conv_style": "internvl2_5_ubuntu_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "ubuntu_action_grounding",
+      "language": false
+    },
+    "windows_action_grounding_20250526_1": {
+      "root": "data/data_20250526/windows/images",
+      "annotation": "annotations/data_20250526_windows_action_grounding_20250510_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_crop_action_grounding_20250526_1": {
+      "root": "data/data_20250526/windows/images",
+      "annotation": "annotations/data_20250526_windows_crop_action_grounding_20250510_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_action_grounding_20250526_2": {
+      "root": "data/data_20250526/windows/images",
+      "annotation": "annotations/data_20250526_windows_action_grounding_20250526_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_crop_action_grounding_20250526_2": {
+      "root": "data/data_20250526/windows/images",
+      "annotation": "annotations/data_20250526_windows_crop_action_grounding_20250526_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_action_grounding_20250526_3": {
+      "root": "data/data_20250526/windows/images",
+      "annotation": "annotations/data_20250526_windows_action_grounding_20250527_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_crop_action_grounding_20250526_3": {
+      "root": "data/data_20250526/windows/images",
+      "annotation": "annotations/data_20250526_windows_crop_action_grounding_20250527_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_action_grounding_20250526_4": {
+      "root": "data/data_20250526/windows/images",
+      "annotation": "annotations/data_20250526_windows_action_grounding_20250529_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_crop_action_grounding_20250526_4": {
+      "root": "data/data_20250526/windows/images",
+      "annotation": "annotations/data_20250526_windows_crop_action_grounding_20250529_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250609_1": {
+      "root": "data/data_20250609/windows/images",
+      "annotation": "annotations/data_20250609_windows_action_grounding_20250510_concat_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250609_2": {
+      "root": "data/data_20250609/windows/images",
+      "annotation": "annotations/data_20250609_windows_action_grounding_20250526_concat_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250609_3": {
+      "root": "data/data_20250609/windows/images",
+      "annotation": "annotations/data_20250609_windows_action_grounding_20250527_concat_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250609_4": {
+      "root": "data/data_20250609/windows/images",
+      "annotation": "annotations/data_20250609_windows_action_grounding_20250529_concat_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250616_1": {
+      "root": "data/data_20250616/windows_pure_paste/images",
+      "annotation": "annotations/data_20250616_windows_paste_action_grounding_20250510_paste_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250616_2": {
+      "root": "data/data_20250616/windows_pure_paste/images",
+      "annotation": "annotations/data_20250616_windows_paste_action_grounding_20250526_paste_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250616_3": {
+      "root": "data/data_20250616/windows_pure_paste/images",
+      "annotation": "annotations/data_20250616_windows_paste_action_grounding_20250527_paste_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250616_4": {
+      "root": "data/data_20250616/windows_pure_paste/images",
+      "annotation": "annotations/data_20250616_windows_paste_action_grounding_20250529_paste_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250616_5": {
+      "root": "data/data_20250616/windows_pure_paste/images",
+      "annotation": "annotations/data_20250616_windows_pure_paste_action_grounding_20250510_paste_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250616_6": {
+      "root": "data/data_20250616/windows_pure_paste/images",
+      "annotation": "annotations/data_20250616_windows_pure_paste_action_grounding_20250526_paste_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250616_7": {
+      "root": "data/data_20250616/windows_pure_paste/images",
+      "annotation": "annotations/data_20250616_windows_pure_paste_action_grounding_20250527_paste_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250616_8": {
+      "root": "data/data_20250616/windows_pure_paste/images",
+      "annotation": "annotations/data_20250616_windows_pure_paste_action_grounding_20250529_paste_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_human_action_grounding_20250623": {
+      "root": "data/data_20250623/windows/images",
+      "annotation": "annotations/data_20250623_windows_action_grounding_20250619_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 3,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_crop_human_action_grounding_20250623": {
+      "root": "data/data_20250623/windows/images",
+      "annotation": "annotations/data_20250623_windows_crop_action_grounding_20250619_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_hover_action_grounding_20250623": {
+      "root": "data/data_20250623/windows/images",
+      "annotation": "annotations/data_20250623_windows_action_grounding_20250620_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_crop_hover_action_grounding_20250623": {
+      "root": "data/data_20250623/windows/images",
+      "annotation": "annotations/data_20250623_windows_crop_action_grounding_20250620_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250623_1": {
+      "root": "data/data_20250623/windows_augment/images",
+      "annotation": "annotations/data_20250623_windows_augment_action_grounding_20250620_concat_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250623_2": {
+      "root": "data/data_20250623/windows_augment/images",
+      "annotation": "annotations/data_20250623_windows_augment_action_grounding_20250620_paste_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250623_3": {
+      "root": "data/data_20250623/windows_augment/images",
+      "annotation": "annotations/data_20250623_windows_augment_action_grounding_20250620_pure_paste_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250623_4": {
+      "root": "data/data_20250623/windows_augment/images",
+      "annotation": "annotations/data_20250623_windows_augment_action_grounding_20250619_concat_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250623_5": {
+      "root": "data/data_20250623/windows_augment/images",
+      "annotation": "annotations/data_20250623_windows_augment_action_grounding_20250619_paste_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250623_6": {
+      "root": "data/data_20250623/windows_augment/images",
+      "annotation": "annotations/data_20250623_windows_augment_action_grounding_20250619_pure_paste_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_human_action_grounding_20250630": {
+      "root": "data/data_20250630/windows/images",
+      "annotation": "annotations/data_20250630_windows_action_grounding_20250627_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 3,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_crop_human_action_grounding_20250630": {
+      "root": "data/data_20250630/windows/images",
+      "annotation": "annotations/data_20250630_windows_crop_action_grounding_20250627_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250630_1": {
+      "root": "data/data_20250630/windows_augment/images",
+      "annotation": "annotations/data_20250630_windows_augment_action_grounding_20250627_concat_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250630_2": {
+      "root": "data/data_20250630/windows_augment/images",
+      "annotation": "annotations/data_20250630_windows_augment_action_grounding_20250627_paste_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250630_3": {
+      "root": "data/data_20250630/windows_augment/images",
+      "annotation": "annotations/data_20250630_windows_augment_action_grounding_20250627_pure_paste_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_human_action_grounding_20250630_2": {
+      "root": "data/data_20250630/windows_data_20250630/images",
+      "annotation": "annotations/data_20250630_windows_data_20250630_action_grounding_20250630_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_crop_human_action_grounding_20250630_2": {
+      "root": "data/data_20250630/windows_data_20250630/images",
+      "annotation": "annotations/data_20250630_windows_data_20250630_crop_action_grounding_20250630_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_human_action_grounding_20250630_3": {
+      "root": "data/data_20250630/windows_data_20250703/images",
+      "annotation": "annotations/data_20250630_windows_data_20250703_action_grounding_20250703_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_crop_human_action_grounding_20250630_3": {
+      "root": "data/data_20250630/windows_data_20250703/images",
+      "annotation": "annotations/data_20250630_windows_data_20250703_crop_action_grounding_20250703_202507011_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250630_4": {
+      "root": "data/data_20250630/windows_augment_data_20250703/images",
+      "annotation": "annotations/data_20250630_windows_augment_data_20250703_action_grounding_20250703_concat_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250630_5": {
+      "root": "data/data_20250630/windows_augment_data_20250703/images",
+      "annotation": "annotations/data_20250630_windows_augment_data_20250703_action_grounding_20250703_paste_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250630_6": {
+      "root": "data/data_20250630/windows_augment_data_20250703/images",
+      "annotation": "annotations/data_20250630_windows_augment_data_20250703_action_grounding_20250703_pure_paste_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250630_7": {
+      "root": "data/data_20250630/windows_augment_data_20250630/images",
+      "annotation": "annotations/data_20250630_windows_augment_data_20250630_action_grounding_20250630_concat_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250630_8": {
+      "root": "data/data_20250630/windows_augment_data_20250630/images",
+      "annotation": "annotations/data_20250630_windows_augment_data_20250630_action_grounding_20250630_paste_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250630_9": {
+      "root": "data/data_20250630/windows_augment_data_20250630/images",
+      "annotation": "annotations/data_20250630_windows_augment_data_20250630_action_grounding_20250630_pure_paste_202507011.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_human_action_grounding_20250707": {
+      "root": "data/data_20250707/windows_data_20250707/images",
+      "annotation": "annotations/data_20250707_windows_data_20250707_action_grounding_20250708_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_crop_human_action_grounding_20250707": {
+      "root": "data/data_20250707/windows_data_20250707/images",
+      "annotation": "annotations/data_20250707_windows_data_20250707_crop_action_grounding_20250708_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250707_1": {
+      "root": "data/data_20250707/windows_augment_data_20250707/images",
+      "annotation": "annotations/data_20250707_windows_augment_data_20250707_concat_action_grounding_20250708.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250707_2": {
+      "root": "data/data_20250707/windows_augment_data_20250707/images",
+      "annotation": "annotations/data_20250707_windows_augment_data_20250707_paste_action_grounding_20250708.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_aug_action_grounding_20250707_3": {
+      "root": "data/data_20250707/windows_augment_data_20250707/images",
+      "annotation": "annotations/data_20250707_windows_augment_data_20250707_pure_paste_action_grounding_20250708.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_human_action_grounding_20250714": {
+      "root": "data/data_20250714/windows_data_20250714/images",
+      "annotation": "annotations/data_20250714_windows_data_20250714_action_grounding_20250717_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "windows_crop_human_action_grounding_20250714": {
+      "root": "data/data_20250714/windows_data_20250714/images",
+      "annotation": "annotations/data_20250714_windows_data_20250714_crop_action_grounding_20250717_20250722.jsonl",
+      "conv_style": "internvl2_5_windows_grounding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_action_grounding",
+      "language": false
+    },
+    "ubuntu_internvl_grounding_20250310": {
+      "root": "data/data_20250310/ubuntu/",
+      "annotation": "annotations/data_20250310_ubuntu_internvl_grounding_20250407.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "ubuntu_internvl_grounding",
+      "language": false
+    },
+    "windows_click_grounding_20250310": {
+      "root": "data/data_20250310/windows/images",
+      "annotation": "annotations/data_20250310_windows_internvl_grounding_function_20250421.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_click_grounding",
+      "language": false
+    },
+    "ubuntu_internvl_grounding_20250317": {
+      "root": "data/data_20250317/ubuntu/images/",
+      "annotation": "annotations/data_20250317_ubuntu_internvl_grounding_20250407.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "ubuntu_internvl_grounding",
+      "language": false
+    },
+    "windows_internvl_grounding_20250317": {
+      "root": "data/data_20250317/windows/images",
+      "annotation": "annotations/data_20250317_windows_internvl_grounding_20250421_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_crop_internvl_grounding_20250317": {
+      "root": "data/data_20250317/windows/images",
+      "annotation": "annotations/data_20250317_windows_crop_internvl_grounding_20250421_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.25,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_click_internvl_grounding_20250317": {
+      "root": "data/data_20250317/windows/images",
+      "annotation": "annotations/data_20250317_windows_internvl_grounding_function_20250421_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_crop_click_internvl_grounding_20250317": {
+      "root": "data/data_20250317/windows/images",
+      "annotation": "annotations/data_20250317_windows_crop_internvl_grounding_function_20250421_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.25,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_internvl_grounding_20250310": {
+      "root": "data/data_20250310/windows/images",
+      "annotation": "annotations/data_20250310_windows_internvl_grounding_20250421_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_crop_internvl_grounding_20250310": {
+      "root": "data/data_20250310/windows/images",
+      "annotation": "annotations/data_20250310_windows_crop_internvl_grounding_20250421_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.25,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "android_internvl_grounding_20250328": {
+      "root": "data/data_20250328/android/images/",
+      "annotation": "annotations/data_20250328_android_internvl_grounding_20250409.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_internvl_grounding",
+      "language": false
+    },
+    "windows_internvl_grounding_20250328": {
+      "root": "data/data_20250328/windows/",
+      "annotation": "annotations/data_20250328_windows_internvl_grounding_20250425_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "web_internvl_grounding_20250328": {
+      "root": "data/data_20250328/web_25k/images/",
+      "annotation": "annotations/data_20250328_web_25k_internvl_grounding_20250409.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "web_internvl_grounding",
+      "language": false
+    },
+    "icon_internvl_grounding_20250328": {
+      "root": "data/data_20250328/icon_canva/images/",
+      "annotation": "annotations/data_20250328_icon_canva_icon_anno_20250328.jsonl",
+      "conv_style": "internvl_grounding",
+      "data_augment": false,
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "task": "icon_internvl_grounding"
+    },
+    "mac_internvl_grounding_20250407": {
+      "root": "data/data_20250407/mac/images",
+      "annotation": "annotations/data_20250407_mac_internvl_grounding_20250410.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "mac_internvl_grounding",
+      "language": false
+    },
+    "iphone_internvl_grounding_20250407": {
+      "root": "data/data_20250407/iphone/white/images/",
+      "annotation": "annotations/data_20250407_iphone_white_internvl_grounding_20250410.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "iphone_internvl_grounding",
+      "language": false
+    },
+    "web_internvl_grounding_20250407": {
+      "root": "data/data_20250407/web/images/",
+      "annotation": "annotations/data_20250407_web_internvl_grounding_20250414.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "web_internvl_grounding",
+      "language": false
+    },
+    "android_internvl_grounding_20250407": {
+      "root": "data/data_20250407/android",
+      "annotation": "annotations/data_20250407_android_internvl_grounding_20250410.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_internvl_grounding",
+      "language": false
+    },
+    "windows_internvl_grounding_20250407": {
+      "root": "data/data_20250407/windows/images",
+      "annotation": "annotations/data_20250407_windows_internvl_grounding_20250416_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_cropping_internvl_grounding_20250407": {
+      "root": "data/data_20250407/windows/images",
+      "annotation": "annotations/data_20250407_windows_sub_internvl_grounding_20250421.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.3,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_cropping_internvl_grounding",
+      "language": false
+    },
+    "iphone_internvl_grounding_20250414": {
+      "root": "data/data_20250414/iphone/images",
+      "annotation": "annotations/data_20250414_iphone_internvl_grounding_20250417.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "iphone_internvl_grounding",
+      "language": false
+    },
+    "iphone_human_internvl_grounding_20250414": {
+      "root": "data/data_20250414/iphone/images",
+      "annotation": "annotations/data_20250414_iphone_human_internvl_grounding_20250421.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "iphone_human_internvl_grounding",
+      "language": false
+    },
+    "mac_human_internvl_grounding_20250414": {
+      "root": "data/data_20250414/mac/images",
+      "annotation": "annotations/data_20250414_mac_human_internvl_grounding_20250418.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "mac_human_internvl_grounding",
+      "language": false
+    },
+    "android_internvl_grounding_20250421": {
+      "root": "data/data_20250421/Android",
+      "annotation": "annotations/data_20250421_Android_internvl_grounding_20250429.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_internvl_grounding",
+      "language": false
+    },
+    "android_internvl_grounding_20250428": {
+      "root": "data/data_20250428/Android",
+      "annotation": "annotations/data_20250428_Android_internvl_grounding_20250429.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_internvl_grounding",
+      "language": false
+    },
+    "web_canvas_internvl_grounding_20250428": {
+      "root": "data/data_20250428/web_canvas/images",
+      "annotation": "annotations/data_20250428_web_canvas_internvl_grounding_20250429.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.3,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "web_internvl_grounding",
+      "language": false
+    },
+    "web_internvl_grounding_20250421": {
+      "root": "data/data_20250421/web/images/",
+      "annotation": "annotations/data_20250421_web_internvl_grounding_20250505.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "web_internvl_grounding",
+      "language": false
+    },
+    "ubuntu_internvl_grounding_20250428": {
+      "root": "data/data_20250428/ubuntu/images/",
+      "annotation": "annotations/data_20250428_ubuntu_internvl_grounding_20250505.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "ubuntu_internvl_grounding",
+      "language": false
+    },
+    "android_internvl_grounding_20250505": {
+      "root": "data/data_20250505/android/images/",
+      "annotation": "annotations/data_20250505_android_internvl_grounding_20250506.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_internvl_grounding",
+      "language": false
+    },
+    "windows_internvl_grounding_20250505": {
+      "root": "data/data_20250505/windows/images",
+      "annotation": "annotations/data_20250505_windows_internvl_grounding_20250508_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_crop_internvl_grounding_20250505": {
+      "root": "data/data_20250505/windows/images",
+      "annotation": "annotations/data_20250505_windows_crop_internvl_grounding_20250508_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.25,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "ubuntu_internvl_grounding_20250508": {
+      "root": "data/data_20250508/ubuntu/images",
+      "annotation": "annotations/data_20250508_ubuntu_internvl_grounding_20250509.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "ubuntu_internvl_grounding",
+      "language": false
+    },
+    "windows_internvl_grounding_20250526_1": {
+      "root": "data/data_20250526/windows/images",
+      "annotation": "annotations/data_20250526_windows_internvl_grounding_20250510_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_crop_internvl_grounding_20250526_1": {
+      "root": "data/data_20250526/windows/images",
+      "annotation": "annotations/data_20250526_windows_crop_internvl_grounding_20250510_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.25,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_internvl_grounding_20250526_2": {
+      "root": "data/data_20250526/windows/images",
+      "annotation": "annotations/data_20250526_windows_internvl_grounding_20250526_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_crop_internvl_grounding_20250526_2": {
+      "root": "data/data_20250526/windows/images",
+      "annotation": "annotations/data_20250526_windows_crop_internvl_grounding_20250526_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.25,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_internvl_grounding_20250526_4": {
+      "root": "data/data_20250526/windows/images",
+      "annotation": "annotations/data_20250526_windows_internvl_grounding_20250529_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_crop_internvl_grounding_20250526_4": {
+      "root": "data/data_20250526/windows/images",
+      "annotation": "annotations/data_20250526_windows_crop_internvl_grounding_20250529_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.25,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_human_internvl_grounding_20250523": {
+      "root": "data/data_20250623/windows/images",
+      "annotation": "annotations/data_20250623_windows_internvl_grounding_20250619_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_crop_human_internvl_grounding_20250523": {
+      "root": "data/data_20250623/windows/images",
+      "annotation": "annotations/data_20250623_windows_crop_internvl_grounding_20250619_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.25,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_hover_internvl_grounding_20250523": {
+      "root": "data/data_20250623/windows/images",
+      "annotation": "annotations/data_20250623_windows_internvl_grounding_20250620_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_crop_hover_internvl_grounding_20250523": {
+      "root": "data/data_20250623/windows/images",
+      "annotation": "annotations/data_20250623_windows_crop_internvl_grounding_20250620_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.25,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_aug_internvl_grounding_20250623_1": {
+      "root": "data/data_20250623/windows_augment/images",
+      "annotation": "annotations/data_20250623_windows_augment_internvl_grounding_20250620_concat.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_aug_internvl_grounding_20250623_2": {
+      "root": "data/data_20250623/windows_augment/images",
+      "annotation": "annotations/data_20250623_windows_augment_internvl_grounding_20250620_paste.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_aug_internvl_grounding_20250623_3": {
+      "root": "data/data_20250623/windows_augment/images",
+      "annotation": "annotations/data_20250623_windows_augment_internvl_grounding_20250620_pure_paste.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_aug_internvl_grounding_20250623_4": {
+      "root": "data/data_20250623/windows_augment/images",
+      "annotation": "annotations/data_20250623_windows_augment_internvl_grounding_20250619_concat.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_aug_internvl_grounding_20250623_5": {
+      "root": "data/data_20250623/windows_augment/images",
+      "annotation": "annotations/data_20250623_windows_augment_internvl_grounding_20250619_paste.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_aug_internvl_grounding_20250623_6": {
+      "root": "data/data_20250623/windows_augment/images",
+      "annotation": "annotations/data_20250623_windows_augment_internvl_grounding_20250619_pure_paste.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_human_internvl_grounding_20250630": {
+      "root": "data/data_20250630/windows/images",
+      "annotation": "annotations/data_20250630_windows_internvl_grounding_20250627_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.25,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_crop_human_internvl_grounding_20250630": {
+      "root": "data/data_20250630/windows/images",
+      "annotation": "annotations/data_20250630_windows_crop_internvl_grounding_20250627_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_aug_internvl_grounding_20250630_1": {
+      "root": "data/data_20250630/windows_augment/images",
+      "annotation": "annotations/data_20250630_windows_augment_internvl_grounding_20250627_concat.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_aug_internvl_grounding_20250630_2": {
+      "root": "data/data_20250630/windows_augment/images",
+      "annotation": "annotations/data_20250630_windows_augment_internvl_grounding_20250627_paste.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_aug_internvl_grounding_20250630_3": {
+      "root": "data/data_20250630/windows_augment/images",
+      "annotation": "annotations/data_20250630_windows_augment_internvl_grounding_20250627_pure_paste.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_human_internvl_grounding_20250630_2": {
+      "root": "data/data_20250630/windows_data_20250630/images",
+      "annotation": "annotations/data_20250630_windows_data_20250630_internvl_grounding_20250630_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_crop_human_internvl_grounding_20250630_2": {
+      "root": "data/data_20250630/windows_data_20250630/images",
+      "annotation": "annotations/data_20250630_windows_data_20250630_crop_internvl_grounding_20250630_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.25,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_human_internvl_grounding_20250630_3": {
+      "root": "data/data_20250630/windows_data_20250703/images",
+      "annotation": "annotations/data_20250630_windows_data_20250703_internvl_grounding_20250703_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_crop_human_internvl_grounding_20250630_3": {
+      "root": "data/data_20250630/windows_data_20250703/images",
+      "annotation": "annotations/data_20250630_windows_data_20250703_crop_internvl_grounding_20250703_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.25,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_aug_internvl_grounding_20250630_4": {
+      "root": "data/data_20250630/windows_augment_data_20250703/images",
+      "annotation": "annotations/data_20250630_windows_augment_data_20250703_internvl_grounding_20250703_concat.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_aug_internvl_grounding_20250630_5": {
+      "root": "data/data_20250630/windows_augment_data_20250703/images",
+      "annotation": "annotations/data_20250630_windows_augment_data_20250703_internvl_grounding_20250703_paste.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_aug_internvl_grounding_20250630_6": {
+      "root": "data/data_20250630/windows_augment_data_20250703/images",
+      "annotation": "annotations/data_20250630_windows_augment_data_20250703_internvl_grounding_20250703_pure_paste.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_aug_internvl_grounding_20250630_7": {
+      "root": "data/data_20250630/windows_augment_data_20250630/images",
+      "annotation": "annotations/data_20250630_windows_augment_data_20250630_internvl_grounding_20250630_concat.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_aug_internvl_grounding_20250630_8": {
+      "root": "data/data_20250630/windows_augment_data_20250630/images",
+      "annotation": "annotations/data_20250630_windows_augment_data_20250630_internvl_grounding_20250630_paste.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_aug_internvl_grounding_20250630_9": {
+      "root": "data/data_20250630/windows_augment_data_20250630/images",
+      "annotation": "annotations/data_20250630_windows_augment_data_20250630_internvl_grounding_20250630_pure_paste.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_human_internvl_grounding_20250707": {
+      "root": "data/data_20250707/windows_data_20250707/images",
+      "annotation": "annotations/data_20250707_windows_data_20250707_internvl_grounding_20250708_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_crop_human_internvl_grounding_20250707": {
+      "root": "data/data_20250707/windows_data_20250707/images",
+      "annotation": "annotations/data_20250707_windows_data_20250707_crop_internvl_grounding_20250708_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.25,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_aug_internvl_grounding_20250707_1": {
+      "root": "data/data_20250707/windows_augment_data_20250707/images",
+      "annotation": "annotations/data_20250707_windows_augment_data_20250707_concat_internvl_grounding_20250708.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_aug_internvl_grounding_20250707_2": {
+      "root": "data/data_20250707/windows_augment_data_20250707/images",
+      "annotation": "annotations/data_20250707_windows_augment_data_20250707_paste_internvl_grounding_20250708.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_aug_internvl_grounding_20250707_3": {
+      "root": "data/data_20250707/windows_augment_data_20250707/images",
+      "annotation": "annotations/data_20250707_windows_augment_data_20250707_pure_paste_internvl_grounding_20250708.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_human_internvl_grounding_20250714": {
+      "root": "data/data_20250714/windows_data_20250714/images",
+      "annotation": "annotations/data_20250714_windows_data_20250714_internvl_grounding_20250717_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.5,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "windows_crop_human_internvl_grounding_20250714": {
+      "root": "data/data_20250714/windows_data_20250714/images",
+      "annotation": "annotations/data_20250714_windows_data_20250714_crop_internvl_grounding_20250717_20250722.jsonl",
+      "conv_style": "internvl_grounding",
+      "repeat_time": 0.25,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_internvl_grounding",
+      "language": false
+    },
+    "ws_android_navigation_20250328": {
+      "root": "data/data_20250328/android/images/",
+      "annotation": "annotations/data_20250328_android_navigation_20250628.jsonl",
+      "conv_style": "internvl2_5_mobile_navigation_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "ws_android_navigation",
+      "language": false
+    },
+    "ws_android_navigation_20250407": {
+      "root": "data/data_20250407/android",
+      "annotation": "annotations/data_20250407_android_navigation_20250628.jsonl",
+      "conv_style": "internvl2_5_mobile_navigation_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "ws_android_navigation",
+      "language": false
+    },
+    "ws_web_navigation_w_history_20250328": {
+      "root": "data/data_20250328/web/images",
+      "annotation": "annotations/data_20250328_web_navigation_20250428.jsonl",
+      "conv_style": "internvl2_5_web_navigation_v1",
+      "repeat_time": 2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "web_ws_navigation",
+      "language": false
+    },
+    "ws_web_navigation_wo_history_20250328": {
+      "root": "data/data_20250328/web/images",
+      "annotation": "annotations/data_20250328_web_navigation_no_history_20250428.jsonl",
+      "conv_style": "internvl2_5_web_navigation_v1",
+      "repeat_time": 2,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "web_navigation",
+      "language": false
+    },
+    "ws_web_navigation_20250421": {
+      "root": "data/data_20250421/web/images/",
+      "annotation": "annotations/data_20250421_web_navigation_20250601.jsonl",
+      "conv_style": "internvl2_5_web_navigation_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "web_navigation",
+      "language": false
+    },
+    "ws_ubuntu_navigation_20250328": {
+      "root": "data/data_20250428/ubuntu/images",
+      "annotation": "annotations/data_20250428_ubuntu_navigation_20250506.jsonl",
+      "conv_style": "internvl2_5_ubuntu_navigation_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "ubuntu_navigation",
+      "language": false
+    },
+    "ws_android_navigation_20250505": {
+      "root": "data/data_20250505/android/images/",
+      "annotation": "annotations/data_20250505_android_navigation_20250628.jsonl",
+      "conv_style": "internvl2_5_mobile_navigation_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "ws_android_navigation",
+      "language": false
+    },
+    "internal_mac_navigation_boost_instruction_20250612": {
+      "root": "data/data_20250612/mac/images",
+      "annotation": "annotations/data_20250612_mac_navigation_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_mac_navigation_v1",
+      "data_augment": false,
+      "repeat_time": 1,
+      "split_anno_by_rank": false,
+      "task": "mac_navigation"
+    },
+    "internal_ubuntu_navigation_boost_instruction_20250612": {
+      "root": "data/data_20250612/ubuntu/images",
+      "annotation": "annotations/data_20250612_ubuntu_navigation_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_ubuntu_navigation_v1",
+      "data_augment": false,
+      "repeat_time": 1,
+      "split_anno_by_rank": false,
+      "task": "ubuntu_navigation"
+    },
+    "internal_windows_navigation_boost_instruction_20250612": {
+      "root": "data/data_20250612/windows/images",
+      "annotation": "annotations/data_20250612_windows_navigation_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_windows_navigation_v1",
+      "data_augment": false,
+      "repeat_time": 1,
+      "split_anno_by_rank": false,
+      "task": "windows_navigation"
+    },
+    "internal_web_navigation_boost_instruction_20250612": {
+      "root": "data/data_20250612/web/images",
+      "annotation": "annotations/data_20250612_web_navigation_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_web_navigation_v1",
+      "data_augment": false,
+      "repeat_time": 1,
+      "split_anno_by_rank": false,
+      "task": "web_navigation"
+    },
+    "internal_web_navigation_boost_instruction_20250624": {
+      "root": "data/data_20250624/web/images",
+      "annotation": "annotations/data_20250624_web_navigation_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_web_navigation_v1",
+      "data_augment": false,
+      "repeat_time": 1,
+      "split_anno_by_rank": false,
+      "task": "web_navigation"
+    },
+    "internal_ubuntu_navigation_boost_instruction_20250624": {
+      "root": "data/data_20250624/ubuntu/images",
+      "annotation": "annotations/data_20250624_ubuntu_navigation_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_ubuntu_navigation_v1",
+      "data_augment": false,
+      "repeat_time": 1,
+      "split_anno_by_rank": false,
+      "task": "ubuntu_navigation"
+    },
+    "internal_mac_navigation_boost_instruction_20250630": {
+      "root": "data/data_20250630/mac/images",
+      "annotation": "annotations/data_20250630_mac_navigation_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_mac_navigation_v1",
+      "data_augment": false,
+      "repeat_time": 1,
+      "split_anno_by_rank": false,
+      "task": "mac_navigation"
+    },
+    "internal_web_navigation_boost_instruction_20250630": {
+      "root": "data/data_20250630/web/images",
+      "annotation": "annotations/data_20250630_web_navigation_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_web_navigation_v1",
+      "data_augment": false,
+      "repeat_time": 1,
+      "split_anno_by_rank": false,
+      "task": "web_navigation"
+    },
+    "internal_mac_navigation_boost_instruction_20250707": {
+      "root": "data/data_20250707/mac/images",
+      "annotation": "annotations/data_20250707_mac_navigation_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_mac_navigation_v1",
+      "data_augment": false,
+      "repeat_time": 1,
+      "split_anno_by_rank": false,
+      "task": "mac_navigation"
+    },
+    "internal_windows_navigation_boost_instruction_20250707": {
+      "root": "data/data_20250707/windows/images",
+      "annotation": "annotations/data_20250707_windows_navigation_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_windows_navigation_v1",
+      "data_augment": false,
+      "repeat_time": 0.5,
+      "split_anno_by_rank": false,
+      "task": "windows_navigation"
+    },
+    "internal_ubuntu_navigation_boost_instruction_20250707": {
+      "root": "data/data_20250707/ubuntu/images",
+      "annotation": "annotations/data_20250707_ubuntu_navigation_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_ubuntu_navigation_v1",
+      "data_augment": false,
+      "repeat_time": 0.5,
+      "split_anno_by_rank": false,
+      "task": "ubuntu_navigation"
+    },
+    "internal_windows_navigation_boost_instruction_20250714": {
+      "root": "data/data_20250714/windows/images",
+      "annotation": "annotations/data_20250714_windows_navigation_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_windows_navigation_v1",
+      "data_augment": false,
+      "repeat_time": 0.5,
+      "split_anno_by_rank": false,
+      "task": "windows_navigation"
+    },
+    "internal_web_navigation_boost_instruction_20250714": {
+      "root": "data/data_20250714/web/images",
+      "annotation": "annotations/data_20250714_web_navigation_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_web_navigation_v1",
+      "data_augment": false,
+      "repeat_time": 0.5,
+      "split_anno_by_rank": false,
+      "task": "web_navigation"
+    },
+    "internal_ubuntu_navigation_boost_instruction_20250714": {
+      "root": "data/data_20250714/ubuntu/images",
+      "annotation": "annotations/data_20250714_ubuntu_navigation_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_ubuntu_navigation_v1",
+      "data_augment": false,
+      "repeat_time": 0.5,
+      "split_anno_by_rank": false,
+      "task": "ubuntu_navigation"
+    },
+    "internal_mac_planning_cot_20250612": {
+      "root": "data/data_20250612/mac/images",
+      "annotation": "annotations/data_20250612_mac_planning_20250710_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_mac_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 0,
+      "split_anno_by_rank": false,
+      "task": "mac_planning_cot"
+    },
+    "internal_ubuntu_planning_cot_20250612": {
+      "root": "data/data_20250612/ubuntu/images",
+      "annotation": "annotations/data_20250612_ubuntu_planning_20250627.jsonl",
+      "conv_style": "internvl2_5_ubuntu_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 0,
+      "split_anno_by_rank": false,
+      "task": "ubuntu_planning_cot"
+    },
+    "internal_windows_planning_cot_20250612": {
+      "root": "data/data_20250612/windows/images",
+      "annotation": "annotations/data_20250612_windows_planning_20250615.jsonl",
+      "conv_style": "internvl2_5_windows_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 0,
+      "split_anno_by_rank": false,
+      "task": "windows_planning_cot"
+    },
+    "internal_web_planning_cot_20250612": {
+      "root": "data/data_20250612/web/images",
+      "annotation": "annotations/data_20250612_web_planning_20250615.jsonl",
+      "conv_style": "internvl2_5_web_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 0,
+      "split_anno_by_rank": false,
+      "task": "web_planning_cot"
+    },
+    "internal_ubuntu_planning_cot_boost_action_20250612": {
+      "root": "data/data_20250612/ubuntu/images",
+      "annotation": "annotations/data_20250612_ubuntu_planning_20250627_boost_action.jsonl",
+      "conv_style": "internvl2_5_ubuntu_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 0,
+      "split_anno_by_rank": false,
+      "task": "ubuntu_planning_cot"
+    },
+    "internal_ubuntu_planning_cot_boost_instruction_action_20250612": {
+      "root": "data/data_20250612/ubuntu/images",
+      "annotation": "annotations/data_20250612_ubuntu_planning_20250627_boost_instruction_action.jsonl",
+      "conv_style": "internvl2_5_ubuntu_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 0,
+      "split_anno_by_rank": false,
+      "task": "ubuntu_planning_cot"
+    },
+    "internal_ubuntu_planning_cot_boost_action_20250624": {
+      "root": "data/data_20250624/ubuntu/images",
+      "annotation": "annotations/data_20250624_ubuntu_planning_20250627_boost_action.jsonl",
+      "conv_style": "internvl2_5_ubuntu_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 0,
+      "split_anno_by_rank": false,
+      "task": "ubuntu_planning_cot"
+    },
+    "internal_ubuntu_planning_cot_boost_instruction_action_20250624": {
+      "root": "data/data_20250624/ubuntu/images",
+      "annotation": "annotations/data_20250624_ubuntu_planning_20250627_boost_instruction_action.jsonl",
+      "conv_style": "internvl2_5_ubuntu_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 0,
+      "split_anno_by_rank": false,
+      "task": "ubuntu_planning_cot"
+    },
+    "internal_ubuntu_planning_cot_20250624": {
+      "root": "data/data_20250624/ubuntu/images",
+      "annotation": "annotations/data_20250624_ubuntu_planning_20250627.jsonl",
+      "conv_style": "internvl2_5_ubuntu_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 0,
+      "split_anno_by_rank": false,
+      "task": "ubuntu_planning_cot"
+    },
+    "internal_web_planning_cot_20250627": {
+      "root": "data/data_20250624/web/images",
+      "annotation": "annotations/data_20250624_web_planning_20250627.jsonl",
+      "conv_style": "internvl2_5_web_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 0,
+      "split_anno_by_rank": false,
+      "task": "web_planning_cot"
+    },
+    "internal_mac_planning_cot_boost_instruction_20250612": {
+      "root": "data/data_20250612/mac/images",
+      "annotation": "annotations/data_20250612_mac_planning_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_mac_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 2,
+      "split_anno_by_rank": false,
+      "task": "mac_planning_cot"
+    },
+    "internal_ubuntu_planning_cot_boost_instruction_20250612": {
+      "root": "data/data_20250612/ubuntu/images",
+      "annotation": "annotations/data_20250612_ubuntu_planning_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_ubuntu_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 2,
+      "split_anno_by_rank": false,
+      "task": "ubuntu_planning_cot"
+    },
+    "internal_windows_planning_cot_boost_instruction_20250612": {
+      "root": "data/data_20250612/windows/images",
+      "annotation": "annotations/data_20250612_windows_planning_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_windows_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 2,
+      "split_anno_by_rank": false,
+      "task": "windows_planning_cot"
+    },
+    "internal_web_planning_cot_boost_instruction_20250612": {
+      "root": "data/data_20250612/web/images",
+      "annotation": "annotations/data_20250612_web_planning_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_web_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 2,
+      "split_anno_by_rank": false,
+      "task": "web_planning_cot"
+    },
+    "internal_web_planning_cot_boost_instruction_20250624": {
+      "root": "data/data_20250624/web/images",
+      "annotation": "annotations/data_20250624_web_planning_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_web_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 2,
+      "split_anno_by_rank": false,
+      "task": "web_planning_cot"
+    },
+    "internal_ubuntu_planning_cot_boost_instruction_20250624": {
+      "root": "data/data_20250624/ubuntu/images",
+      "annotation": "annotations/data_20250624_ubuntu_planning_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_ubuntu_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 2,
+      "split_anno_by_rank": false,
+      "task": "ubuntu_planning_cot"
+    },
+    "internal_mac_planning_cot_boost_instruction_20250630": {
+      "root": "data/data_20250630/mac/images",
+      "annotation": "annotations/data_20250630_mac_planning_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_mac_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 3,
+      "split_anno_by_rank": false,
+      "task": "mac_planning_cot"
+    },
+    "internal_web_planning_cot_boost_instruction_20250630": {
+      "root": "data/data_20250630/web/images",
+      "annotation": "annotations/data_20250630_web_planning_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_web_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 2,
+      "split_anno_by_rank": false,
+      "task": "web_planning_cot"
+    },
+    "internal_mac_planning_cot_boost_instruction_20250707": {
+      "root": "data/data_20250707/mac/images",
+      "annotation": "annotations/data_20250707_mac_planning_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_mac_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 2,
+      "split_anno_by_rank": false,
+      "task": "mac_planning_cot"
+    },
+    "internal_windows_planning_cot_boost_instruction_20250707": {
+      "root": "data/data_20250707/windows/images",
+      "annotation": "annotations/data_20250707_windows_planning_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_windows_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 1,
+      "split_anno_by_rank": false,
+      "task": "windows_planning_cot"
+    },
+    "internal_ubuntu_planning_cot_boost_instruction_20250707": {
+      "root": "data/data_20250707/ubuntu/images",
+      "annotation": "annotations/data_20250707_ubuntu_planning_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_ubuntu_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 1,
+      "split_anno_by_rank": false,
+      "task": "ubuntu_planning_cot"
+    },
+    "internal_windows_planning_cot_boost_instruction_20250714": {
+      "root": "data/data_20250714/windows/images",
+      "annotation": "annotations/data_20250714_windows_planning_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_windows_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 1,
+      "split_anno_by_rank": false,
+      "task": "windows_planning_cot"
+    },
+    "internal_web_planning_cot_boost_instruction_20250714": {
+      "root": "data/data_20250714/web/images",
+      "annotation": "annotations/data_20250714_web_planning_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_web_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 1,
+      "split_anno_by_rank": false,
+      "task": "web_planning_cot"
+    },
+    "internal_ubuntu_planning_cot_boost_instruction_20250714": {
+      "root": "data/data_20250714/ubuntu/images",
+      "annotation": "annotations/data_20250714_ubuntu_planning_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_ubuntu_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 1,
+      "split_anno_by_rank": false,
+      "task": "ubuntu_planning_cot"
+    },
+    "internal_android_navigation_boost_instruction_20250612": {
+      "root": "data/data_20250612/android/images",
+      "annotation": "annotations/data_20250612_android_navigation_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_mobile_navigation_v1",
+      "data_augment": false,
+      "repeat_time": 1,
+      "split_anno_by_rank": false,
+      "task": "android_navigation"
+    },
+    "internal_android_navigation_boost_instruction_20250630": {
+      "root": "data/data_20250630/android/images",
+      "annotation": "annotations/data_20250630_android_navigation_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_mobile_navigation_v1",
+      "data_augment": false,
+      "repeat_time": 1,
+      "split_anno_by_rank": false,
+      "task": "android_navigation"
+    },
+    "internal_android_navigation_boost_instruction_20250707": {
+      "root": "data/data_20250707/android/images",
+      "annotation": "annotations/data_20250707_android_navigation_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_mobile_navigation_v1",
+      "data_augment": false,
+      "repeat_time": 0.5,
+      "split_anno_by_rank": false,
+      "task": "android_navigation"
+    },
+    "internal_android_planning_cot_20250612": {
+      "root": "data/data_20250612/android/images",
+      "annotation": "annotations/data_20250612_android_planning_20250615.jsonl",
+      "conv_style": "internvl2_5_mobile_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 0,
+      "split_anno_by_rank": false,
+      "task": "android_planning_cot"
+    },
+    "internal_android_planning_cot_boost_instruction_20250612": {
+      "root": "data/data_20250612/android/images",
+      "annotation": "annotations/data_20250612_android_planning_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_mobile_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 2,
+      "split_anno_by_rank": false,
+      "task": "android_planning_cot"
+    },
+    "internal_android_planning_cot_boost_instruction_20250630": {
+      "root": "data/data_20250630/android/images",
+      "annotation": "annotations/data_20250630_android_planning_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_mobile_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 3,
+      "split_anno_by_rank": false,
+      "task": "android_planning_cot"
+    },
+    "internal_android_planning_cot_boost_instruction_20250707": {
+      "root": "data/data_20250707/android/images",
+      "annotation": "annotations/data_20250707_android_planning_20250720_boost_instruction.jsonl",
+      "conv_style": "internvl2_5_mobile_planning_cot_v1",
+      "data_augment": false,
+      "repeat_time": 1,
+      "split_anno_by_rank": false,
+      "task": "android_planning_cot"
+    },
+    "windows_20250526_user_intention_20250703": {
+      "root": "data/data_20250526/windows/images",
+      "annotation": "annotations/data_20250526_windows_user_intention_20250703.jsonl",
+      "conv_style": "internvl2_5_windows_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_user_intention",
+      "language": false
+    },
+    "windows_20250526_screen_transition_20250703": {
+      "root": "data/data_20250526/windows/images",
+      "annotation": "annotations/data_20250526_windows_screen_transition_20250703.jsonl",
+      "conv_style": "internvl2_5_windows_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_screen_transition",
+      "language": false
+    },
+    "windows_20250526_dense_caption_20250703": {
+      "root": "data/data_20250526/windows/images",
+      "annotation": "annotations/data_20250526_windows_dense_caption_20250703.jsonl",
+      "conv_style": "internvl2_5_windows_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_dense_caption",
+      "language": false
+    },
+    "windows_20250505_user_intention_20250703": {
+      "root": "data/data_20250505/windows/images",
+      "annotation": "annotations/data_20250505_windows_user_intention_20250703.jsonl",
+      "conv_style": "internvl2_5_windows_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_user_intention",
+      "language": false
+    },
+    "windows_20250505_screen_transition_20250703": {
+      "root": "data/data_20250505/windows/images",
+      "annotation": "annotations/data_20250505_windows_screen_transition_20250703.jsonl",
+      "conv_style": "internvl2_5_windows_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_screen_transition",
+      "language": false
+    },
+    "windows_20250505_dense_caption_20250703": {
+      "root": "data/data_20250505/windows/images",
+      "annotation": "annotations/data_20250505_windows_dense_caption_20250703.jsonl",
+      "conv_style": "internvl2_5_windows_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_dense_caption",
+      "language": false
+    },
+    "windows_20250626_dense_caption_20250703": {
+      "root": "data/data_20250630/windows/images",
+      "annotation": "annotations/data_20250630_windows_dense_caption_20250703.jsonl",
+      "conv_style": "internvl2_5_windows_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_dense_caption",
+      "language": false
+    },
+    "windows_20250619_user_intention_20250703": {
+      "root": "data/data_20250623/windows/images",
+      "annotation": "annotations/data_20250623_windows_user_intention_20250703.jsonl",
+      "conv_style": "internvl2_5_windows_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_user_intention",
+      "language": false
+    },
+    "windows_20250619_screen_transition_20250703": {
+      "root": "data/data_20250623/windows/images",
+      "annotation": "annotations/data_20250623_windows_screen_transition_20250703.jsonl",
+      "conv_style": "internvl2_5_windows_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_screen_transition",
+      "language": false
+    },
+    "windows_20250619_dense_caption_20250703": {
+      "root": "data/data_20250623/windows/images",
+      "annotation": "annotations/data_20250623_windows_dense_caption_20250703.jsonl",
+      "conv_style": "internvl2_5_windows_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_dense_caption",
+      "language": false
+    },
+    "mac_20250612_user_intention_20250805": {
+      "root": "data/data_20250612/mac/images",
+      "annotation": "annotations/data_20250612_mac_user_intention_20250805.jsonl",
+      "conv_style": "internvl2_5_mac_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "mac_user_intention",
+      "language": false
+    },
+    "mac_20250612_screen_transition_20250805": {
+      "root": "data/data_20250612/mac/images",
+      "annotation": "annotations/data_20250612_mac_screen_transition_20250805.jsonl",
+      "conv_style": "internvl2_5_mac_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "mac_screen_transition",
+      "language": false
+    },
+    "mac_20250612_dense_caption_20250805": {
+      "root": "data/data_20250612/mac/images",
+      "annotation": "annotations/data_20250612_mac_dense_caption_20250805.jsonl",
+      "conv_style": "internvl2_5_mac_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "mac_dense_caption",
+      "language": false
+    },
+    "windows_20250612_user_intention_20250805": {
+      "root": "data/data_20250612/windows/images",
+      "annotation": "annotations/data_20250612_windows_user_intention_20250805.jsonl",
+      "conv_style": "internvl2_5_windows_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_user_intention",
+      "language": false
+    },
+    "windows_20250612_screen_transition_20250805": {
+      "root": "data/data_20250612/windows/images",
+      "annotation": "annotations/data_20250612_windows_screen_transition_20250805.jsonl",
+      "conv_style": "internvl2_5_windows_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_screen_transition",
+      "language": false
+    },
+    "windows_20250612_dense_caption_20250805": {
+      "root": "data/data_20250612/windows/images",
+      "annotation": "annotations/data_20250612_windows_dense_caption_20250805.jsonl",
+      "conv_style": "internvl2_5_windows_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_dense_caption",
+      "language": false
+    },
+    "ubuntu_20250612_user_intention_20250805": {
+      "root": "data/data_20250612/ubuntu/images",
+      "annotation": "annotations/data_20250612_ubuntu_user_intention_20250805.jsonl",
+      "conv_style": "internvl2_5_ubuntu_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "ubuntu_user_intention",
+      "language": false
+    },
+    "ubuntu_20250612_screen_transition_20250805": {
+      "root": "data/data_20250612/ubuntu/images",
+      "annotation": "annotations/data_20250612_ubuntu_screen_transition_20250805.jsonl",
+      "conv_style": "internvl2_5_ubuntu_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "ubuntu_screen_transition",
+      "language": false
+    },
+    "ubuntu_20250612_dense_caption_20250805": {
+      "root": "data/data_20250612/ubuntu/images",
+      "annotation": "annotations/data_20250612_ubuntu_dense_caption_20250805.jsonl",
+      "conv_style": "internvl2_5_ubuntu_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "ubuntu_dense_caption",
+      "language": false
+    },
+    "android_20250407_dense_caption_20250712": {
+      "root": "data/data_20250407/android",
+      "annotation": "annotations/data_20250407_android_dense_caption_20250712.jsonl",
+      "conv_style": "internvl2_5_android_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_dense_caption",
+      "language": false
+    },
+    "android_20250407_screen_transition_20250712": {
+      "root": "data/data_20250407/android",
+      "annotation": "annotations/data_20250407_android_screen_transition_20250712.jsonl",
+      "conv_style": "internvl2_5_android_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_screen_transition",
+      "language": false
+    },
+    "android_20250407_user_intention_20250703": {
+      "root": "data/data_20250407/android",
+      "annotation": "annotations/data_20250407_android_user_intention_20250712.jsonl",
+      "conv_style": "internvl2_5_android_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_user_intention",
+      "language": false
+    },
+    "ubuntu_20250407_dense_caption_20250712": {
+      "root": "data/data_20250407/ubuntu/images",
+      "annotation": "annotations/data_20250407_ubuntu_dense_caption_20250712.jsonl",
+      "conv_style": "internvl2_5_ubuntu_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "ubuntu_dense_caption",
+      "language": false
+    },
+    "ubuntu_20250407_screen_transition_20250712": {
+      "root": "data/data_20250407/ubuntu/images",
+      "annotation": "annotations/data_20250407_ubuntu_screen_transition_20250712.jsonl",
+      "conv_style": "internvl2_5_ubuntu_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "ubuntu_screen_transition",
+      "language": false
+    },
+    "ubuntu_20250407_user_intention_20250712": {
+      "root": "data/data_20250407/ubuntu/images",
+      "annotation": "annotations/data_20250407_ubuntu_user_intention_20250712.jsonl",
+      "conv_style": "internvl2_5_ubuntu_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "ubuntu_user_intention",
+      "language": false
+    },
+    "web_20250407_dense_caption_20250712": {
+      "root": "data/data_20250407/web/images",
+      "annotation": "annotations/data_20250407_web_dense_caption_20250712.jsonl",
+      "conv_style": "internvl2_5_web_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "web_dense_caption",
+      "language": false
+    },
+    "web_20250407_screen_transition_20250712": {
+      "root": "data/data_20250407/web/images",
+      "annotation": "annotations/data_20250407_web_screen_transition_20250712.jsonl",
+      "conv_style": "internvl2_5_web_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "web_screen_transition",
+      "language": false
+    },
+    "web_20250407_user_intention_20250712": {
+      "root": "data/data_20250407/web/images",
+      "annotation": "annotations/data_20250407_web_user_intention_20250712.jsonl",
+      "conv_style": "internvl2_5_web_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "web_user_intention",
+      "language": false
+    },
+    "mac_20250407_dense_caption_20250712": {
+      "root": "data/data_20250407/mac/images",
+      "annotation": "annotations/data_20250407_mac_dense_caption_20250712.jsonl",
+      "conv_style": "internvl2_5_mac_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "mac_dense_caption",
+      "language": false
+    },
+    "mac_20250407_screen_transition_20250712": {
+      "root": "data/data_20250407/mac/images",
+      "annotation": "annotations/data_20250407_mac_screen_transition_20250712.jsonl",
+      "conv_style": "internvl2_5_mac_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "mac_screen_transition",
+      "language": false
+    },
+    "mac_20250407_user_intention_20250712": {
+      "root": "data/data_20250407/mac/images",
+      "annotation": "annotations/data_20250407_mac_user_intention_20250712.jsonl",
+      "conv_style": "internvl2_5_mac_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "mac_user_intention",
+      "language": false
+    },
+    "windows_20250407_dense_caption_20250713": {
+      "root": "data/data_20250407/windows/images",
+      "annotation": "annotations/data_20250407_windows_dense_caption_20250713.jsonl",
+      "conv_style": "internvl2_5_windows_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_dense_caption",
+      "language": false
+    },
+    "windows_20250407_screen_transition_20250713": {
+      "root": "data/data_20250407/windows/images",
+      "annotation": "annotations/data_20250407_windows_screen_transition_20250713.jsonl",
+      "conv_style": "internvl2_5_windows_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_screen_transition",
+      "language": false
+    },
+    "windows_20250407_user_intention_20250713": {
+      "root": "data/data_20250407/windows/images",
+      "annotation": "annotations/data_20250407_windows_user_intention_20250713.jsonl",
+      "conv_style": "internvl2_5_windows_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "windows_user_intention",
+      "language": false
+    },
+    "iphone_20250414_dense_caption_20250713": {
+      "root": "data/data_20250414/iphone/images",
+      "annotation": "annotations/data_20250414_iphone_dense_caption_20250713.jsonl",
+      "conv_style": "internvl2_5_iphone_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "iphone_dense_caption",
+      "language": false
+    },
+    "iphone_20250414_screen_transition_20250713": {
+      "root": "data/data_20250414/iphone/images",
+      "annotation": "annotations/data_20250414_iphone_screen_transition_20250713.jsonl",
+      "conv_style": "internvl2_5_iphone_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "iphone_screen_transition",
+      "language": false
+    },
+    "iphone_20250414_user_intention_20250713": {
+      "root": "data/data_20250414/iphone/images",
+      "annotation": "annotations/data_20250414_iphone_user_intention_20250713.jsonl",
+      "conv_style": "internvl2_5_iphone_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "iphone_user_intention",
+      "language": false
+    },
+    "android_20250414_dense_caption_20250713": {
+      "root": "data/data_20250414/android/images",
+      "annotation": "annotations/data_20250414_android_dense_caption_20250715.jsonl",
+      "conv_style": "internvl2_5_android_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_dense_caption",
+      "language": false
+    },
+    "android_20250414_screen_transition_20250713": {
+      "root": "data/data_20250414/android/images",
+      "annotation": "annotations/data_20250414_android_screen_transition_20250715.jsonl",
+      "conv_style": "internvl2_5_android_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_screen_transition",
+      "language": false
+    },
+    "android_20250414_user_intention_20250713": {
+      "root": "data/data_20250414/android/images",
+      "annotation": "annotations/data_20250414_android_user_intention_20250715.jsonl",
+      "conv_style": "internvl2_5_android_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_user_intention",
+      "language": false
+    },
+    "android_2_20250414_dense_caption_20250713": {
+      "root": "data/data_20250414/android_2/images",
+      "annotation": "annotations/data_20250414_android_2_dense_caption_20250715.jsonl",
+      "conv_style": "internvl2_5_android_2_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_2_dense_caption",
+      "language": false
+    },
+    "android_2_20250414_screen_transition_20250713": {
+      "root": "data/data_20250414/android_2/images",
+      "annotation": "annotations/data_20250414_android_2_screen_transition_20250715.jsonl",
+      "conv_style": "internvl2_5_android_2_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_2_screen_transition",
+      "language": false
+    },
+    "android_2_20250414_user_intention_20250713": {
+      "root": "data/data_20250414/android_2/images",
+      "annotation": "annotations/data_20250414_android_2_user_intention_20250715.jsonl",
+      "conv_style": "internvl2_5_android_2_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_2_user_intention",
+      "language": false
+    },
+    "android_20250328_user_intention_20250805": {
+      "root": "data/data_20250328/android/images",
+      "annotation": "annotations/data_20250328_android_user_intention_20250805.jsonl",
+      "conv_style": "internvl2_5_android_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_user_intention",
+      "language": false
+    },
+    "android_20250328_screen_transition_20250805": {
+      "root": "data/data_20250328/android/images",
+      "annotation": "annotations/data_20250328_android_screen_transition_20250805.jsonl",
+      "conv_style": "internvl2_5_android_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_screen_transition",
+      "language": false
+    },
+    "android_20250328_dense_caption_20250805": {
+      "root": "data/data_20250328/android/images",
+      "annotation": "annotations/data_20250328_android_dense_caption_20250805.jsonl",
+      "conv_style": "internvl2_5_android_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_dense_caption",
+      "language": false
+    },
+    "mac_20250328_dense_caption_20250805": {
+      "root": "data/data_20250328/mac/images",
+      "annotation": "annotations/data_20250328_mac_dense_caption_20250805.jsonl",
+      "conv_style": "internvl2_5_mac_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "mac_dense_caption",
+      "language": false
+    },
+    "mac_20250328_user_intention_20250805": {
+      "root": "data/data_20250328/mac/images",
+      "annotation": "annotations/data_20250328_mac_user_intention_20250805.jsonl",
+      "conv_style": "internvl2_5_mac_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "mac_user_intention",
+      "language": false
+    },
+    "mac_20250328_screen_transition_20250805": {
+      "root": "data/data_20250328/mac/images",
+      "annotation": "annotations/data_20250328_mac_screen_transition_20250805.jsonl",
+      "conv_style": "internvl2_5_mac_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "mac_screen_transition",
+      "language": false
+    },
+    "android_20250612_dense_caption_20250703": {
+      "root": "data/data_20250612/android/images",
+      "annotation": "annotations/data_20250612_android_dense_caption_20250703.jsonl",
+      "conv_style": "internvl2_5_android_understanding_v1",
+      "repeat_time": 1,
+      "split_anno_by_rank": true,
+      "data_augment": false,
+      "task": "android_dense_caption",
+      "language": false
+    }
+}

@@ -1,0 +1,17 @@
+# screenspot_pro registration defaults. Read at import by env_config.load(ENV_DIR).
+# Override the WHOLE config at startup: SCREENSPOT_PRO_CONFIG=/path/to/your.yaml
+# (or a bare name -> configs/<name>.yaml). A rollout's env_kwargs still win per run.
+#
+# The HF repo-id / fetch (likaixin/ScreenSpot-Pro) stays in code — it is not a
+# tunable default.
+
+env_var_prefix: SCREENSPOT_PRO
+
+env_kwargs:
+  binary_reward: true      # inside bbox -> 1.0, else 0.0 (false -> distance reward)
+  valid_actions: ["point"] # ⚠ advanced — defines the action enum (single-step grounding click)
+  extra_tools: []          # opt-in; this env owns NO extra tool of its own (no refusal
+                           # split, unlike osworld_g's report_infeasible), so only the
+                           # canonical finish tools are selectable. An unknown name RAISES.
+
+server_kwargs: {}   # static grounding dataset; no module-level infra env-vars

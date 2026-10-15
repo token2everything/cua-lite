@@ -1,0 +1,57 @@
+{
+  "at_utc": "2026-10-13T05:30:28.486155+00:00",
+  "uv_lock_SHA256": "7621ffde96f995775b3b6aae0322db2b44bc0177f239f4b0839c7c06d79724db",
+  "packages": [
+    {
+      "name": "playwright",
+      "version": "1.63.0",
+      "wheel": "playwright-1.63.0-py3-none-manylinux1_x86_64.whl",
+      "url": "https://files.pythonhosted.org/packages/27/9c/103a5037789062bdab27c7dca53f3ca6b075b572ab2cd96eec825b3aec4e/playwright-1.63.0-py3-none-manylinux1_x86_64.whl",
+      "SHA256": "ad21bc07516b187965a7521c5cf0df0bd657b17482eaad74335272d35a2b07de"
+    },
+    {
+      "name": "greenlet",
+      "version": "3.5.6",
+      "wheel": "greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+      "url": "https://files.pythonhosted.org/packages/66/6a/1594f3869c57c149abdb380492529e04d4c0229b5e4d79572c5bd0aaa673/greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+      "SHA256": "975736b002ed080d124cf81a79cb7e05cb26d6b3f5c7a7b651c0fcce70353aa1"
+    },
+    {
+      "name": "pyee",
+      "version": "13.0.1",
+      "wheel": "pyee-13.0.1-py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/a0/c4/b4d4827c93ef43c01f599ef31453ccc1c132b353284fc6c87d535c233129/pyee-13.0.1-py3-none-any.whl",
+      "SHA256": "af2f8fede4171ef667dfded53f96e2ed0d6e6bd7ee3bb46437f77e3b57689228"
+    },
+    {
+      "name": "typing-extensions",
+      "version": "4.16.0",
+      "wheel": "typing_extensions-4.16.0-py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl",
+      "SHA256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8"
+    }
+  ],
+  "installation_argv": [
+    "uv",
+    "pip",
+    "install",
+    "--python",
+    "/tmp/wav-v03-reproduction-venv/bin/python",
+    "--target",
+    "/data/wav-v04-gui-runtime-ntoeh32o/gui-python",
+    "--no-compile",
+    "--no-deps",
+    "--no-cache",
+    "/data/wav-v04-gui-runtime-ntoeh32o/wheels/playwright-1.63.0-py3-none-manylinux1_x86_64.whl",
+    "/data/wav-v04-gui-runtime-ntoeh32o/wheels/greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+    "/data/wav-v04-gui-runtime-ntoeh32o/wheels/pyee-13.0.1-py3-none-any.whl",
+    "/data/wav-v04-gui-runtime-ntoeh32o/wheels/typing_extensions-4.16.0-py3-none-any.whl"
+  ],
+  "archive": "vendor/runtime-inputs/gui-python.tar.gz",
+  "archive_SHA256": "ecdeb93ee65104f867352dbae8d9eb4a49dcdd5f9b4b63e9bdbdf0018adda21e",
+  "scope": "GUI model interpreter only; existing bootstrap/author runtime remains unchanged",
+  "browser_executable": "/root/.local/share/uv/python/ms-playwright/chromium-1117/chrome-linux/chrome",
+  "browser_version": "Chromium 125.0.6422.26",
+  "browser_SHA256": "4a44e3dd7367f709128e58da3e3f3a7c8bc3ebcb32dd2aadcbcb53424280c97e",
+  "build_directory": "/data/wav-v04-gui-runtime-ntoeh32o"
+}

@@ -1,0 +1,26 @@
+{
+  "generated": true,
+  "sources": {
+    "asset_identity": "{\"components\":{\"generated_judges\":\"osworld/judge_functions/generated_tasks\",\"generated_tasks\":\"osworld/generated_tasks\",\"rl_judges\":\"osworld/judge_functions/rl_tasks\",\"rl_tasks\":\"osworld/rl_tasks\"},\"file_cache_revision\":\"711e0811642364e7aa8f10a8918367d0b626d578\",\"repo\":\"extreme1228/ScaleCUA\",\"revision\":\"77d7174d45d36e3c355269699d7f59a90a714ce6\"}",
+    "generator": "scripts/utils/tasks.sh",
+    "oracle_fixture_identity": "{\"files\":2,\"path\":\"lite/gym/envs/lite/scalecua/data/oracle\",\"sha256\":\"df1fc8726651ae399438816ccd862a0fdb712f938ead0280cd7144a7ca8ec116\"}",
+    "osworld_eval_domain_map_identity": {
+      "entries": 369,
+      "sha256": "4c0631c868aedb4ea3e9ac562086c445a85b6734d12eabc82d7128c9ac76693a",
+      "source": "lite/gym/envs/lite/osworld/data/eval.jsonl"
+    }
+  },
+  "splits": {
+    "rl": {
+      "path": "rl.jsonl",
+      "rows": 2049,
+      "sha256": "5e47d1ba47451ec4bbc639b886744ab3e9b512e3688b954292a59e0f43551383"
+    },
+    "train": {
+      "path": "train.jsonl",
+      "rows": 20289,
+      "sha256": "4093f05b882fbe85b592930d474f0f2f20d59b23c51f33e55908d8d20dbca8cb"
+    }
+  },
+  "version": 1
+}

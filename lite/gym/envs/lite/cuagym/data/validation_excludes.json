@@ -1,0 +1,1068 @@
+{
+  "05771bc8-f75a-5951-abc0-4bc502e3fdc4": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "08a4b6ce-fd9f-55e7-bf9e-d08cdb83fca7": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "0dbe0ab4-fe9f-5e12-a268-5845c756a245": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "1940e1ae-d53e-50f1-bd3b-2770dac3d356": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "1c1f2dd6-6916-5961-91ec-445a99afc8a8": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "1d8dd220-fdf5-5c32-af4d-c589b6612272": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "20cd2803-77c7-598f-bc53-a538dde9467c": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "2157e1f2-f03c-58a3-bdfa-517eaecd8d88": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "25c18f81-e126-518e-bf52-530608e26c1c": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "2a6867c5-6588-5327-92d4-a680ffc0e86b": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "2b558bec-d913-5bbd-be18-8ae90a6fdcc2": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "2bde3e68-4f66-5e82-9f6f-0bc790c130f5": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "b6d88de6-df86-57cb-af07-60939ab6ad7f",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "2df064d8-53d5-56da-8714-194f78ce2532": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "30cdb635-d045-5b50-8d06-a0e908263ff7": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "323b9a78-670d-599b-bdf4-2b609be48ef8": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "33bb3467-82b0-5a18-b6c0-e3905e7fa3ef": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "e923ae7b-262b-50aa-aaab-d0621c268f79",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "33c7efaf-cd89-5793-b6c5-2000b6f01608": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "34c05f78-19e6-5cb7-b7af-1f50f355bdc4": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "3e0901f2-566c-508a-b4d4-802895256b47": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "7b2a5452-8bce-5f5a-916e-0d6550814620",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "3e80b68f-1967-5318-a7af-a494f3d2dc87": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "2d0b12a2-2df6-5c69-b78b-fc0b8a238bdb",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "40403d55-e34b-563f-beb2-d68e6f00ea76": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "4146f813-e524-511f-9a42-8f73ae73dd96": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "45a27721-aa87-569a-84dc-cd8d86ec5884": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "471bc4cb-c5fb-526d-996e-225e713fb3d5": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "4a057cd3-0328-586e-9cef-ef8c32c71850": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "4a7930c8-d9e0-5bf8-a8f9-285dbfb9805f": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "1136106a-92f2-5f78-abd9-8425658c0e77",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "4d4076d9-a112-5705-9837-cffacc01b196": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "4ddde9de-e46f-5867-b237-2bce05a824e7": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "29e1baba-a67d-5c17-8c5c-da0f64c42e19",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "502b4c22-343b-5fed-8824-4bed687fe347": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "535f0cb5-b1f9-5608-9cf7-c68b257e8b03": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "d914539d-cd46-50f3-b5ac-0b98c752d768",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "5649b78a-2702-5cc3-a356-83e405460877": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "57673507-a1ad-5253-bdad-76f8e13cadb4": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "58027024-7224-59ff-bb30-8f668047ff5a": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "c20b9246-e5dd-50fb-9224-3e1cf420e79e",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "5a4fdf26-dff6-5685-8eea-907057d1afae": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "80f0bf6e-52ac-5b70-89d8-4cac7be189a2",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "5af613bd-a55c-5163-b35f-91784c73ebeb": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "8f0f6a94-5bf5-5d3b-a3e7-14dd6569f7f9",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "5b276ea4-2089-5175-baea-d699ec621cc8": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "2c385b93-4f27-5764-af7d-c317b86a9b2f",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "5bc50511-2b6a-573e-8b11-2e57f5cf7c52": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "2fd5d22b-c734-5c83-b8f4-de5fa63d409d",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "5c5e710b-f3a8-5f9c-86b4-dd798b8ddbae": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "d49477e0-e3c7-5899-8ddd-af6517d46f5a",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "5c819900-42e3-5e3b-b733-b280749e0757": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "5cb72854-f8ad-5fd7-9cf6-ddeb0c35e566": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "aac1840c-6732-5368-ad39-b74cc91bea8e",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "5cbb8722-0bf2-5e44-81dc-83455aeb7fe0": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "b6ebe706-8e87-542e-97e6-f5bb97002053",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "5cbc05c9-3707-5fd3-943b-9fce8975c3e3": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "672a5e23-6520-524c-b9d4-e0a7ce804afb",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "5e9e3c31-cc3d-5e39-980a-e6e8288bbf7c": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "4561b908-bfda-5054-bec8-cfd9bd86e3b5",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "60c2f960-fb89-54a5-9a84-5560ddcdfa96": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "61648870-d2e9-56ea-8f57-c6204bacd701": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "8fa7452d-81c9-57cd-ba12-905ca791d8fc",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "61d7be87-feea-5359-b035-13c1a2891e63": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "636f94ce-f708-57e6-9e86-da1fb6cde721": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "f075e60e-6ea2-5119-9d93-18ba5c04014f",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "64998049-08cb-5775-8c56-e9b419c1d9c0": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "7b36e07c-5150-5c54-96ba-dc806e1c3a78",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "65a18e7f-5846-589f-bb58-5dda7124243b": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "676711cd-6816-5fa2-a5a0-971b1871e7d2": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "681be46e-ed77-5adb-8da3-3bf8ae29f25f": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "6958b412-e77b-512d-bdaa-516aa0d4634a": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "69ce31d0-7fb0-57b2-9aff-335868fba35a": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "0868e074-056a-5c3b-8552-ca530a10d04e",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "6aab510b-880a-56d0-8523-e807afda1e88": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "6abe7c64-ba6d-5a57-bb07-0e79cbea4631": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "6bf7de5f-b530-5c7c-a3fc-5286a568967e": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "450f8aeb-ef3f-5512-b2de-0fa55b2497f1",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "6c991c53-28bd-5192-ab1b-63dccd7ddeb5": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "46e799cf-f904-5529-ba53-0766a91a0a06",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "6cba237e-72a8-587a-a162-9ff4db2751bd": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "11432067-1b50-55ad-aa5e-6a62e9d06eb0",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "6d4b07c2-0596-54dd-8217-d94948fd4796": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "4a2fe016-bae9-5d28-867b-cc887c681421",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "6d5fdae2-3f63-5c7d-b98b-4cba4080defb": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "a3eb3099-8973-59e5-80c4-27677f66ac9a",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "6e572132-5af0-5fe8-9121-bb0fb634f0e1": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "71771c2d-2c87-5072-ba6c-af05b51816d4": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "7292d815-e72d-5663-af6c-7736ece020ff": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "58e52e2a-7111-5b35-9c4e-9a0a2e317d10",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "7495a1c2-9ab1-5624-9bd3-55ec53f78bf7": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "38b82911-8574-5742-bd3e-92f0fde084bd",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "755ae465-f1e7-54ca-8230-030fa1bdf1eb": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "bb980d44-d45f-58e9-bbeb-73bf7e94aa87",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "773df3f7-6e1f-5efd-9014-0acb6b6664f6": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "25ce3904-8d1b-5a3d-9897-9261337f1021",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "77845785-533e-5939-8b2d-0ff90a7aa4d5": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "7c854c32-a4a6-5089-9833-d2d03848367f",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "7a38c075-25cd-5795-aab4-e16425b2f845": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "7c6847c6-4060-5d92-a755-7b7dda8c1c38": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "7d1fcb4b-0310-553c-a194-8a5c3d3ee636": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "80f0b505-bc80-5129-ae9b-9007f76afb7d",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "7d4ee931-361e-5bad-b8c1-d8c7dc46660b": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "7d6318c6-3df0-520e-8efe-638944bf865f": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "7da02747-7764-5000-9352-1af6c8db252d": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "92ff7f37-29e4-59f1-a9f0-ab4bad0dc956",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "7dcf891d-243a-5b3d-98da-d5bbd079f9ad": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "7ed18cca-c06a-5135-b946-bc08d313ef75": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "558d9f52-9070-53b6-861f-0ac8de6483ec",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "7fc46287-5d0d-5563-90eb-2077e252ada8": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "96f2e019-7aa8-5f81-a611-3c72be16d7cc",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "816ba993-483b-5df3-8887-c9890d9386d3": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "f0165564-7440-51d2-95c7-a9514e087629",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "82bb8f7e-af8c-5f0b-a0e7-3854d194db73": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "a747a15c-c4b3-5ec2-8832-bec9b1d50547",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "83758bb5-6e7e-5b01-9c9d-e1a2f8887d50": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "86c68fd4-30e0-50ab-ab70-8073b75f428a": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "1f7da002-1c14-5fc0-9e36-9d0942f69bb2",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "86e47dc9-1c0d-528a-aab8-8e44f2cd1794": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "23c2d6d6-92b8-5650-b769-b257cb679b13",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "87ad4ca1-12c1-54d2-9d67-e00a450d2baf": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "a39d23a5-6a15-502d-b9e8-220e9172c257",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "8862e8c7-5350-5199-8579-7a26a7047a45": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "8a176db2-717e-5fda-a241-aad00af8eb26": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "58d5d75b-3a37-5ff6-b606-aede89fe36c2",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "8abbfbe1-f76f-53e7-8d42-1b8015c9762d": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "c177e839-6365-5c47-a47a-786ab16b530d",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "8c62a7c5-0c29-5623-8c2e-9da64c639f4b": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "174b8044-ee0b-57d5-a79e-a29560ec3731",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "8cb944c7-477b-5b3f-a7d1-5dd5fa136cf2": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "8d702f35-38d6-5190-8649-e5f6885b3e41": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "e19fdb9f-fbc6-5590-88fc-e6f15ce4eae7",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "8ecaa5e3-deb3-5ed8-818a-88069bafd134": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "8fb8bae0-c1ca-51a8-826b-a936f579c1ce": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "91c7e0dd-a213-59ef-aa42-b3f1f1373a3f": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "53d36690-34c0-5091-8b45-acfa0474cb08",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "9250cc20-b33e-5bf4-885c-de96010bd061": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "94a18fa7-5bd0-58fc-84de-4d587e2bc280": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "95f7eae2-6b2e-592f-a4a6-66a4561e7fbd": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "968c44d8-b6b0-58e4-b97c-4249e42cf079": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "a5dbfebf-4ef8-598d-a4a9-b081becfe369",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "96a39ba4-b12f-510e-b711-c556683d0549": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "f8e8d8fe-059f-5f21-b10c-2d26026803bc",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "98802735-ab36-5895-bd5b-5505dd7a2e0e": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "b6e2d76f-3c28-5fa5-b4f6-f9ee69a5e46d",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "9a2fdc9c-15df-5e80-9f17-1dc895a408ad": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "5c49dfcf-ab3f-56c2-8521-29206f26751b",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "9b92d336-2944-5cae-acc7-f76cbcbd5598": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "54a5ad44-bc49-51eb-ac5f-1d53e7387287",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "9c2a7359-4a52-559d-a595-f9ded623eca2": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "f815c165-edc9-50e0-8210-541b705533a2",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "9c4efb65-8780-56d7-8203-4be56de7ae0c": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "9e48d0cc-6216-5e29-b6f5-f620b23eb3a7": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "9e51c244-dac5-5866-8209-11af2fb06332",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "9f71576b-afae-54f1-aa34-1903cfb2080b": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "9feb1c93-1b1e-5ef9-aeb1-02a33e8c1d77": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "e5956eff-0512-54d2-a43b-4e11bb3566bc",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "_meta": {
+    "asset_revision": "025b0ab5f89c8f492850dd8536398bf60cb14b45",
+    "comment": "Revision-pinned CUA-Gym validation findings. Tasks remain registered and are annotated by the importers.",
+    "layers": {
+      "duplicate_bundle_audit": {
+        "count": 128,
+        "reason": "broken_reward:instruction_mismatch",
+        "runs": "byte-identical setup+reward pair audit followed by instruction/evaluator review"
+      },
+      "live_noop": {
+        "runs": "reset + terminate in a real lite.cuagym container with no agent action",
+        "status": "not run for the new pinned image; run only after review"
+      },
+      "mock_runtime_audit": {
+        "count": 81,
+        "reason": "broken_mock:blank_render",
+        "runs": "real-container reset and rendered-root inspection against the pinned Google Drive and Uber Eats mocks"
+      }
+    },
+    "total": 209
+  },
+  "a0d8393b-7b86-5efd-a3a7-3b6222972278": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "a14aafff-2f27-51d9-9edb-1c60fae95e0a": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "5cbf77bc-c7dc-5f10-a3d2-d29d4d830a7f",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "a1851ab6-e1a0-593e-a082-8989ccec31a8": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "4dc6c851-0802-526e-9c58-97fc7170ee66",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "a1b9f54c-7ed4-5028-97a1-c4fba6904339": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "f4d38a4c-ea4b-58e7-95c7-4f64d93c5db8",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "a30cc1a3-481c-5cda-97ec-d5a03773f92d": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "d4c212d5-79f5-5b17-a413-02977fa78fa4",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "a34f66f8-7140-5a11-8eaf-c73203ae7470": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "a3c35192-0af3-54ba-a130-5a3602334c49": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "a4156265-c3a2-5921-be1a-0986bfe02248": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "8628157e-c614-5fd6-93e9-6655b1dcb818",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "a41fd538-c210-5d2c-8475-82eb0032a633": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "4bf8d0d2-4ca6-50a3-9d60-fa6af9a4caea",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "a4414113-5f2c-584a-80a0-44e021580e29": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "aab1f839-62d4-5986-a12d-0c4048d44376",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "a52a8c96-722c-57b0-b7de-8cef06a97112": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "a9649a71-4ce5-5947-aaf6-464b5c52d0bb": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "abc8f6f8-9a7b-5692-a592-27307019c8e6": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "1c51ac82-9208-5c04-af9d-f9108147fb1f",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "ac602c4b-3d71-57cf-b3ad-98c387d359c5": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "ac6630b8-2308-55d0-9701-e6215ad69b84": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "acb28ac6-9269-5a63-ba64-4f90246d0bae": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "ad74df4a-dac8-5335-8895-4883de5f79e4": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "3f0f490a-03f5-5034-9bc8-3872f99ccce4",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "ade21364-fd09-5645-9864-c138522068bc": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "df006d46-5173-57bc-abd1-77deecfaeb2c",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "af869b97-ffc7-5995-96ed-9b42b4aba78f": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "af8fa337-f48a-53fb-8ed1-3bde465d07df": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "afcc9437-a0f2-569f-bcc2-f50ab3dc25a6": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "b01fa8c7-10b2-567f-999e-9c495eaef0a4": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "24d6f22b-1913-5cb4-b217-247bfe1e0e07",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "b0380413-4e77-5c7a-bbbf-3069e2b95715": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "7fe341bf-0668-55c1-8fdf-fc6c4de0de87",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "b1b99d3f-9e2a-53e3-98d7-7217fbcab885": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "6e1008f8-07ba-50f7-bed8-2a8dafae59aa",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "b36b92f2-75ee-5f23-8648-ada07fe6fa8b": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "34a80534-5015-583a-bf3f-efe1ecfb13d9",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "b3d51f48-9c36-55db-9a5c-c76a0dc3a4fd": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "0e3f8c64-f29a-514f-9a2e-934117437869",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "b42142d5-fa38-5990-ad98-67a70f3c6a53": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "5cdb1ce3-7381-5633-84a5-dec1c5b218a2",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "b5344ef7-2e31-5641-8306-a54dd55159cd": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "3cda6a52-988a-5710-8fb1-baf9f8cba495",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "b77921de-06c9-5f16-9ccc-1ee6c8e45d0f": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "5e22df13-0891-5247-8911-1542fb0d8804",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "b89ebdc2-8975-53f0-8df4-1b5c33137f98": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "890866a9-3029-5f54-a259-229e1909afd2",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "bb969438-f2ff-5977-bd2f-71f1b6e42533": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "e53ce6ef-eb52-5790-8a39-7f9d245965db",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "bcc22f69-cb0e-549d-b63b-ad795516e7f2": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "edab36bd-9cda-5db1-bd2c-fc745e37c776",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "bcd133a4-56a7-52ec-899a-db62733bd6bc": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "5030b566-5d53-5312-a597-0344a7c4b361",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "c0cb1332-c061-5d73-8b13-dabca44bac86": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "c0f23d1e-6e37-5cfb-abdd-fc7a63f4b6c2": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "c161362e-05de-5e48-b656-f0a087cb485b": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "e4b21550-6d68-5b84-8178-f30e07fc74bf",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "c304e882-50d0-5e1b-bcf9-33e7c5d9fdc3": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "c34ae674-6172-5cdd-bcb5-6b92d8112dae",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "c31bf27f-4293-5a16-9b4b-32a1ae8107b0": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "acdd2658-e76c-54af-93a1-02dc6bd1d593",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "c39c976b-51b2-5703-88b3-0d5e0d7c4b7b": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "750f536d-29dc-5e98-bd77-c750a579f244",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "c4010acb-fd77-521f-82bd-33dcdfabd22a": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "7d6b1973-7409-5028-8304-11ae8cfd6fab",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "c4633f86-9b56-578a-baca-b5f444f66fc1": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "bf7e248d-a42d-5069-8ec8-427f0066d5c2",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "c50d0ece-e447-5763-b4ea-5bf60a757942": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "0e7b42aa-09d6-5262-b073-e3ca79fe9a39",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "c70cc2cb-bb81-58bb-933e-10dab82b3e83": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "472faabb-1445-5bf5-9dba-0720b5638156",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "c893aea9-99f5-5a3c-9ea4-d6c35ade5fd6": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "a0c71b24-17f5-56e2-b7c9-0c8df9cb3107",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "c8f72532-498a-5c2d-8af2-3ea39564bc48": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "ed42dba3-c223-5b0b-83ed-8145440544ca",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "cd54821c-7268-51c6-b9f2-2397001390c8": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "4da295c0-ce6e-5eb0-8e40-81ee431f7fd0",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "cd710936-ed1c-5f3e-9f90-db7084af11fd": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "40459f27-dd9a-5229-94ae-82a01e46ac91",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "d0e7f972-c221-579e-bc7c-97a2f1b186da": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "d224fc78-a749-5882-8ae1-85b937bcea7e": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "893a802b-a680-5126-af73-b964475317ae",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "d2e99e53-aee9-5508-b7b8-cf46806268ef": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "bdfde587-be2d-5806-b47b-9d2408c96c31",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "d4c3069f-0bc7-5449-a1da-7fc35bf19bc2": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "51c4c693-d8f4-516a-95e7-466c5675e958",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "d4ef8304-d265-5c54-bb69-8f913d954cb1": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "ef317f78-0623-5ee9-b5e4-d6805f6673da",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "d55fd0c4-65c0-5a62-a4a0-8deeb2861d5d": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "bfb66085-aa35-5d96-a6da-1ebdd6e5e7fd",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "d6d1775e-f1f6-570b-8454-f78da4cc5414": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "23fef3ae-f818-5adf-8258-e8155290b6b6",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "d7a5a560-d29f-53fb-bbea-971af3eb0014": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "d7bd2182-162a-5eb0-bdd6-db99dac7e32f": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "2804f50f-9013-58e1-9121-42d6f083df94",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "d8b3176b-883c-5274-8297-7c88c0933931": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "3b970fb5-dc1b-55f2-82e4-95fa3217995e",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "da41687c-3b7e-5128-84bb-bec84400a4fd": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "2de04543-42a6-5be6-98ea-294110ec222e",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "da9da096-1bd9-5284-94ef-64ec5f21d1ef": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "673f8050-11b7-5382-b952-0778ffbfeed5",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "dacdb131-dc66-564e-8567-e9a2c6a17684": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "576d39f0-d6cc-5b70-8bc8-fe9908f26332",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "db5161e1-07f6-50cc-bb5a-d74b3234f35a": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "db95b010-4133-5031-a357-56fdf48a2ef7": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "c2d81286-33a1-5867-88b2-b9da49fa5f2e",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "dc31d9b1-6297-5f97-9e1c-294f2f65b4b4": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "842af91e-1a26-5195-b443-baf7188b584a",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "dcb86a42-5499-509f-a3d6-45bfd57118b0": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "33b08c70-ddf5-51f0-b5e9-b687745dc3e2",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "dee2d5da-cafe-5f2d-beb8-7fd86418273e": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "dee991de-a5cb-5cf0-865d-7e37bcce83da": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "e0dfa634-7994-5afe-a313-ce2069bb632e": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "e130902f-6773-5b43-8ac9-4d218176e7d6": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "e21c8044-ccc9-56db-bede-45f97a376053": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "c046323f-6dda-5fed-afd3-f166f9d0e0b3",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "e41be952-f5fc-5bc8-85d6-93d055f88989": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "e65afd84-a694-564d-9da7-5aebfba66ae6": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "b2ecb140-d3e4-50f2-b59a-a9a889b6e9f2",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "e7dabc29-fff0-54f4-a3e2-8cca6cb3121f": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "e8b2fd88-1ecb-5f6b-9957-661c72417399": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "a9665bc8-224f-5a2e-85ca-f9a11cd437ba",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "e97c0d74-032c-5099-bcfb-6f0ab52e9568": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "e9b0841b-231a-5626-956f-a4e6356806e9": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "120ddb81-eacd-5d74-90a7-e06d0733cd4f",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "ea52aabe-5b9b-591d-9413-f7e74665576a": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "3a6e2a29-1454-5d83-ac36-4c3620f98c78",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "eb4b14f0-db54-5985-96a9-d76365831eb6": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "f1f4abad-ca5a-5b5e-95cb-8cf708462fde",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "ebb9c3ad-1881-5c3b-b786-598606fe7c78": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "23e4e21f-791a-5f25-98e3-4aeb5002bc1d",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "ec20d306-7ad5-58a3-a8e1-f0ad56651d74": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "ec26fea3-5538-525c-8d87-a129d73f0640": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "407e99e5-ea58-51e7-a7de-219d476efb60",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "ec9a12bc-d639-575e-9705-0c9626856306": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "e84f3ef9-d769-5ad9-a6b7-c098c5b75531",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "edd5152f-2d93-5a9d-9565-827ad9481744": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "c2c31743-31b2-5229-a619-4c56019b257e",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "ee1a84f1-ffc8-56ba-8d44-bb2be5395532": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "ee1c1512-25c6-5db9-84ba-7fba37499655": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "ee49783e-d63f-5b7d-8b2c-7bc5f7d7ed64": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "ee642a83-65df-5b4b-b8d9-315c251ff961": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "4e519b7f-557d-5e8c-b14a-e57d28fffce2",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "ef141058-6dcb-5e15-a204-01fcf3b24f8b": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "e66bebec-567a-5215-a7f0-d97d234c0de1",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "ef87a22f-10d6-5b62-a1a8-eb4d52e5801f": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "c98c2c01-7a97-5c1b-80d2-71f3b3518e8c",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "f06edbb5-2ddc-531b-b80f-2965654d7855": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "83074d81-04b0-58cb-929e-f5d237999d2f",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "f1efd238-713b-5528-bdf8-1a8ba1dfed38": {
+    "app": "uber_eats",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "f36ea865-a852-5edf-82e1-481a4e8e6b5d": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "3a58aff4-8db3-5941-9b98-ad08709b6d24",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "f3caf23a-e6d8-5f91-8d08-6e3b83262872": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "4a208712-8010-5db1-a08e-088a146cefd0",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "f606813c-f8c2-506d-960f-9395801084fd": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "5f64f51e-090c-5ae3-8364-bd9601b8ae0f",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "f6fc9fc8-53dd-56db-8a48-f7979737ca7b": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "53add6cf-01d1-5a5b-aa10-e682b7297e67",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "f778a566-be70-53fa-8c53-a598efecb714": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "abbfde26-725c-505c-bf06-cc94a6895462",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "f798b515-1411-5661-8f85-a4dd68937cde": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "59f5ccf0-f12b-5b66-ba19-32578a34380f",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "f8e03d41-535c-5cb5-a808-7f1a4e470491": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "cc948c16-dc78-538d-bcf5-989f7e2baabb",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "f8ef0886-93a0-5584-b993-be2d55260991": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "f958e204-bf65-599e-98b5-008b92ea1755": {
+    "app": "google_drive",
+    "layer": "mock_runtime_audit",
+    "reason": "broken_mock:blank_render"
+  },
+  "f97765a0-5181-5fbf-9b72-b8051a0a547a": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "0445540a-46ac-55cf-87d5-f1363140a936",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "fa097d51-e80d-5c62-98bd-41e09fe01055": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "fc5cec77-7fee-51a3-8185-2c9851848764",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "fd690489-39d5-5d16-b686-ca832746d175": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "dafbdcb8-5b79-5ce0-aac3-1e284ba144bd",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "fe8a72c8-4688-59b1-927d-93586fc5d95d": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "f671717d-2ba2-51b5-bc58-331c06187d93",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "fec4789f-0b86-527e-bd92-10ea783afaa5": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "3da47dc1-894d-584b-9be8-590a9be9d050",
+    "reason": "broken_reward:instruction_mismatch"
+  },
+  "ff76ce92-3a25-50ce-a2df-31b82b4515b0": {
+    "layer": "duplicate_bundle_audit",
+    "paired_task_id": "bdbb3f23-5f23-5c5c-b78e-0c4dae7af15c",
+    "reason": "broken_reward:instruction_mismatch"
+  }
+}

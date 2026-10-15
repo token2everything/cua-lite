@@ -1,0 +1,10 @@
+{
+  "description": "cua-lite preprocessed version of Aguvis (xlangai/aguvis-stage1 + xlangai/aguvis-stage2). A large-scale composite GUI dataset using a unified PyAutoGUI action format across mobile / browser / desktop. Stage 1 → grounding.action (single-step locate-and-click across SeeClick, GUIEnv, WebUI, RicoSCA, RICO Icon, Widget Captioning, UI RefExp, OmniACT); Stage 2 → use (multi-step trajectories from AndroidControl, AitW, MiniWoB++, COAT, GUIDE).",
+  "original_urls": [
+    "https://huggingface.co/datasets/xlangai/aguvis-stage1",
+    "https://huggingface.co/datasets/xlangai/aguvis-stage2"
+  ],
+  "license": "See original datasets (xlangai/aguvis-stage1 and xlangai/aguvis-stage2).",
+  "citation": "See https://huggingface.co/datasets/xlangai/aguvis-stage1",
+  "extra_notes": "Sub-datasets already processed from their original sources are excluded here: GUIAct, AMEX (ui_genie), Multimodal-Mind2Web, GUI-Odyssey. Source coordinates are normalized [0,1] → scaled to [0,1000]."
+}

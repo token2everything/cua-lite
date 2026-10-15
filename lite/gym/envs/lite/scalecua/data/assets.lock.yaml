@@ -1,0 +1,16 @@
+assets:
+  repo: extreme1228/ScaleCUA
+  revision: 77d7174d45d36e3c355269699d7f59a90a714ce6
+  components:
+    generated_tasks:
+      path: osworld/generated_tasks
+      baked: false
+    rl_tasks:
+      path: osworld/rl_tasks
+      baked: false
+    generated_judges:
+      path: osworld/judge_functions/generated_tasks
+      baked: false
+    rl_judges:
+      path: osworld/judge_functions/rl_tasks
+      baked: false

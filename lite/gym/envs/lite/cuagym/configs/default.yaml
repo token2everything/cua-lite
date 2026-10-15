@@ -1,0 +1,39 @@
+# lite.cuagym registration defaults. Read at import by env_config.load(ENV_DIR).
+# Override the WHOLE config at startup: LITE_CUAGYM_CONFIG=/path/to/your.yaml
+# (or a bare name -> configs/<name>.yaml). A rollout's env_kwargs still win per run.
+
+env_var_prefix: LITE_CUAGYM
+
+make_kwargs:
+  step_timeout: 120.0
+
+env_kwargs:
+  max_steps: 30
+  post_action_delay: 2.0
+  # LLM judge (text-only -- unlike cuaworld's, it sends no frames). 46 pinned
+  # bundles mention the judge, 38 of them live after excludes. Rerun the fallback
+  # impact census before quoting older "except grants nothing" or reward-weight
+  # figures. Model id here rather than hardcoded, same convention as webgym's
+  # eval_config; overridable per run with LITE_CUAGYM_JUDGE_MODEL.
+  #
+  # Before changing this, check the deployment's RPM headroom at your concurrency —
+  # webgym measured one without it 429ing at conc-32, the 429s swallowed into corrupted
+  # evals (lite/gym/envs/webgym/configs/default.yaml).
+  judge:
+    model: "gpt-5.5"
+  computer:
+    image: "cua-lite/lite.cuagym:latest"
+    display_resolution: [1920, 1080]
+    # 8GB for the same reason as lite.osworld: this image extends the
+    # lite.osworld desktop base, so a GEGL/office op can peak past 4GB and get
+    # SIGKILLed (which reads as an app crash, not a cap). See the note on
+    # ``memory`` in /lite/gym/envs/lite/osworld/configs/default.yaml.
+    memory: "8GB"
+    cpu: "2"
+    timeout: 600
+
+server_kwargs:
+  # gym-anything contract: fresh runner per episode. 0 in-place reuses —
+  # reset_with_recycle destroys after every served episode; the first-reset
+  # gate + the never-ran reset_to_pristine keep a freshly booted backend.
+  max_resets_per_container: 0

@@ -1,0 +1,10 @@
+{
+  "description": "cua-lite preprocessed version of ScaleCUA (OpenGVLab/ScaleCUA-Data + zyliu/ScaleCUA-Data-Understanding). Large-scale multi-platform / multi-task-type GUI dataset spanning understanding, grounding:action, grounding:bbox, grounding:point, and use.",
+  "original_urls": [
+    "https://huggingface.co/datasets/OpenGVLab/ScaleCUA-Data",
+    "https://huggingface.co/datasets/zyliu/ScaleCUA-Data-Understanding"
+  ],
+  "license": "See original datasets (OpenGVLab/ScaleCUA-Data and zyliu/ScaleCUA-Data-Understanding).",
+  "citation": "See https://huggingface.co/datasets/OpenGVLab/ScaleCUA-Data",
+  "extra_notes": ""
+}

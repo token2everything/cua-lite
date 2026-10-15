@@ -1,0 +1,744 @@
+{
+  "schema_version": 1,
+  "winarenafiles_commit": "2b8a27c3b561381e6f25cada0f97a8fd5ed95a75",
+  "assets": [
+    {
+      "source_url": "https://drive.google.com/uc?export=download&id=1Afd0Qze3iAdsFPKtzmPvtSg_GZiHT3DC",
+      "download_url": "https://drive.google.com/uc?export=download&id=1Afd0Qze3iAdsFPKtzmPvtSg_GZiHT3DC",
+      "sha256": "f2b6f1197482fed97005f23239b79da5ff30433302f0ce1e3c4009a00defe086",
+      "size": 6313
+    },
+    {
+      "source_url": "https://drive.google.com/uc?export=download&id=1h9BRrJ7UwP3huncI0Qtv3rRYSWl-LfNI",
+      "download_url": "https://drive.google.com/uc?export=download&id=1h9BRrJ7UwP3huncI0Qtv3rRYSWl-LfNI",
+      "sha256": "27e8792577422c2b67606cf5bce4159cc1606586d268f0e6ee585e7cbde20732",
+      "size": 5695
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/01b269ae-2111-4a07-81fd-3fcd711993b0-WOS/config/Student_Level_Fill_Blank.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/01b269ae-2111-4a07-81fd-3fcd711993b0-WOS/config/Student_Level_Fill_Blank.xlsx",
+      "sha256": "44a4981d2dd13a56f4a4b9d4dff4d51e1e36d057d5d08cd74961302bedaf8f70",
+      "size": 5620
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/01b269ae-2111-4a07-81fd-3fcd711993b0-WOS/eval/Student_Level_Fill_Blank_gold.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/01b269ae-2111-4a07-81fd-3fcd711993b0-WOS/eval/Student_Level_Fill_Blank_gold.xlsx",
+      "sha256": "a7d02419d122a3d755a41c7ca2e2bb3afabcc88138ef29b740148528ea0b6f8b",
+      "size": 6052
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/035f41ba-6653-43ab-aa63-c86d449d62e5-WOS/config/IncomeStatement2.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/035f41ba-6653-43ab-aa63-c86d449d62e5-WOS/config/IncomeStatement2.xlsx",
+      "sha256": "8f9da5481c2bcefefebae562e037a71b5b93163ff6b48295fd4df30b86cf8279",
+      "size": 9941
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/035f41ba-6653-43ab-aa63-c86d449d62e5-WOS/eval/5_IncomeStatement2_gt1.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/035f41ba-6653-43ab-aa63-c86d449d62e5-WOS/eval/5_IncomeStatement2_gt1.xlsx",
+      "sha256": "dce5ec128f2fcb633591ce430f73dc6a1f5041fa2e003fca42af2cb89d2ad0a9",
+      "size": 10555
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/04d9aeaf-7bed-4024-bedb-e10e6f00eb7f-WOS/config/SmallBalanceSheet.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/04d9aeaf-7bed-4024-bedb-e10e6f00eb7f-WOS/config/SmallBalanceSheet.xlsx",
+      "sha256": "4249084517378a0c24a0ff20b5e7b771942f2bf96dce95fbee22598d337fcc5a",
+      "size": 11976
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/04d9aeaf-7bed-4024-bedb-e10e6f00eb7f-WOS/eval/4_SmallBalanceSheet_gt1.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/04d9aeaf-7bed-4024-bedb-e10e6f00eb7f-WOS/eval/4_SmallBalanceSheet_gt1.xlsx",
+      "sha256": "5f832b5537dd3e36920d2bced63c239f9b60f1b6d385c1c35cf6c75715daf1f5",
+      "size": 11776
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/0a2e43bf-b26c-4631-a966-af9dfa12c9e5-WOS/config/SalesRep.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/0a2e43bf-b26c-4631-a966-af9dfa12c9e5-WOS/config/SalesRep.xlsx",
+      "sha256": "f4e54c5b2394e7c7dc5975d1f0bea29f93227aa435827d6649ce86b64734428f",
+      "size": 9500
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/0a2e43bf-b26c-4631-a966-af9dfa12c9e5-WOS/eval/5_SalesRep_gt1.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/0a2e43bf-b26c-4631-a966-af9dfa12c9e5-WOS/eval/5_SalesRep_gt1.xlsx",
+      "sha256": "bc60d9c9d12ecf24fdbed627f4f501b4036effa73599b12a23e299ba2dc84444",
+      "size": 15287
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/0acbd372-ca7a-4507-b949-70673120190f-WOS/config/NetIncome.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/0acbd372-ca7a-4507-b949-70673120190f-WOS/config/NetIncome.xlsx",
+      "sha256": "4bf3c94407240969c2dc55b098d2fab6b247f3b530fe48bae0f39a923b397300",
+      "size": 9201
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/0acbd372-ca7a-4507-b949-70673120190f-WOS/eval/1_NetIncome_gt1.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/0acbd372-ca7a-4507-b949-70673120190f-WOS/eval/1_NetIncome_gt1.xlsx",
+      "sha256": "9f4b07fafc0efe13d73a9aede7169c88d1c371251b2acb144b3af45a77ccc2ea",
+      "size": 9936
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/0bf05a7d-b28b-44d2-955a-50b41e24012a-WOS/config/Customers_New_7digit_Id.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/0bf05a7d-b28b-44d2-955a-50b41e24012a-WOS/config/Customers_New_7digit_Id.xlsx",
+      "sha256": "3b83aba5790e91f538ee5d6f0856efa73e59d86730f857b7ed186eda0a3a329f",
+      "size": 5741
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/0bf05a7d-b28b-44d2-955a-50b41e24012a-WOS/eval/Customers_New_7digit_Id_gold.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/0bf05a7d-b28b-44d2-955a-50b41e24012a-WOS/eval/Customers_New_7digit_Id_gold.xlsx",
+      "sha256": "7b6e9a8897f371bdab4d73d11599e6b376c1229493374cdb779e334feb906286",
+      "size": 6631
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/0cecd4f3-74de-457b-ba94-29ad6b5dafb6-WOS/config/LARS_Science_Assessment_Resource_List_7-30-21.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/0cecd4f3-74de-457b-ba94-29ad6b5dafb6-WOS/config/LARS_Science_Assessment_Resource_List_7-30-21.xlsx",
+      "sha256": "86d5618bbdc2ebbd7de484564fa39b905c7077129278ba9a3f50d2fa7454ee1f",
+      "size": 16046
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/0cecd4f3-74de-457b-ba94-29ad6b5dafb6-WOS/eval/LARS_Science_Assessment_Resource_List_7-30-21_gold.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/0cecd4f3-74de-457b-ba94-29ad6b5dafb6-WOS/eval/LARS_Science_Assessment_Resource_List_7-30-21_gold.xlsx",
+      "sha256": "165192c2a2f342e54a80a41addfad5d3e6a5cdb916cf4d0f63022b2eb7d7c52b",
+      "size": 19637
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/1d17d234-e39d-4ed7-b46f-4417922a4e7c-WOS/config/FutureValue.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/1d17d234-e39d-4ed7-b46f-4417922a4e7c-WOS/config/FutureValue.xlsx",
+      "sha256": "10bf193a7f5de4f534acb34ad4de622b7556bdc1b523b9c832fd6119b56d2211",
+      "size": 9124
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/1d17d234-e39d-4ed7-b46f-4417922a4e7c-WOS/eval/5_FutureValue_gt1.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/1d17d234-e39d-4ed7-b46f-4417922a4e7c-WOS/eval/5_FutureValue_gt1.xlsx",
+      "sha256": "a87b2fbb532017840c289ba43bfd46d837ae5972ae8a92d5da603b312727fd22",
+      "size": 5994
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/1de60575-bb6e-4c3d-9e6a-2fa699f9f197-WOS/config/EntireSummerSales.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/1de60575-bb6e-4c3d-9e6a-2fa699f9f197-WOS/config/EntireSummerSales.xlsx",
+      "sha256": "af5da0ac14d0ef8044becabba3392d1a06cb3f64cfba347ed84f862f44d0a93f",
+      "size": 104602
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/1de60575-bb6e-4c3d-9e6a-2fa699f9f197-WOS/eval/6_EntireSummerSales_gt1.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/1de60575-bb6e-4c3d-9e6a-2fa699f9f197-WOS/eval/6_EntireSummerSales_gt1.xlsx",
+      "sha256": "2715c3ce74255c63a3c261efa77ef4cd7aca5833d4ff694e4fcd5729828378ef",
+      "size": 104604
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/1e8df695-bd1b-45b3-b557-e7d599cf7597-WOS/config/WeeklySales.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/1e8df695-bd1b-45b3-b557-e7d599cf7597-WOS/config/WeeklySales.xlsx",
+      "sha256": "5add57623a183f18267bd53129a9638ef30d5553665946395e8c5ee590e0ce51",
+      "size": 9162
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/1e8df695-bd1b-45b3-b557-e7d599cf7597-WOS/eval/6_WeeklySales_gt1.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/1e8df695-bd1b-45b3-b557-e7d599cf7597-WOS/eval/6_WeeklySales_gt1.xlsx",
+      "sha256": "5a5f87debbd93162632e069162857cc754ee428d0300d2b5dd393f89b70bded3",
+      "size": 9755
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/21ab7b40-77c2-4ae6-8321-e00d3a086c73-WOS/config/PeriodRate.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/21ab7b40-77c2-4ae6-8321-e00d3a086c73-WOS/config/PeriodRate.xlsx",
+      "sha256": "3a3d75fae5a1ef3b91ac5fbba9ab94aadabce8f833e608634bbf8dda7e7afcfc",
+      "size": 9226
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/21ab7b40-77c2-4ae6-8321-e00d3a086c73-WOS/eval/1_PeriodRate_gt1.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/21ab7b40-77c2-4ae6-8321-e00d3a086c73-WOS/eval/1_PeriodRate_gt1.xlsx",
+      "sha256": "599cbdc6fe16b64b9628022bf55f26a488d1912c4b036359f3564c6146e1407a",
+      "size": 6186
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/26a8440e-c166-4c50-aef4-bfb77314b46b-WOS/config/SalesRep.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/26a8440e-c166-4c50-aef4-bfb77314b46b-WOS/config/SalesRep.xlsx",
+      "sha256": "f4e54c5b2394e7c7dc5975d1f0bea29f93227aa435827d6649ce86b64734428f",
+      "size": 9500
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/26a8440e-c166-4c50-aef4-bfb77314b46b-WOS/eval/3_SalesRep_gt1.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/26a8440e-c166-4c50-aef4-bfb77314b46b-WOS/eval/3_SalesRep_gt1.xlsx",
+      "sha256": "36aeeb9844db1b4ca03e5e736773ad62088757eb37694ff452464f774c9b0b28",
+      "size": 10094
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/30e3e107-1cfb-46ee-a755-2cd080d7ba6a-WOS/config/DemographicProfile.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/30e3e107-1cfb-46ee-a755-2cd080d7ba6a-WOS/config/DemographicProfile.xlsx",
+      "sha256": "63b02a319f350d65643fe4923ea63f9b50eae7dedd2073a92b4e56e0315107d5",
+      "size": 9717
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/30e3e107-1cfb-46ee-a755-2cd080d7ba6a-WOS/eval/1_DemographicProfile_gt1.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/30e3e107-1cfb-46ee-a755-2cd080d7ba6a-WOS/eval/1_DemographicProfile_gt1.xlsx",
+      "sha256": "8a32d39129088ab172e7275193a51880d8241157041d10c71f3cf656a49fae93",
+      "size": 13054
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/39aa4e37-dc91-482e-99af-132a612d40f3-WOS/config/LARS_Science_Assessment_Resource_List_7-30-21.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/39aa4e37-dc91-482e-99af-132a612d40f3-WOS/config/LARS_Science_Assessment_Resource_List_7-30-21.xlsx",
+      "sha256": "fd992916f8b1c515d07a4750ab909b7f654f61a1f88cd430549d1073a8fe4e25",
+      "size": 15069
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/39aa4e37-dc91-482e-99af-132a612d40f3-WOS/eval/LARS_Science_Assessment_Resource_List_7-30-21_Gold.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/39aa4e37-dc91-482e-99af-132a612d40f3-WOS/eval/LARS_Science_Assessment_Resource_List_7-30-21_Gold.xlsx",
+      "sha256": "76529a219b5bd51de1caa77bec6834a23c3d750ad29ac44659e4c74077c7c51b",
+      "size": 10834
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/4de54231-e4b5-49e3-b2ba-61a0bec721c0-WOS/config/RampUpAndDown.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/4de54231-e4b5-49e3-b2ba-61a0bec721c0-WOS/config/RampUpAndDown.xlsx",
+      "sha256": "d86f02749766e1c33512b521eca32aed4222a21bafc6c8f28f546ffcdcd10f40",
+      "size": 9950
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/4de54231-e4b5-49e3-b2ba-61a0bec721c0-WOS/eval/3_RampUpAndDown_gt1.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/4de54231-e4b5-49e3-b2ba-61a0bec721c0-WOS/eval/3_RampUpAndDown_gt1.xlsx",
+      "sha256": "d496fac274c078686d3dc8ca19214d7a6e5cfa4b9f5fa8d15cf68a1807ebd523",
+      "size": 8320
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/4f07fbe9-70de-4927-a4d5-bb28bc12c52c-WOS/config/Padding_Decimals_In_Formular.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/4f07fbe9-70de-4927-a4d5-bb28bc12c52c-WOS/config/Padding_Decimals_In_Formular.xlsx",
+      "sha256": "c9283c55bccdac033a2979700e92c679367520536331be9bf4c1b4dea315dca3",
+      "size": 4803
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/4f07fbe9-70de-4927-a4d5-bb28bc12c52c-WOS/eval/Padding_Decimals_In_Formular_gold.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/4f07fbe9-70de-4927-a4d5-bb28bc12c52c-WOS/eval/Padding_Decimals_In_Formular_gold.xlsx",
+      "sha256": "1dd8b7285d7c63360d9fa72a9a47b0aa709328975c7228d70b04c96eda36b1dd",
+      "size": 4967
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/5d353deb-c4b0-4126-a99e-5490817b48cb-WOS/config/EasyGDPBreakdown.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/5d353deb-c4b0-4126-a99e-5490817b48cb-WOS/config/EasyGDPBreakdown.xlsx",
+      "sha256": "95d4c56a9fff7175acd908c64c8514b3d70ce4425506305a6f2ffe7407b093c1",
+      "size": 778137
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/5d353deb-c4b0-4126-a99e-5490817b48cb-WOS/eval/9_EasyGDPBreakdown_gt1.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/5d353deb-c4b0-4126-a99e-5490817b48cb-WOS/eval/9_EasyGDPBreakdown_gt1.xlsx",
+      "sha256": "30810993fe83c0b73861ef675841a430f601f07fd9ef447c4ea0a2c185ba8bcb",
+      "size": 1219665
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/5f8601f8-6e90-4d2c-91bb-eb5836ad1d5c-WOS/config/ExpenseReport.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/5f8601f8-6e90-4d2c-91bb-eb5836ad1d5c-WOS/config/ExpenseReport.xlsx",
+      "sha256": "502a82cb9a842158a7fd32b1b547ad509f4ca4a240ae8b03514e50166811716c",
+      "size": 10492
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/5f8601f8-6e90-4d2c-91bb-eb5836ad1d5c-WOS/eval/6_ExpenseReport_gt1.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/5f8601f8-6e90-4d2c-91bb-eb5836ad1d5c-WOS/eval/6_ExpenseReport_gt1.xlsx",
+      "sha256": "a48901269396bd45680c670924c1b21e5705e40e2ea32a04e7c401d1a8600092",
+      "size": 13124
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/7a4e4bc8-922c-4c84-865c-25ba34136be1-WOS/config/Name_Order_Id_move_column.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/7a4e4bc8-922c-4c84-865c-25ba34136be1-WOS/config/Name_Order_Id_move_column.xlsx",
+      "sha256": "903d84381ff8d559617c4e35239ed980a698c8389f891ad6e24057a35c8551f1",
+      "size": 5882
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/7a4e4bc8-922c-4c84-865c-25ba34136be1-WOS/eval/Name_Order_Id_move_column_gold.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/7a4e4bc8-922c-4c84-865c-25ba34136be1-WOS/eval/Name_Order_Id_move_column_gold.xlsx",
+      "sha256": "473337702ef9cdbdc32f4575d93451d1cc3ac01c11b605994e16e278cbb09480",
+      "size": 6263
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/7e429b8d-a3f0-4ed0-9b58-08957d00b127-WOS/config/VLOOKUP_Fill_the_form.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/7e429b8d-a3f0-4ed0-9b58-08957d00b127-WOS/config/VLOOKUP_Fill_the_form.xlsx",
+      "sha256": "e08832bd2b6996eb495ea8216b235167bdc771c373baff8739fa2d602e4bdd23",
+      "size": 5347
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/7e429b8d-a3f0-4ed0-9b58-08957d00b127-WOS/eval/VLOOKUP_Fill_the_form_gold.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/7e429b8d-a3f0-4ed0-9b58-08957d00b127-WOS/eval/VLOOKUP_Fill_the_form_gold.xlsx",
+      "sha256": "c16a639cbbe421d20c4250a49f12fa27680b874e060dc54cef93ebaea3144321",
+      "size": 5875
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/7efeb4b1-3d19-4762-b163-63328d66303b-WOS/config/Order_Sales_Serial%23.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/7efeb4b1-3d19-4762-b163-63328d66303b-WOS/config/Order_Sales_Serial%23.xlsx",
+      "sha256": "d0d3cfbb42f4d94b2ecff4adf6b21ae76c6eb4bc83f1c385b60f57750f0cf5cf",
+      "size": 5890
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/7efeb4b1-3d19-4762-b163-63328d66303b-WOS/eval/Order_Sales_Serial%23_gold.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/7efeb4b1-3d19-4762-b163-63328d66303b-WOS/eval/Order_Sales_Serial%23_gold.xlsx",
+      "sha256": "9103bfbba0dc71f4f4904f75ebcfdba18a5624aefd142b201fa7cdb42f1f82cd",
+      "size": 6437
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/8b1ce5f2-59d2-4dcc-b0b0-666a714b9a14-WOS/config/Calendar_Highlight_Weekend_Days.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/8b1ce5f2-59d2-4dcc-b0b0-666a714b9a14-WOS/config/Calendar_Highlight_Weekend_Days.xlsx",
+      "sha256": "a29c48e75f1b5894100a15e9ce204a0a599c7ce9bc5a8101d226dd1c4d68f70f",
+      "size": 5773
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/8b1ce5f2-59d2-4dcc-b0b0-666a714b9a14-WOS/eval/Calendar_Highlight_Weekend_Days_gold.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/8b1ce5f2-59d2-4dcc-b0b0-666a714b9a14-WOS/eval/Calendar_Highlight_Weekend_Days_gold.xlsx",
+      "sha256": "e83e93f388874dd7e075b92a22478e586fdad0f55ecfc538b93823c3efd8b6d1",
+      "size": 6472
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/9ed02102-6b28-4946-8339-c028166e9512-WOS/config/BoomerangSales.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/9ed02102-6b28-4946-8339-c028166e9512-WOS/config/BoomerangSales.xlsx",
+      "sha256": "9962eddeb2e47c89d67374922dce5065a65e233bd806eb024506b4c6647bd6b2",
+      "size": 12387
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/calc/9ed02102-6b28-4946-8339-c028166e9512-WOS/eval/1_BoomerangSales_gt1.xlsx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/calc/9ed02102-6b28-4946-8339-c028166e9512-WOS/eval/1_BoomerangSales_gt1.xlsx",
+      "sha256": "87c92c3bffb92b3eadf4695b139d7b0c0e71d7ca8dcaef9281c0968611a9fd8a",
+      "size": 21504
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/file_explorer/016c9a9d-f2b9-4428-8fdb-f74f4439ece6-WOS/config/cs-black-000.png",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/file_explorer/016c9a9d-f2b9-4428-8fdb-f74f4439ece6-WOS/config/cs-black-000.png",
+      "sha256": "71e18b0143704fc6db87349651d51b0a55590e332db9b0bdf4a9c4beb1576391",
+      "size": 1916
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/file_explorer/016c9a9d-f2b9-4428-8fdb-f74f4439ece6-WOS/config/cs-gray-7f7f7f.png",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/file_explorer/016c9a9d-f2b9-4428-8fdb-f74f4439ece6-WOS/config/cs-gray-7f7f7f.png",
+      "sha256": "d37cccaa92c3245fb5316e4f32bf132c8ab04e4e3fce53b15338a5c2d700fd8c",
+      "size": 1940
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/file_explorer/016c9a9d-f2b9-4428-8fdb-f74f4439ece6-WOS/config/cs-white-fff.png",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/file_explorer/016c9a9d-f2b9-4428-8fdb-f74f4439ece6-WOS/config/cs-white-fff.png",
+      "sha256": "a16e0c65d052dfad95684a22a0da00fb1c61d8b8ac905f6cb2790d70e78ab076",
+      "size": 1911
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/file_explorer/0c9dda13-428c-492b-900b-f48562111f93-WOS/config/Doc01.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/file_explorer/0c9dda13-428c-492b-900b-f48562111f93-WOS/config/Doc01.docx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/file_explorer/0c9dda13-428c-492b-900b-f48562111f93-WOS/config/Doc02.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/file_explorer/0c9dda13-428c-492b-900b-f48562111f93-WOS/config/Doc02.docx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/file_explorer/22e529ff-4199-4ffb-95b7-8e5be9b7a860-WOS/config/TestImage.jpg",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/file_explorer/22e529ff-4199-4ffb-95b7-8e5be9b7a860-WOS/config/TestImage.jpg",
+      "sha256": "a37491a5e479e191cfe547b484426037455ce8aacff7ab15f91925330c24864f",
+      "size": 1602752
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/file_explorer/2d292a2d-686b-4e72-80f7-af6c232b1258-WOS/config/SampleText.txt",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/file_explorer/2d292a2d-686b-4e72-80f7-af6c232b1258-WOS/config/SampleText.txt",
+      "sha256": "95a2f1edb08a76120b82cec7c93ca477618639f04beac7d2aeba2dc039d43715",
+      "size": 6
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/file_explorer/2d292a2d-686b-4e72-80f7-af6c232b1258-WOS/config/The%20Wonders%20of%20Our%20Solar%20System.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/file_explorer/2d292a2d-686b-4e72-80f7-af6c232b1258-WOS/config/The%20Wonders%20of%20Our%20Solar%20System.docx",
+      "sha256": "a96e3aa014225bf45d74ac43493598e02523900657ebc4cd5781e6cf7f8a51cf",
+      "size": 594367
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/file_explorer/3bad5766-5186-42be-abe1-12eacc798d3a-WOS/config/SampleText.txt",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/file_explorer/3bad5766-5186-42be-abe1-12eacc798d3a-WOS/config/SampleText.txt",
+      "sha256": "95a2f1edb08a76120b82cec7c93ca477618639f04beac7d2aeba2dc039d43715",
+      "size": 6
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/file_explorer/5548314e-d807-4e9e-97e9-b3a4f9fd634f-WOS/config/SamplePPT.pptx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/file_explorer/5548314e-d807-4e9e-97e9-b3a4f9fd634f-WOS/config/SamplePPT.pptx",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/file_explorer/5548314e-d807-4e9e-97e9-b3a4f9fd634f-WOS/config/SampleText.txt",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/file_explorer/5548314e-d807-4e9e-97e9-b3a4f9fd634f-WOS/config/SampleText.txt",
+      "sha256": "95a2f1edb08a76120b82cec7c93ca477618639f04beac7d2aeba2dc039d43715",
+      "size": 6
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/file_explorer/5548314e-d807-4e9e-97e9-b3a4f9fd634f-WOS/eval/DocumentsBackup.zip",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/file_explorer/5548314e-d807-4e9e-97e9-b3a4f9fd634f-WOS/eval/DocumentsBackup.zip",
+      "sha256": "9fb5185facd00db4f9c4475d9c2f9babc0e3a2f15fad7bfa2a12b9fbce3a542f",
+      "size": 400
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/file_explorer/7c70e16b-e14f-4baa-b046-3e022b2d0305-WOS/config/SampleText.txt",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/file_explorer/7c70e16b-e14f-4baa-b046-3e022b2d0305-WOS/config/SampleText.txt",
+      "sha256": "95a2f1edb08a76120b82cec7c93ca477618639f04beac7d2aeba2dc039d43715",
+      "size": 6
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/file_explorer/ac46b5cb-616a-46e0-b287-9628fd0dab06-WOS/config/SampleText.txt",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/file_explorer/ac46b5cb-616a-46e0-b287-9628fd0dab06-WOS/config/SampleText.txt",
+      "sha256": "95a2f1edb08a76120b82cec7c93ca477618639f04beac7d2aeba2dc039d43715",
+      "size": 6
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/file_explorer/b0c9dac6-52ba-4937-aabb-b0abdc2a8138-WOS/config/SampleText.txt",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/file_explorer/b0c9dac6-52ba-4937-aabb-b0abdc2a8138-WOS/config/SampleText.txt",
+      "sha256": "95a2f1edb08a76120b82cec7c93ca477618639f04beac7d2aeba2dc039d43715",
+      "size": 6
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/file_explorer/b8ab0ae1-d2b4-4e6f-b609-df7d76b456d7-WOS/config/SampleText.txt",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/file_explorer/b8ab0ae1-d2b4-4e6f-b609-df7d76b456d7-WOS/config/SampleText.txt",
+      "sha256": "95a2f1edb08a76120b82cec7c93ca477618639f04beac7d2aeba2dc039d43715",
+      "size": 6
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/file_explorer/e27984c7-968c-48d7-b2c3-6e45cdcc5249-WOS/config/secret.txt",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/file_explorer/e27984c7-968c-48d7-b2c3-6e45cdcc5249-WOS/config/secret.txt",
+      "sha256": "cacf492d616bd4d8b6aae754ecfe3e9f6f34a31629b0946a2677b708ceebcfba",
+      "size": 37
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/file_explorer/f934d80d-84d2-4b46-953c-89f77b5a709a-WOS/config/SampleText.txt",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/file_explorer/f934d80d-84d2-4b46-953c-89f77b5a709a-WOS/config/SampleText.txt",
+      "sha256": "95a2f1edb08a76120b82cec7c93ca477618639f04beac7d2aeba2dc039d43715",
+      "size": 6
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/notepad/366de66e-cbae-4d72-b042-26390db2b145-WOS/eval/draft.txt",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/notepad/366de66e-cbae-4d72-b042-26390db2b145-WOS/eval/draft.txt",
+      "sha256": "fc6f50fbceffdc50e2f7bb20bf1b308a10cd876c9e97e9c512785f6eeb6fb4c8",
+      "size": 16
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/notepad/a7d4b6c5-569b-452e-9e1d-ffdb3d431d15-WOS/config/largefile.txt",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/notepad/a7d4b6c5-569b-452e-9e1d-ffdb3d431d15-WOS/config/largefile.txt",
+      "sha256": "f077be90ec7d39ba5641107f8094a5823e8ed7fb7ba3b1751870402805b942ca",
+      "size": 1129
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/notepad/a7d4b6c5-569b-452e-9e1d-ffdb3d431d15-WOS/eval/example_count_gold.txt",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/notepad/a7d4b6c5-569b-452e-9e1d-ffdb3d431d15-WOS/eval/example_count_gold.txt",
+      "sha256": "785f3ec7eb32f30b90cd0fcf3657d388b5ff4297f2f9716ff66e9b69c05ddd09",
+      "size": 2
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vlc/386dbd0e-0241-4a0a-b6a2-6704fba26b1c-WOS/config/Colorful-Flowers(chosic.com).mp3",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vlc/386dbd0e-0241-4a0a-b6a2-6704fba26b1c-WOS/config/Colorful-Flowers(chosic.com).mp3",
+      "sha256": "cefefd45ff84762fc8cc43c37a8b8288c06d03bcad0f60fc91b927c1eadde0d6",
+      "size": 9749988
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vlc/386dbd0e-0241-4a0a-b6a2-6704fba26b1c-WOS/config/lecture_pdf.pdf",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vlc/386dbd0e-0241-4a0a-b6a2-6704fba26b1c-WOS/config/lecture_pdf.pdf",
+      "sha256": "8a4659725b3f91ace2590603449a656fdc7b66bd344f1aaaf8004f8be550cb50",
+      "size": 221904
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vlc/8f080098-ddb1-424c-b438-4e96e5e4786e-WOS/config/Baby%20Justin%20Bieber.mp4",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vlc/8f080098-ddb1-424c-b438-4e96e5e4786e-WOS/config/Baby%20Justin%20Bieber.mp4",
+      "sha256": "b1c90b75d950875962f324c2224d62cc251c60925cd049f04571d6c07d6ac2cd",
+      "size": 12600781
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vlc/8f080098-ddb1-424c-b438-4e96e5e4786e-WOS/eval/Baby%20Justin%20Bieber.mp3",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vlc/8f080098-ddb1-424c-b438-4e96e5e4786e-WOS/eval/Baby%20Justin%20Bieber.mp3",
+      "sha256": "d79d63242cb7c0d4392df0da28b32cd757234115d8b1f6ccfa39ef64f5a062a4",
+      "size": 3504169
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vlc/aa4b5023-aef6-4ed9-bdc9-705f59ab9ad6-WOS/config/flipped_1984_Apple_Macintosh_Commercial.mp4",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vlc/aa4b5023-aef6-4ed9-bdc9-705f59ab9ad6-WOS/config/flipped_1984_Apple_Macintosh_Commercial.mp4",
+      "sha256": "7e9e0e25ef4d37d9aeedfa8578f10432156d0eea3b6c003fee8f5271293e6900",
+      "size": 3080531
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vlc/aa4b5023-aef6-4ed9-bdc9-705f59ab9ad6-WOS/eval/1984_Apple_Macintosh_Commercial.mp4",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vlc/aa4b5023-aef6-4ed9-bdc9-705f59ab9ad6-WOS/eval/1984_Apple_Macintosh_Commercial.mp4",
+      "sha256": "46ca3972404b92f7a35c62c55e19d2b5dd341b6012a25079bb1835394369faf7",
+      "size": 2826084
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vlc/efcf0d81-0835-4880-b2fd-d866e8bc2294-WOS/config/Interstellar%20Movie%20-%20Official%20Trailer.mp4",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vlc/efcf0d81-0835-4880-b2fd-d866e8bc2294-WOS/config/Interstellar%20Movie%20-%20Official%20Trailer.mp4",
+      "sha256": "5171ffecaeaafd363e0c0f858006ab57d7bc08ce109abd2b89c6748be137e1fe",
+      "size": 26502599
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vlc/efcf0d81-0835-4880-b2fd-d866e8bc2294-WOS/eval/interstellar.png",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vlc/efcf0d81-0835-4880-b2fd-d866e8bc2294-WOS/eval/interstellar.png",
+      "sha256": "3a8d54e194ba6006b7874bf5703f64f98768b12c0886de878bf5d02ebc5d281a",
+      "size": 485340
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vlc/fba2c100-79e8-42df-ae74-b592418d54f4-WOS/config/Interstellar%20Movie%20-%20Official%20Trailer.mp4",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vlc/fba2c100-79e8-42df-ae74-b592418d54f4-WOS/config/Interstellar%20Movie%20-%20Official%20Trailer.mp4",
+      "sha256": "5171ffecaeaafd363e0c0f858006ab57d7bc08ce109abd2b89c6748be137e1fe",
+      "size": 26502599
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vlc/fba2c100-79e8-42df-ae74-b592418d54f4-WOS/eval/interstellar.png",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vlc/fba2c100-79e8-42df-ae74-b592418d54f4-WOS/eval/interstellar.png",
+      "sha256": "3a8d54e194ba6006b7874bf5703f64f98768b12c0886de878bf5d02ebc5d281a",
+      "size": 485340
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vlc/fcd3d211-80f9-53eg-bf85-c603529e65g5-1-WOS/config/Interstellar%20Movie%20-%20Official%20Trailer.mp4",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vlc/fcd3d211-80f9-53eg-bf85-c603529e65g5-1-WOS/config/Interstellar%20Movie%20-%20Official%20Trailer.mp4",
+      "sha256": "5171ffecaeaafd363e0c0f858006ab57d7bc08ce109abd2b89c6748be137e1fe",
+      "size": 26502599
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vscode/0ed39f63-6049-43d4-ba4d-5fa2fe04a951-WOS/config/vscode_replace_text.txt",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vscode/0ed39f63-6049-43d4-ba4d-5fa2fe04a951-WOS/config/vscode_replace_text.txt",
+      "sha256": "fddd104baad484309a4dec480879bfa5ea452e6aef9131024f06132a931cfd58",
+      "size": 637
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vscode/0ed39f63-6049-43d4-ba4d-5fa2fe04a951-WOS/eval/vscode_replace_text_gold.txt",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vscode/0ed39f63-6049-43d4-ba4d-5fa2fe04a951-WOS/eval/vscode_replace_text_gold.txt",
+      "sha256": "8dad55e80d4f415f90affbb2ca44efdbef153f54ff4b21c21e903743aeaed93d",
+      "size": 637
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vscode/5e2d93d8-8ad0-4435-b150-1692aacaa994-WOS/config/README.md",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vscode/5e2d93d8-8ad0-4435-b150-1692aacaa994-WOS/config/README.md",
+      "sha256": "94c262278cbe09e8f4bd8f99a9d989dc6c69e8dfc39ca67c53f20ed24c1fb80a",
+      "size": 95
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vscode/5e2d93d8-8ad0-4435-b150-1692aacaa994-WOS/config/main.py",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vscode/5e2d93d8-8ad0-4435-b150-1692aacaa994-WOS/config/main.py",
+      "sha256": "64e5822301cd230ece61946075bebb2d149c101c9102ea1149415ed92fc69ee1",
+      "size": 92
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vscode/5e2d93d8-8ad0-4435-b150-1692aacaa994-WOS/config/settings.json",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vscode/5e2d93d8-8ad0-4435-b150-1692aacaa994-WOS/config/settings.json",
+      "sha256": "4ee65ae16e56fe8427ce16368295c4cd0077450756e24374be1a1156cda35efb",
+      "size": 200
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vscode/INF-7aeae0e2-70ee-4705-821d-1bba5d5b2ddd-WOS/config/main.py",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vscode/INF-7aeae0e2-70ee-4705-821d-1bba5d5b2ddd-WOS/config/main.py",
+      "sha256": "d78c3ea2cd003fda91018c754cc2b4b744b62d75b55fde557f9048d2c8f2319d",
+      "size": 221
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vscode/INF-847a96b6-df94-4927-97e6-8cc9ea66ced7-WOS/config/workspace1.code-workspace",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vscode/INF-847a96b6-df94-4927-97e6-8cc9ea66ced7-WOS/config/workspace1.code-workspace",
+      "sha256": "d913fe3fd5c42aa31a3feb66a83188e95acba5a3112e830b66c905a002fb865c",
+      "size": 52
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vscode/INF-847a96b6-df94-4927-97e6-8cc9ea66ced7-WOS/config/workspace2.code-workspace",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vscode/INF-847a96b6-df94-4927-97e6-8cc9ea66ced7-WOS/config/workspace2.code-workspace",
+      "sha256": "b5837447e80852ecc11a8edb3016156ab9ae0531988b696f903073ae17dad235",
+      "size": 52
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vscode/ec71221e-ac43-46f9-89b8-ee7d80f7e1c5-WOS/config/test.py",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vscode/ec71221e-ac43-46f9-89b8-ee7d80f7e1c5-WOS/config/test.py",
+      "sha256": "e7d4e1fdee6722fc07fa402ab026a7158f4b94f5760cca332523d5378d152888",
+      "size": 252
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/vscode/ec71221e-ac43-46f9-89b8-ee7d80f7e1c5-WOS/eval/test_gold.py",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/vscode/ec71221e-ac43-46f9-89b8-ee7d80f7e1c5-WOS/eval/test_gold.py",
+      "sha256": "38c7e66a915509f86133d76defab294064f1dd94d87c729daeb799d073149b34",
+      "size": 288
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/0810415c-bde4-4443-9047-d5f70165a697-WOS/config/Novels_Intro_Packet.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/0810415c-bde4-4443-9047-d5f70165a697-WOS/config/Novels_Intro_Packet.docx",
+      "sha256": "9e615941ced6d491c595f9904d50213c6b6447a8bc6391f052d3745104ded5ed",
+      "size": 11734
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/0810415c-bde4-4443-9047-d5f70165a697-WOS/eval/Novels_Intro_Packet_Gold.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/0810415c-bde4-4443-9047-d5f70165a697-WOS/eval/Novels_Intro_Packet_Gold.docx",
+      "sha256": "fe7f236ee2810829b29a119fb37d6ad08520594a36827076eeb62e7a7b0c66e8",
+      "size": 12066
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/0a0faba3-5580-44df-965d-f562a99b291c-WOS/config/04%20CHIN9505%20EBook%20Purchasing%20info%202021%20Jan.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/0a0faba3-5580-44df-965d-f562a99b291c-WOS/config/04%20CHIN9505%20EBook%20Purchasing%20info%202021%20Jan.docx",
+      "sha256": "efe354c69b84d33e87696922afb7b397a18167d19dbe8fabc64ff6931693f101",
+      "size": 13163
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/0a0faba3-5580-44df-965d-f562a99b291c-WOS/eval/04%20CHIN9505%20EBook%20Purchasing%20info%202021%20Jan_Gold.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/0a0faba3-5580-44df-965d-f562a99b291c-WOS/eval/04%20CHIN9505%20EBook%20Purchasing%20info%202021%20Jan_Gold.docx",
+      "sha256": "bcb2d18c4c9f1857beaf88ae202e042bac5d126512c2b373f32956431c4b0f46",
+      "size": 13869
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/0b17a146-2934-46c7-8727-73ff6b6483e8-WOS/config/H2O_Factsheet_WA.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/0b17a146-2934-46c7-8727-73ff6b6483e8-WOS/config/H2O_Factsheet_WA.docx",
+      "sha256": "d853fe6eb1d49cfe6c31108c587a23de239314608c7ca036e38291efc9461e11",
+      "size": 145259
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/0b17a146-2934-46c7-8727-73ff6b6483e8-WOS/eval/H2O_Factsheet_WA_Gold.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/0b17a146-2934-46c7-8727-73ff6b6483e8-WOS/eval/H2O_Factsheet_WA_Gold.docx",
+      "sha256": "489dcf67cd13dc13a8e37152b6db1f4931e49030ba67aca47c573345ce9fdc00",
+      "size": 147208
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/0e47de2a-32e0-456c-a366-8c607ef7a9d2-WOS/LibreOffice_Open_Source_Word_Processing.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/0e47de2a-32e0-456c-a366-8c607ef7a9d2-WOS/LibreOffice_Open_Source_Word_Processing.docx",
+      "sha256": "14bf1830fe564811f847eb688fc36ae5c64317481f7aaad7473965d035cd2b28",
+      "size": 789110
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/0e763496-b6bb-4508-a427-fad0b6c3e195-WOS/Dublin_Zoo_Intro.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/0e763496-b6bb-4508-a427-fad0b6c3e195-WOS/Dublin_Zoo_Intro.docx",
+      "sha256": "76d9039c2b6c86381cbcf1a87178c6c50bbcf9b1e3d651ddb6e9caa189988430",
+      "size": 11047
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/3ef2b351-8a84-4ff2-8724-d86eae9b842e-WOS/Constitution_Template_With_Guidelines.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/3ef2b351-8a84-4ff2-8724-d86eae9b842e-WOS/Constitution_Template_With_Guidelines.docx",
+      "sha256": "29c478b49fbc9f460ad4a9c4d1b23b71513167c118f0ed5fec3de98c28ba5251",
+      "size": 15990
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/41c621f7-3544-49e1-af8d-dafd0f834f75-WOS/config/How_to_read_a_scientific_article.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/41c621f7-3544-49e1-af8d-dafd0f834f75-WOS/config/How_to_read_a_scientific_article.docx",
+      "sha256": "e6845bcc0383e0f3e2914a52acca9c38d52e483804d87ea40df1b55ac83bbb9b",
+      "size": 8783
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/41c621f7-3544-49e1-af8d-dafd0f834f75-WOS/eval/How_to_read_a_scientific_article_Gold.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/41c621f7-3544-49e1-af8d-dafd0f834f75-WOS/eval/How_to_read_a_scientific_article_Gold.docx",
+      "sha256": "08c3f4919af01d233dc48f103b049dbf52094fe53820edf8815804c2cda85b93",
+      "size": 9606
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/4bcb1253-a636-4df4-8cb0-a35c04dfef31-WOS/config/View_Person_Organizational_Summary.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/4bcb1253-a636-4df4-8cb0-a35c04dfef31-WOS/config/View_Person_Organizational_Summary.docx",
+      "sha256": "7500009b2c15e5f3097a39dfc683ee34cc4f5bcd621c94fb4ceaa937d44cb9fc",
+      "size": 415460
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/4bcb1253-a636-4df4-8cb0-a35c04dfef31-WOS/eval/View_Person_Organizational_Summary.pdf",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/4bcb1253-a636-4df4-8cb0-a35c04dfef31-WOS/eval/View_Person_Organizational_Summary.pdf",
+      "sha256": "a476731ba8fbb81c14001e98e72aa3c77f83abef450f0baca9eaa47d515fe4ef",
+      "size": 300158
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/6a33f9b9-0a56-4844-9c3f-96ec3ffb3ba2-WOS/config/sample-recruitment-phone-script.odt",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/6a33f9b9-0a56-4844-9c3f-96ec3ffb3ba2-WOS/config/sample-recruitment-phone-script.odt",
+      "sha256": "83c59a66298ef427ac33128b396ad56aea09a352be10e3b1bbbc7859597b43d3",
+      "size": 41925
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/6a33f9b9-0a56-4844-9c3f-96ec3ffb3ba2-WOS/eval/sample-recruitment-phone-script_Gold.odt",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/6a33f9b9-0a56-4844-9c3f-96ec3ffb3ba2-WOS/eval/sample-recruitment-phone-script_Gold.odt",
+      "sha256": "a2bbb4d2c48cffb539511301d84ac8aef95100e977f681119f219215860e1c2d",
+      "size": 41620
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/72b810ef-4156-4d09-8f08-a0cf57e7cefe-WOS/config/GEOG2169_Course_Outline_2022-23.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/72b810ef-4156-4d09-8f08-a0cf57e7cefe-WOS/config/GEOG2169_Course_Outline_2022-23.docx",
+      "sha256": "6c960a6d9e4983b410eb3e27b610b1569649a20c5b470116e3db52ca9220dd50",
+      "size": 10953
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/72b810ef-4156-4d09-8f08-a0cf57e7cefe-WOS/eval/GEOG2169_Course_Outline_2022-23_Gold.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/72b810ef-4156-4d09-8f08-a0cf57e7cefe-WOS/eval/GEOG2169_Course_Outline_2022-23_Gold.docx",
+      "sha256": "b914fe1c978cdfbe7830b14f7aff45da37f3dc7f1c96cfe2e39ca7f08ef50a21",
+      "size": 11384
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/88fe4b2d-3040-4c70-9a70-546a47764b48-WOS/config/CCCH9003_Tutorial_guidelines.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/88fe4b2d-3040-4c70-9a70-546a47764b48-WOS/config/CCCH9003_Tutorial_guidelines.docx",
+      "sha256": "23931b1976c39ef8501a8a5190d6cb599dfb37e6ebf8a10abb7932aa80ce43bc",
+      "size": 198791
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/88fe4b2d-3040-4c70-9a70-546a47764b48-WOS/eval/CCCH9003_Tutorial_guidelines_Gold.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/88fe4b2d-3040-4c70-9a70-546a47764b48-WOS/eval/CCCH9003_Tutorial_guidelines_Gold.docx",
+      "sha256": "19a110157e9ebc133eb0fa8a5c235d003d74470aaba1f70665cf22e7255a8472",
+      "size": 200174
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/936321ce-5236-426a-9a20-e0e3c5dc536f-WOS/config/Graphemes_Sound_Letter_Patterns.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/936321ce-5236-426a-9a20-e0e3c5dc536f-WOS/config/Graphemes_Sound_Letter_Patterns.docx",
+      "sha256": "c66b6d7bf814e71acd4777353b7be5eca1c9735dc9f510fa61993d78aef492ca",
+      "size": 68195
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/936321ce-5236-426a-9a20-e0e3c5dc536f-WOS/eval/Graphemes_Sound_Letter_Patterns_Gold.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/936321ce-5236-426a-9a20-e0e3c5dc536f-WOS/eval/Graphemes_Sound_Letter_Patterns_Gold.docx",
+      "sha256": "1fb8ea4bb0abe1d84544fa3c02e8715e6e3936853c3b160a6fb2087f909ab07f",
+      "size": 130031
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/INF-bb8ccc78-479f-4a2f-a71e-d565e439436b-WOS/config/The%20Wonders%20of%20Our%20Solar%20System.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/INF-bb8ccc78-479f-4a2f-a71e-d565e439436b-WOS/config/The%20Wonders%20of%20Our%20Solar%20System.docx",
+      "sha256": "a96e3aa014225bf45d74ac43493598e02523900657ebc4cd5781e6cf7f8a51cf",
+      "size": 594367
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/adf5e2c3-64c7-4644-b7b6-d2f0167927e7-WOS/config/Essay_Writing_English_for_uni.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/adf5e2c3-64c7-4644-b7b6-d2f0167927e7-WOS/config/Essay_Writing_English_for_uni.docx",
+      "sha256": "245f3064d64dead11e37b341ca5ab42e4435c6ac63ad0fe14c3f7513a37e249a",
+      "size": 16721
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/adf5e2c3-64c7-4644-b7b6-d2f0167927e7-WOS/eval/Essay_Writing_English_for_uni_Gold.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/adf5e2c3-64c7-4644-b7b6-d2f0167927e7-WOS/eval/Essay_Writing_English_for_uni_Gold.docx",
+      "sha256": "1ae0d141428acee7fd1221d9f7cc0cfcbb50316bc5998ae4bd7ba8842ddec05b",
+      "size": 18244
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/b21acd93-60fd-4127-8a43-2f5178f4a830-WOS/config/CCHU9045_Course_Outline_2019-20.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/b21acd93-60fd-4127-8a43-2f5178f4a830-WOS/config/CCHU9045_Course_Outline_2019-20.docx",
+      "sha256": "f58ab6dfb76fa597fe8d2962838d01aa15b060bdd8c4981b02777a0faa3dc252",
+      "size": 7446
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/b21acd93-60fd-4127-8a43-2f5178f4a830-WOS/eval/CCHU9045_Course_Outline_2019-20_Gold.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/b21acd93-60fd-4127-8a43-2f5178f4a830-WOS/eval/CCHU9045_Course_Outline_2019-20_Gold.docx",
+      "sha256": "2b8928f1146977d06fee2981d9d22f2b13781c7add4176fa855dbc0c94a93062",
+      "size": 7452
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/d53ff5ee-3b1a-431e-b2be-30ed2673079b-WOS/config/presentation_instruction_2023_Feb.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/d53ff5ee-3b1a-431e-b2be-30ed2673079b-WOS/config/presentation_instruction_2023_Feb.docx",
+      "sha256": "26932140b262b8886b42d82e3a8acd1e48a4c9c97abe803791e9cf1ab10d3ce8",
+      "size": 7660
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/d53ff5ee-3b1a-431e-b2be-30ed2673079b-WOS/eval/presentation_instruction_2023_Feb_Gold.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/d53ff5ee-3b1a-431e-b2be-30ed2673079b-WOS/eval/presentation_instruction_2023_Feb_Gold.docx",
+      "sha256": "4bf3cec92ae61e1263f4bd54131c03ec90f6dbc8f70159a3a1fdc6be10cfc19a",
+      "size": 8773
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/e246f6d8-78d7-44ac-b668-fcf47946cb50-WOS/config/Y22-2119-assign4.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/e246f6d8-78d7-44ac-b668-fcf47946cb50-WOS/config/Y22-2119-assign4.docx",
+      "sha256": "51b35873bde4e9041a5e7557e52685db5fc92a8244c87bf65dbc0b19f3cd81f1",
+      "size": 196107
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/e246f6d8-78d7-44ac-b668-fcf47946cb50-WOS/eval/Y22-2119-assign4_Gold.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/e246f6d8-78d7-44ac-b668-fcf47946cb50-WOS/eval/Y22-2119-assign4_Gold.docx",
+      "sha256": "48ac677346bd818af4f90d77b0947b30b91c0627883fcc31902c1edd94bcc7f9",
+      "size": 196108
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/e528b65e-1107-4b8c-8988-490e4fece599-WOS/config/Geography_And_Magical_Realism.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/e528b65e-1107-4b8c-8988-490e4fece599-WOS/config/Geography_And_Magical_Realism.docx",
+      "sha256": "b7a84074837e33be184bac095e0c6824bd818a79791c3358ef2cdcd352f046b4",
+      "size": 9143
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/e528b65e-1107-4b8c-8988-490e4fece599-WOS/eval/Geography_And_Magical_Realism_Gold.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/e528b65e-1107-4b8c-8988-490e4fece599-WOS/eval/Geography_And_Magical_Realism_Gold.docx",
+      "sha256": "6b2a1968cd8ba4a91ebf122d11a6168ffdc9fec314e1641b8f635fe7644ad74b",
+      "size": 9144
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/main/task_files/writer/f178a4a9-d090-4b56-bc4c-4b72a61a035d-WOS/config/loa-one-time-submission-sealand.docx",
+      "download_url": "https://raw.githubusercontent.com/rogeriobonatti/winarenafiles/2b8a27c3b561381e6f25cada0f97a8fd5ed95a75/task_files/writer/f178a4a9-d090-4b56-bc4c-4b72a61a035d-WOS/config/loa-one-time-submission-sealand.docx",
+      "sha256": "81c40f540211de5408329eae55e4409766f0fba09dbb4d7e640ac0e2f7669b47",
+      "size": 26068
+    }
+  ]
+}
